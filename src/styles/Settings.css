@@ -1,0 +1,311 @@
+/* ============================================
+   Settings Styles
+   ============================================ */
+
+.settings-page {
+  animation: fadeInUp 400ms ease-out;
+  max-width: 800px;
+}
+
+.settings-header {
+  margin-bottom: var(--space-xl);
+}
+
+.settings-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin-bottom: var(--space-xs);
+}
+
+.settings-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.settings-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  animation: fadeInUp 400ms ease-out both;
+}
+
+.settings-section:nth-child(2) { animation-delay: 80ms; }
+.settings-section:nth-child(3) { animation-delay: 160ms; }
+.settings-section:nth-child(4) { animation-delay: 240ms; }
+.settings-section:nth-child(5) { animation-delay: 320ms; }
+
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.settings-section-icon {
+  color: var(--accent-primary);
+}
+
+.settings-section-title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-row:first-of-type {
+  padding-top: 0;
+}
+
+.settings-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 60%;
+}
+
+.settings-row-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.settings-row-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Toggle Switch */
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-hover);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+  border: 1px solid var(--border-default);
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: all var(--transition-base);
+}
+
+.toggle input:checked + .toggle-slider {
+  background: var(--accent-primary-dim);
+  border-color: var(--accent-primary);
+}
+
+.toggle input:checked + .toggle-slider::after {
+  transform: translateY(-50%) translateX(20px);
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+}
+
+/* Settings Select */
+.settings-select {
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  min-width: 140px;
+}
+
+/* Settings Input */
+.settings-input {
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  width: 140px;
+}
+
+/* Keyboard Shortcuts */
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.shortcut-label {
+  color: var(--text-secondary);
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: 4px;
+}
+
+.shortcut-key {
+  padding: 3px 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* Bounty Tracker Styles */
+.bounty-tracker-page {
+  animation: fadeInUp 400ms ease-out;
+}
+
+.bounty-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.bounty-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+}
+
+.bounty-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.bounty-stat-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.bounty-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+}
+
+.bounty-stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}
+
+.bounty-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.bounty-table th {
+  text-align: left;
+  padding: var(--space-md);
+  background: var(--bg-elevated);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.bounty-table td {
+  padding: var(--space-md);
+  font-size: var(--font-size-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.bounty-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bounty-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-submitted {
+  background: var(--accent-primary-dim);
+  color: var(--accent-primary);
+}
+
+.status-triaged {
+  background: var(--accent-yellow-dim);
+  color: var(--accent-yellow);
+}
+
+.status-resolved {
+  background: var(--accent-green-dim);
+  color: var(--accent-green);
+}
+
+.status-paid {
+  background: rgba(16, 185, 129, 0.25);
+  color: #34D399;
+}
+
+.status-duplicate {
+  background: var(--accent-red-dim);
+  color: var(--accent-red);
+}

@@ -1,0 +1,342 @@
+/* ============================================
+   Sidebar Styles — KROMA
+   ============================================ */
+
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-sidebar);
+  transition: width var(--transition-slow);
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ---- Animated 3D Logo Section ---- */
+.sidebar-header {
+  padding: var(--space-xl) var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Subtle dark space background behind logo */
+.sidebar-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(139, 92, 246, 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.sidebar-logo-container {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  perspective: 600px;
+  z-index: 2;
+}
+
+.sidebar-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  animation: logo3DFloat 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+  transition: all 0.5s ease;
+}
+
+@keyframes logo3DFloat {
+  0%, 100% {
+    transform: rotateY(0deg) rotateX(0deg) translateZ(0px);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.15), 0 0 24px rgba(139, 92, 246, 0.06);
+  }
+  25% {
+    transform: rotateY(6deg) rotateX(-2deg) translateZ(3px);
+    box-shadow: -3px 2px 16px rgba(139, 92, 246, 0.18), 0 0 28px rgba(139, 92, 246, 0.08);
+  }
+  50% {
+    transform: rotateY(0deg) rotateX(0deg) translateZ(5px);
+    box-shadow: 0 3px 20px rgba(139, 92, 246, 0.2), 0 0 32px rgba(139, 92, 246, 0.1);
+  }
+  75% {
+    transform: rotateY(-6deg) rotateX(2deg) translateZ(3px);
+    box-shadow: 3px 2px 16px rgba(139, 92, 246, 0.18), 0 0 28px rgba(139, 92, 246, 0.08);
+  }
+}
+
+/* Subtle ring - no red glow */
+.sidebar-logo-container::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius-md) + 2px);
+  background: conic-gradient(from 0deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05), rgba(139, 92, 246, 0.2));
+  z-index: -1;
+  animation: logoGlowSpin 10s linear infinite;
+  opacity: 0.4;
+}
+
+@keyframes logoGlowSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ---- HOLE Text ---- */
+.sidebar-brand {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 3;
+}
+
+.sidebar-brand-name {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  display: flex;
+  gap: 2px;
+  perspective: 500px;
+}
+
+.kroma-letter {
+  display: inline-block;
+  background: linear-gradient(135deg, #C4B5FD, #818CF8, #C4B5FD);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: kromaLetterFloat 4s ease-in-out infinite, kromaGradientShift 3s ease-in-out infinite;
+  transform-style: preserve-3d;
+  text-shadow: none;
+  position: relative;
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.2));
+}
+
+.kroma-letter:nth-child(1) { animation-delay: 0s, 0s; }
+.kroma-letter:nth-child(2) { animation-delay: 0.12s, 0.15s; }
+.kroma-letter:nth-child(3) { animation-delay: 0.24s, 0.3s; }
+.kroma-letter:nth-child(4) { animation-delay: 0.36s, 0.45s; }
+.kroma-letter:nth-child(5) { animation-delay: 0.48s, 0.6s; }
+
+@keyframes kromaLetterFloat {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: translateY(-2px) rotateX(4deg) rotateY(-2deg);
+  }
+  50% {
+    transform: translateY(-3px) rotateX(0deg) rotateY(0deg);
+  }
+  75% {
+    transform: translateY(-2px) rotateX(-4deg) rotateY(2deg);
+  }
+}
+
+@keyframes kromaGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.sidebar-brand-tag {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  margin-top: 3px;
+  opacity: 0.7;
+}
+
+/* ---- Navigation ---- */
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+}
+
+.sidebar-section {
+  margin-bottom: var(--space-lg);
+}
+
+.sidebar-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-xs);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 10px var(--space-md);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  user-select: none;
+}
+
+.sidebar-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.sidebar-item.active {
+  background: color-mix(in srgb, var(--item-accent, #8B5CF6) 12%, transparent);
+  color: var(--item-accent, #A78BFA);
+}
+
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--item-accent, #8B5CF6);
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--item-accent, #8B5CF6) 50%, transparent);
+}
+
+.sidebar-item-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.sidebar-item.active .sidebar-item-icon {
+  opacity: 1;
+}
+
+.sidebar-item-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sidebar-item.active .sidebar-item-badge {
+  background: color-mix(in srgb, var(--item-accent, #8B5CF6) 15%, transparent);
+  color: var(--item-accent, #A78BFA);
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: var(--space-md);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sidebar-footer-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 10px var(--space-md);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-footer-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* New Note Button */
+.sidebar-new-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: calc(100% - var(--space-md) * 2);
+  margin: var(--space-md);
+  padding: 12px;
+  background: linear-gradient(135deg, #7C3AED, #6D28D9);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.sidebar-new-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45);
+}
+
+.sidebar-new-btn:active {
+  transform: scale(0.97);
+}
+
+/* ---- Note Delete Button ---- */
+.sidebar-note-item {
+  position: relative;
+}
+
+.note-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.sidebar-note-item:hover .note-delete-btn {
+  opacity: 1;
+}
+
+.note-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--accent-red);
+}
+
+.note-delete-btn:active {
+  transform: scale(0.9);
+}
+
+/* Delete modal extra styles */
+.delete-modal {
+  max-width: 440px;
+}
