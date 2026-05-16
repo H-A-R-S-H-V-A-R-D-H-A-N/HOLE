@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # Trigger this workflow when a tag like v1.0.0 is pushed
+      - 'v*'
 
 jobs:
   release:
@@ -13,6 +13,7 @@ jobs:
       contents: write
     
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         
@@ -23,8 +24,20 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          
+          node-version: 22
+
+      # Linux: install native build tools for node-pty
+      - name: Install Linux Build Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3 libx11-dev libxkbfile-dev
+
+      # macOS: install Python for node-gyp (node-pty)
+      - name: Install macOS Build Dependencies
+        if: runner.os == 'macOS'
+        run: brew install python-setuptools
+
       - name: Install Dependencies
         run: npm install
 
