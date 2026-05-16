@@ -10,7 +10,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Version-1.0.0-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Version-1.0.1-purple?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Electron-v42-cyan?style=for-the-badge" />
 </p>
 
@@ -122,14 +122,16 @@ It is a single, self-contained Electron application that combines **20+ professi
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v18+ (LTS recommended)
+- **[Node.js](https://nodejs.org/) v20+** (v22 LTS recommended)
 - [Git](https://git-scm.com/)
+
+> ⚠️ **Node.js 20+ is required.** The app uses Vite 8 and Electron 42, which do not work with Node 18 or below.
 
 ### Quick Start (All Platforms)
 
 ```bash
 # Clone the repository
-git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
 cd HOLE
 
 # Install dependencies
@@ -146,21 +148,36 @@ npm run electron:dev
 .\install.bat
 
 # Option 2: Manual
-git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
 cd HOLE
 npm install
 npm run electron:dev
 ```
 
-### Linux / macOS
+### Linux (Ubuntu / Pop!_OS / Kali / Debian)
 
 ```bash
-# Option 1: Use the install script
-chmod +x install.sh
-./install.sh
+# Install Node.js 22 (if you don't have Node 20+)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-# Option 2: Manual
-git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
+# Clone and install
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
+cd HOLE
+npm install
+
+# Start the desktop app
+npm run electron:dev
+```
+
+### macOS
+
+```bash
+# Install Node.js 22 via Homebrew (if needed)
+brew install node@22
+
+# Clone and install
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
 cd HOLE
 npm install
 npm run electron:dev
@@ -169,24 +186,22 @@ npm run electron:dev
 ### Build Native Installer
 
 ```bash
-# Windows (.exe installer)
-npm run electron:build
-
-# Linux (.AppImage)
-npm run electron:build
-
-# macOS (.dmg)
+# Build for your current platform
 npm run electron:build
 ```
 
-The installer will be created in the `release/` directory.
+| Platform | Output |
+|----------|--------|
+| Windows | `release/HOLE Setup X.X.X.exe` |
+| Linux | `release/HOLE-X.X.X.AppImage` |
+| macOS | `release/HOLE-X.X.X.dmg` |
 
 ---
 
 ## Architecture
 
 ```
-hole/
+HOLE/
 ├── electron/          # Electron main process (native OS access)
 │   └── main.cjs       # Window management, IPC, file system APIs
 ├── src/
@@ -202,7 +217,7 @@ hole/
 ### Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|-----------| 
 | **Runtime** | Electron v42 |
 | **Frontend** | React 19 + Vite 8 |
 | **Editor** | TipTap (rich text) + Monaco (code) |

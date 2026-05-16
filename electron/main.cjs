@@ -74,7 +74,7 @@ let activeWatcher = null;
 ipcMain.handle('pick-folder', async () => {
   try {
     const result = await dialog.showOpenDialog(mainWindow, {
-      title: 'Choose where KROMA should store your files',
+      title: 'Choose where HOLE should store your files',
       properties: ['openDirectory', 'createDirectory'],
       buttonLabel: 'Select Folder',
     });
@@ -84,8 +84,8 @@ ipcMain.handle('pick-folder', async () => {
     }
 
     const chosenDir = result.filePaths[0];
-    // Create a KROMA subfolder inside the chosen directory
-    const kromaDir = path.join(chosenDir, 'KROMA');
+    // Create a HOLE subfolder inside the chosen directory
+    const kromaDir = path.join(chosenDir, 'HOLE');
     if (!fs.existsSync(kromaDir)) {
       fs.mkdirSync(kromaDir, { recursive: true });
     }
@@ -351,7 +351,7 @@ ipcMain.handle('fetch-platform-api', async (event, { url, options }) => {
 // Save media natively
 ipcMain.handle('save-media', async (event, { workspacePath, filename, base64Data }) => {
   try {
-    const mediaDir = path.join(workspacePath, 'Kroma_Media');
+    const mediaDir = path.join(workspacePath, 'HOLE_Media');
     if (!fs.existsSync(mediaDir)) {
       fs.mkdirSync(mediaDir, { recursive: true });
     }
@@ -368,13 +368,18 @@ ipcMain.handle('save-media', async (event, { workspacePath, filename, base64Data
 // ---- Tor Mode ---- //
 
 function getTorPath() {
-  // Check bundled location first (works on every PC), then fallbacks
+  const isWin = process.platform === 'win32';
+  const torBin = isWin ? 'tor.exe' : 'tor';
   const locations = [
-    path.join(__dirname, '..', 'bin', 'tor', 'tor.exe'),       // Dev & bundled
-    path.join(process.resourcesPath || '', 'bin', 'tor', 'tor.exe'), // Packaged app (asar unpacked)
-    path.join(__dirname, '..', 'tor', 'tor.exe'),
-    path.join(__dirname, '..', 'tor', 'Tor', 'tor.exe'),
+    path.join(__dirname, '..', 'bin', 'tor', torBin),
+    path.join(process.resourcesPath || '', 'bin', 'tor', torBin),
+    path.join(__dirname, '..', 'tor', torBin),
+    path.join(__dirname, '..', 'tor', 'Tor', torBin),
   ];
+  // On Linux/macOS, also check system-installed tor
+  if (!isWin) {
+    locations.push('/usr/bin/tor', '/usr/local/bin/tor');
+  }
   for (const loc of locations) {
     if (fs.existsSync(loc)) return loc;
   }
@@ -577,7 +582,10 @@ ipcMain.handle('get-tor-ip', async () => {
 
 ipcMain.handle('open-anonymous-browser', async (event, preferredBrowser = 'auto') => {
   try {
-    const browsers = {
+    const isWin = process.platform === 'win32';
+    const isMac = process.platform === 'darwin';
+
+    const browsers = isWin ? {
       chrome: [
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -595,9 +603,21 @@ ipcMain.handle('open-anonymous-browser', async (event, preferredBrowser = 'auto'
         'C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe',
       ],
       opera: [
-        process.env.LOCALAPPDATA + '\\Programs\\Opera\\opera.exe',
-        process.env.LOCALAPPDATA + '\\Programs\\Opera GX\\opera.exe',
+        (process.env.LOCALAPPDATA || '') + '\\Programs\\Opera\\opera.exe',
+        (process.env.LOCALAPPDATA || '') + '\\Programs\\Opera GX\\opera.exe',
       ]
+    } : isMac ? {
+      chrome: ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'],
+      brave: ['/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'],
+      firefox: ['/Applications/Firefox.app/Contents/MacOS/firefox'],
+      edge: ['/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'],
+      opera: ['/Applications/Opera.app/Contents/MacOS/Opera'],
+    } : {
+      chrome: ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium-browser', '/usr/bin/chromium'],
+      brave: ['/usr/bin/brave-browser', '/usr/bin/brave-browser-stable'],
+      firefox: ['/usr/bin/firefox', '/usr/bin/firefox-esr'],
+      edge: ['/usr/bin/microsoft-edge', '/usr/bin/microsoft-edge-stable'],
+      opera: ['/usr/bin/opera'],
     };
 
     let browserPath = null;
@@ -615,8 +635,7 @@ ipcMain.handle('open-anonymous-browser', async (event, preferredBrowser = 'auto'
         return { success: false, error: `Preferred browser (${preferredBrowser}) not found. Please install it or use Auto-detect.` };
       }
     } else {
-      // Auto-detect
-      const allCandidates = [...browsers.chrome, ...browsers.brave, ...browsers.edge, ...browsers.firefox, ...browsers.opera];
+      const allCandidates = [...(browsers.chrome||[]), ...(browsers.brave||[]), ...(browsers.edge||[]), ...(browsers.firefox||[]), ...(browsers.opera||[])];
       for (const b of allCandidates) {
         if (b && fs.existsSync(b)) {
           browserPath = b;
@@ -718,10 +737,11 @@ ipcMain.handle('update-tor-config', async (event, { exitCountry, bridges, bridge
 // Get path to pluggable transport binaries
 function getPluggableTransportPath(type) {
   const ptDir = path.join(__dirname, '..', 'bin', 'tor', 'pluggable_transports');
+  const ext = process.platform === 'win32' ? '.exe' : '';
   const map = {
-    'obfs4': path.join(ptDir, 'lyrebird.exe'),
-    'snowflake': path.join(ptDir, 'snowflake-client.exe'),
-    'conjure': path.join(ptDir, 'conjure-client.exe'),
+    'obfs4': path.join(ptDir, 'lyrebird' + ext),
+    'snowflake': path.join(ptDir, 'snowflake-client' + ext),
+    'conjure': path.join(ptDir, 'conjure-client' + ext),
   };
   return (map[type] || map['obfs4']).replace(/\\/g, '/');
 }
@@ -825,7 +845,7 @@ ipcMain.handle('tor-health-check', async () => {
 // Fetch .onion or regular URL through Tor proxy
 ipcMain.handle('tor-fetch-url', async (event, url) => {
   return new Promise((resolve) => {
-    exec('curl.exe --socks5-hostname 127.0.0.1:9050 -sS -L --max-time 30 "' + url + '"', 
+    exec((process.platform === 'win32' ? 'curl.exe' : 'curl') + ' --socks5-hostname 127.0.0.1:9050 -sS -L --max-time 30 "' + url + '"', 
       { timeout: 35000, maxBuffer: 5 * 1024 * 1024 }, 
       (error, stdout, stderr) => {
         if (error) {
@@ -848,32 +868,30 @@ let isGlobalGhostActive = false;
 // The env vars only affect child processes of THIS app, which is the safe approach.
 
 function cleanupGhostProxySync() {
-  // This is the nuclear cleanup function. It undoes EVERYTHING.
   try {
     const { execSync } = require('child_process');
-    // 1. Disable Windows proxy & DELETE the ProxyServer value entirely
-    execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0 /f', { windowsHide: true });
-    try {
-      execSync('reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /f', { windowsHide: true });
-    } catch (e) { /* ProxyServer might not exist, that's fine */ }
 
-    // 2. DELETE permanent env vars that may have been set by older versions of the app
-    try { execSync('reg delete "HKCU\\Environment" /v HTTP_PROXY /f', { windowsHide: true }); } catch (e) {}
-    try { execSync('reg delete "HKCU\\Environment" /v HTTPS_PROXY /f', { windowsHide: true }); } catch (e) {}
-    try { execSync('reg delete "HKCU\\Environment" /v ALL_PROXY /f', { windowsHide: true }); } catch (e) {}
+    if (process.platform === 'win32') {
+      // Windows: clear registry proxy
+      execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0 /f', { windowsHide: true });
+      try {
+        execSync('reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /f', { windowsHide: true });
+      } catch (e) {}
+      try { execSync('reg delete "HKCU\\Environment" /v HTTP_PROXY /f', { windowsHide: true }); } catch (e) {}
+      try { execSync('reg delete "HKCU\\Environment" /v HTTPS_PROXY /f', { windowsHide: true }); } catch (e) {}
+      try { execSync('reg delete "HKCU\\Environment" /v ALL_PROXY /f', { windowsHide: true }); } catch (e) {}
+      try {
+        execSync('powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable(\'HTTP_PROXY\', $null, \'User\'); [Environment]::SetEnvironmentVariable(\'HTTPS_PROXY\', $null, \'User\'); [Environment]::SetEnvironmentVariable(\'ALL_PROXY\', $null, \'User\')"', { windowsHide: true });
+      } catch (e) {}
+    }
 
-    // 3. Clear from current process tree (volatile)
+    // Clear from current process tree (all platforms)
     delete process.env.HTTP_PROXY;
     delete process.env.HTTPS_PROXY;
     delete process.env.ALL_PROXY;
     delete process.env.http_proxy;
     delete process.env.https_proxy;
     delete process.env.all_proxy;
-
-    // 4. Notify Windows that environment has changed (broadcasts WM_SETTINGCHANGE)
-    try {
-      execSync('powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable(\'HTTP_PROXY\', $null, \'User\'); [Environment]::SetEnvironmentVariable(\'HTTPS_PROXY\', $null, \'User\'); [Environment]::SetEnvironmentVariable(\'ALL_PROXY\', $null, \'User\')"', { windowsHide: true });
-    } catch (e) {}
 
     isGlobalGhostActive = false;
     console.log('[HOLE] Ghost Mode cleanup complete — all proxy traces removed.');
@@ -884,11 +902,12 @@ function cleanupGhostProxySync() {
 
 // Startup Ghost Check: detect leftover proxy from a previous crash
 function checkForGhostLeftovers() {
+  // Only relevant on Windows (registry-based proxy)
+  if (process.platform !== 'win32') return false;
   try {
     const { execSync } = require('child_process');
     let hasGhost = false;
 
-    // Check registry for ProxyEnable=1
     try {
       const regCheck = execSync('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable', { windowsHide: true, encoding: 'utf-8' });
       if (regCheck.includes('0x1')) {
@@ -896,13 +915,12 @@ function checkForGhostLeftovers() {
       }
     } catch (e) {}
 
-    // Check for permanent env vars
     try {
       const envCheck = execSync('reg query "HKCU\\Environment" /v ALL_PROXY', { windowsHide: true, encoding: 'utf-8' });
       if (envCheck.includes('socks5')) {
         hasGhost = true;
       }
-    } catch (e) { /* Not set, good */ }
+    } catch (e) {}
 
     if (hasGhost) {
       console.log('[HOLE] WARNING: Ghost proxy leftovers detected from previous session. Cleaning up...');
@@ -923,18 +941,23 @@ ipcMain.handle('check-ghost-leftovers', async () => {
 ipcMain.handle('enable-global-ghost', async () => {
   return new Promise((resolve) => {
     try {
-      // Step 1: Set registry proxy (this is the "system-wide" part)
-      exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1 /f && reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /t REG_SZ /d "socks=127.0.0.1:9050" /f', { windowsHide: true }, (err) => {
-        if (err) return resolve({ success: false, error: err.message });
-
-        // Step 2: Set VOLATILE process-level env vars (NOT permanent via setx)
+      const enableProxy = () => {
         process.env.HTTP_PROXY = 'socks5h://127.0.0.1:9050';
         process.env.HTTPS_PROXY = 'socks5h://127.0.0.1:9050';
         process.env.ALL_PROXY = 'socks5h://127.0.0.1:9050';
-
         isGlobalGhostActive = true;
         resolve({ success: true });
-      });
+      };
+
+      if (process.platform === 'win32') {
+        exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1 /f && reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /t REG_SZ /d "socks=127.0.0.1:9050" /f', { windowsHide: true }, (err) => {
+          if (err) return resolve({ success: false, error: err.message });
+          enableProxy();
+        });
+      } else {
+        // On Linux/macOS, just set env vars (no system registry)
+        enableProxy();
+      }
     } catch(e) { resolve({ success: false, error: e.message }); }
   });
 });
@@ -954,9 +977,10 @@ const STOP_WORDS = new Set(['about','above','after','again','against','all','am'
 
 ipcMain.handle('generate-wordlist', async (event, { url, useTor, doPermutations, minLength }) => {
   return new Promise((resolve) => {
-    let curlCmd = 'curl.exe -sS -L --max-time 20 "' + url + '"';
+    const curlBin = process.platform === 'win32' ? 'curl.exe' : 'curl';
+    let curlCmd = curlBin + ' -sS -L --max-time 20 "' + url + '"';
     if (useTor) {
-      curlCmd = 'curl.exe --socks5-hostname 127.0.0.1:9050 -sS -L --max-time 30 "' + url + '"';
+      curlCmd = curlBin + ' --socks5-hostname 127.0.0.1:9050 -sS -L --max-time 30 "' + url + '"';
     }
 
     exec(curlCmd, { timeout: 35000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
@@ -1102,22 +1126,31 @@ const pty = require('node-pty');
 let ptyProcess = null;
 
 function getAvailableShells() {
-  const shells = [
-    { name: 'PowerShell', path: 'powershell.exe' },
-    { name: 'Command Prompt', path: 'cmd.exe' }
-  ];
-  
-  const wslPath = path.join(process.env.windir || 'C:\\Windows', 'System32', 'wsl.exe');
-  if (fs.existsSync(wslPath)) {
-    shells.unshift({ name: 'WSL (Linux)', path: wslPath });
+  if (process.platform === 'win32') {
+    const shells = [
+      { name: 'PowerShell', path: 'powershell.exe' },
+      { name: 'Command Prompt', path: 'cmd.exe' }
+    ];
+    const wslPath = path.join(process.env.windir || 'C:\\Windows', 'System32', 'wsl.exe');
+    if (fs.existsSync(wslPath)) {
+      shells.unshift({ name: 'WSL (Linux)', path: wslPath });
+    }
+    const gitBashPath = 'C:\\Program Files\\Git\\bin\\bash.exe';
+    if (fs.existsSync(gitBashPath)) {
+      shells.unshift({ name: 'Git Bash', path: gitBashPath });
+    }
+    return shells;
+  } else {
+    // Linux / macOS
+    const shells = [{ name: 'Bash', path: '/bin/bash' }];
+    if (fs.existsSync('/usr/bin/zsh') || fs.existsSync('/bin/zsh')) {
+      shells.unshift({ name: 'Zsh', path: fs.existsSync('/usr/bin/zsh') ? '/usr/bin/zsh' : '/bin/zsh' });
+    }
+    if (fs.existsSync('/usr/bin/fish')) {
+      shells.push({ name: 'Fish', path: '/usr/bin/fish' });
+    }
+    return shells;
   }
-  
-  const gitBashPath = 'C:\\Program Files\\Git\\bin\\bash.exe';
-  if (fs.existsSync(gitBashPath)) {
-    shells.unshift({ name: 'Git Bash', path: gitBashPath });
-  }
-  
-  return shells;
 }
 
 ipcMain.handle('get-available-shells', () => {
@@ -1138,7 +1171,7 @@ ipcMain.handle('pty-start', (event, { shellPath, cols, rows, useTor }) => {
       name: 'xterm-color',
       cols: cols || 80,
       rows: rows || 24,
-      cwd: process.env.USERPROFILE,
+      cwd: process.env.HOME || process.env.USERPROFILE,
       env: env
     });
 
