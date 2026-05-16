@@ -39,25 +39,7 @@ export default function ResourcesPartners() {
           Curated VPS deals, learning platforms, and essential hacking tools — all with exclusive discounts for the HOLE community.
         </p>
 
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-        }}>
-          {['DigitalOcean', 'Vultr', 'Hack The Box', 'PentesterLab', 'Caido'].map((name, i) => (
-            <span key={i} style={{
-              fontSize: '11px',
-              padding: '4px 12px',
-              borderRadius: '20px',
-              background: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-secondary)',
-            }}>
-              {name}
-            </span>
-          ))}
-        </div>
+
 
         <style>{`
           @keyframes pulse {
