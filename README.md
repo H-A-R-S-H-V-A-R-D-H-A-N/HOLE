@@ -10,7 +10,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Version-1.0.1-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Version-1.1.1-purple?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Electron-v42-cyan?style=for-the-badge" />
 </p>
 
