@@ -49,7 +49,7 @@ It is a single, self-contained Electron application that combines **20+ professi
 ### Offensive Tools
 | Tool | Description |
 |------|-------------|
-| **Payload Library** | 500+ categorized XSS, SQLi, SSRF, and SSTI payloads with one-click copy |
+| **Payload Library** | Categorized XSS, SQLi, SSRF, and SSTI payloads with one-click copy |
 | **WAF Bypass Engine** | Generate WAF evasion payloads for Cloudflare, Akamai, AWS WAF, and more |
 | **JWT Forger** | Decode, edit, re-sign, and brute-force JWT tokens offline |
 | **Reverse Shell Generator** | Generate reverse shells in 15+ languages (Python, Bash, PowerShell, PHP, etc.) |
