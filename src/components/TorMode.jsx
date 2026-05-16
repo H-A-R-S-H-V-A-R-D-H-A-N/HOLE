@@ -195,7 +195,7 @@ export default function TorMode() {
       setTorLog(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: 'Activating System-Wide Ghost Mode...' }]);
       const res = await window.electronAPI.enableGlobalGhost();
       if (res.success) {
-        setTorLog(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: 'Global Ghost Mode ACTIVE: All Windows OS traffic routed through Tor.' }]);
+        setTorLog(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: 'Global Ghost Mode ACTIVE: All system traffic routed through Tor.' }]);
       } else {
         setGlobalGhost(false);
         setTorLog(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: 'Failed to enable Ghost Mode: ' + res.error }]);
@@ -286,15 +286,26 @@ export default function TorMode() {
   }
 
   if (!torInstalled) {
+    const isLinux = navigator.userAgent.includes('Linux');
+    const isMac = navigator.userAgent.includes('Mac');
     return (
       <div className="tool-page page-enter" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 40px)', gap: '24px', padding: '0 40px' }}>
         <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: 'linear-gradient(135deg, #EF4444, #DC2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(239, 68, 68, 0.3)' }}>
           <AlertTriangle size={40} color="#fff" />
         </div>
         <h2 style={{ margin: 0, fontWeight: 800, fontSize: '28px', color: 'var(--text-primary)' }}>Tor Engine Missing</h2>
-        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', textAlign: 'center', maxWidth: '500px', lineHeight: 1.6 }}>
-          The bundled Tor binary could not be found. This may happen if your antivirus quarantined it or the app installation is corrupted. Try reinstalling HOLE.
+        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', textAlign: 'center', maxWidth: '560px', lineHeight: 1.6 }}>
+          {isLinux
+            ? 'Tor is not installed on your system. Install it from your terminal and click Re-check:'
+            : isMac
+            ? 'Tor is not installed on your system. Install it via Homebrew and click Re-check:'
+            : 'The bundled Tor binary could not be found. This may happen if your antivirus quarantined it or the app installation is corrupted. Try reinstalling HOLE.'}
         </p>
+        {(isLinux || isMac) && (
+          <div style={{ background: '#000', border: '1px solid var(--border-default)', borderRadius: '10px', padding: '14px 24px', fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#10B981', letterSpacing: '0.5px', userSelect: 'all', cursor: 'text' }}>
+            {isLinux ? 'sudo apt install tor' : 'brew install tor'}
+          </div>
+        )}
         <button className="btn btn-secondary" onClick={() => window.location.reload()}><RefreshCw size={14} /> Re-check</button>
       </div>
     );
@@ -504,11 +515,11 @@ export default function TorMode() {
               {globalGhost && <span style={{ fontSize: '10px', padding: '2px 6px', background: '#10B981', color: '#000', borderRadius: '4px', fontWeight: 900 }}>ACTIVE</span>}
             </h4>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '600px' }}>
-              Force the entire Windows Operating System (including external cmd.exe, Chrome, Spotify) to route through the active Tor connection. Use with extreme caution.
+              Force your entire system (browsers, terminal, apps) to route through the active Tor connection. Use with extreme caution.
             </p>
             <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', borderLeft: '3px solid #EF4444', borderRadius: '4px', fontSize: '11px', color: '#FCA5A5' }}>
-              <strong>CRASH WARNING:</strong> If HOLE closes unexpectedly while Ghost Mode is ACTIVE, your Windows internet will break ("Proxy server refusing connections"). 
-              To fix it, go to Windows Settings -&gt; Proxy -&gt; Turn OFF "Use a proxy server".
+              <strong>CRASH WARNING:</strong> If HOLE closes unexpectedly while Ghost Mode is ACTIVE, your internet routing may break.
+              {navigator.userAgent.includes('Win') ? ' To fix: Windows Settings → Proxy → Turn OFF "Use a proxy server".' : ' To fix: unset http_proxy https_proxy ALL_PROXY in your shell.'}
             </div>
           </div>
         </div>
