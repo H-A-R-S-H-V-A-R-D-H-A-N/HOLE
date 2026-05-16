@@ -12,9 +12,13 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
     } catch { return []; }
   });
 
-  // Local state for the currently viewed clipboard context (independent of activeContext)
   const [viewingContext, setViewingContext] = useState(activeContext || '');
   const [newContextInput, setNewContextInput] = useState('');
+  const [activeScans, setActiveScans] = useState(() => localStorage.getItem('kroma_active_scans') || '0');
+
+  useEffect(() => {
+    localStorage.setItem('kroma_active_scans', activeScans);
+  }, [activeScans]);
 
   // Keep viewingContext in sync when activeContext changes
   useEffect(() => {
@@ -104,8 +108,23 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
           <div className="stat-card-header">
             <div className="stat-card-icon"><Zap size={20} color="#3B82F6" /></div>
           </div>
-          <div className="stat-card-value">0</div>
-          <div className="stat-card-label">Active Scans</div>
+          <input 
+            type="number" 
+            value={activeScans}
+            onChange={(e) => setActiveScans(e.target.value)}
+            className="stat-card-value"
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'inherit', 
+              width: '100%', 
+              outline: 'none',
+              padding: 0,
+              fontFamily: 'inherit',
+              MozAppearance: 'textfield'
+            }}
+          />
+          <div className="stat-card-label">Active Scans (Manual)</div>
         </div>
       </div>
 
@@ -368,6 +387,7 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
         .pro-action-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
         .pro-action-tile:hover { background: var(--bg-hover); color: var(--accent-primary); border-color: var(--accent-primary-dim); transform: translateY(-2px); }
         .pro-action-tile span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
       `}</style>
     </div>
   );
