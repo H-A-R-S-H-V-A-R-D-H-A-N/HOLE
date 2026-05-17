@@ -14,6 +14,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preelectron:dev": "npm install",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron . --dev\"",
     "electron:build": "vite build && electron-builder",
     "start": "electron ."
