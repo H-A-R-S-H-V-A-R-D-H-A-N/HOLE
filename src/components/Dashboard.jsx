@@ -14,11 +14,6 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
 
   const [viewingContext, setViewingContext] = useState(activeContext || '');
   const [newContextInput, setNewContextInput] = useState('');
-  const [activeScans, setActiveScans] = useState(() => localStorage.getItem('kroma_active_scans') || '0');
-
-  useEffect(() => {
-    localStorage.setItem('kroma_active_scans', activeScans);
-  }, [activeScans]);
 
   // Keep viewingContext in sync when activeContext changes
   useEffect(() => {
@@ -103,28 +98,6 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
           </div>
           <div className="stat-card-value">${totalEarned.toLocaleString()}</div>
           <div className="stat-card-label">Total Bounties Earned</div>
-        </div>
-        <div className="stat-card pro">
-          <div className="stat-card-header">
-            <div className="stat-card-icon"><Zap size={20} color="#3B82F6" /></div>
-          </div>
-          <input 
-            type="number" 
-            value={activeScans}
-            onChange={(e) => setActiveScans(e.target.value)}
-            className="stat-card-value"
-            style={{ 
-              background: 'transparent', 
-              border: 'none', 
-              color: 'inherit', 
-              width: '100%', 
-              outline: 'none',
-              padding: 0,
-              fontFamily: 'inherit',
-              MozAppearance: 'textfield'
-            }}
-          />
-          <div className="stat-card-label">Active Scans (Manual)</div>
         </div>
       </div>
 
