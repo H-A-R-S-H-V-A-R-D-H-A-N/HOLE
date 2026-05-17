@@ -1,280 +1,146 @@
-<p align="center">
-  <img src="public/hole-icon.png" alt="HOLE Logo" width="140" />
-</p>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE/main/public/hole-icon.png" width="150" alt="HOLE Logo">
+  <h1>H O L E</h1>
+  <p><b>The Ultimate Anonymous Bug Bounty Workstation</b></p>
 
-<h1 align="center">H O L E</h1>
-<p align="center">
-  <strong>The Anonymous Bug Bounty Workstation</strong>
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Version-1.1.1-purple?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Electron-v42-cyan?style=for-the-badge" />
-</p>
+  <img src="https://img.shields.io/badge/Status-Active-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Data-Local_Only-red?style=for-the-badge" />
+</div>
 
-<p align="center">
-  <em>A fully offline, native desktop workstation built for elite bug bounty hunters.</em><br/>
-  <em>Zero telemetry. Zero cloud. Everything runs on YOUR machine.</em>
-</p>
+<br />
 
----
+**HOLE** is a fully offline, native desktop workstation built exclusively for elite bug bounty hunters and penetration testers. Unlike scattered CLI scripts or web-based SaaS tools that track your data, HOLE combines **39 professional security tools** into a single, unified, dark-themed dashboard. 
 
-<p align="center">
-  <img src="screenshots/dashboard.png" alt="Dashboard" width="800" />
-</p>
+Every single operation happens **100% locally** on your machine. Zero telemetry. Zero cloud tracking. No data leaves your computer.
 
 ---
 
-## Why HOLE?
+## 🔥 Features & Tool Arsenal
 
-Most security tools are either web-based SaaS products that phone home, or scattered CLI utilities with no unified workflow. **HOLE** is different.
+HOLE is packed with an extensive suite of natively integrated hacking modules. 
 
-It is a single, self-contained Electron application that combines **20+ professional security tools** into one dark-themed, keyboard-driven workstation. Every operation — from JWT cracking to image steganography — happens 100% offline on your local machine with zero network requests.
+### 🛡️ Tor Engine & Privacy (Ghost Mode)
+A built-in native Tor proxy controller that secures your entire workflow. 
+- **System-Wide Ghost Mode**: Hijack your OS routing to force all system traffic (browsers, external terminals, background apps) through the Tor network.
+- **Magic IP Rotator**: Automatically rotates your Exit Node IP every 5, 10, or 30 minutes.
+- **Kill-Switch**: Drops all connections instantly if the Tor daemon fails, preventing IP leaks.
+- **Censorship Bypass**: Native support for **obfs4** and **snowflake** bridges to bypass ISP firewalls.
+- **Country Picker**: Select specific exit node countries (US, UK, DE, RU).
 
-**No accounts. No subscriptions. No data leaves your computer. Ever.**
+### 🕸️ n8n-Style Visual Workflows (GraphQL Viz & Parallel Reality)
+Forget reading massive JSON blobs. HOLE includes an **n8n-style node-based visual editor** for mapping out attack surfaces.
+- **Drag-and-Drop Nodes**: Connect inputs, endpoints, and payloads visually.
+- **GraphQL Introspection**: Paste a GraphQL schema and instantly generate a beautifully mapped, interactive node diagram of all queries and mutations.
 
----
+### 🥷 WAF Evasion & Payload Library
+- **HTTP Request Smuggling**: Pre-calculated chunks and CL.TE / TE.CL generators.
+- **String Analyzer & Obfuscator**: Convert standard payloads into heavily encoded variants (URL, Hex, Base64, Unicode) to bypass Web Application Firewalls.
+- **Payload Library**: A massive offline database of payloads for XSS, SQLi, SSRF, LFI, and RCE.
 
-## Features
+### 🔑 Crypto, Stego & JWT Forger
+- **JWT Forger**: Decode JSON Web Tokens, modify headers/claims on the fly, and re-sign them. Includes a built-in brute-forcer to crack weak JWT secrets (`HMAC` / `RSA`).
+- **Crypto Toolkit**: Perform complex AES, DES, ChaCha20 encryption/decryption entirely offline.
+- **Steganography**: Hide and extract encrypted payloads within standard image files.
 
-### Intelligence & Recon
-| Tool | Description |
-|------|-------------|
-| **Recon Workspace** | Organize targets, subdomains, and attack surface notes |
-| **Recon Database** | Persistent local database for storing recon findings |
-| **Platform Dashboard** | Track active programs across HackerOne, Bugcrowd, Intigriti |
+### 📊 Recon & Methodology Tracker
+- **Bounty Tracker**: A fully-fledged Kanban board specifically designed to track targets, bounties, and vulnerability statuses.
+- **Methodology Checklists**: Built-in OWASP Top 10 checklists to ensure you never miss an endpoint during manual testing.
+- **Hacker Journal**: A markdown-based daily journaling system. All notes are saved as plain `.md` files in your local workspace.
 
-### Offensive Tools
-| Tool | Description |
-|------|-------------|
-| **Payload Library** | Categorized XSS, SQLi, SSRF, and SSTI payloads with one-click copy |
-| **WAF Bypass Engine** | Generate WAF evasion payloads for Cloudflare, Akamai, AWS WAF, and more |
-| **JWT Forger** | Decode, edit, re-sign, and brute-force JWT tokens offline |
-| **Reverse Shell Generator** | Generate reverse shells in 15+ languages (Python, Bash, PowerShell, PHP, etc.) |
-| **CORS Exploit Generator** | Paste HTTP response headers → get a ready-to-use HTML exploit file |
-| **GraphQL Visualizer** | Parse introspection JSON → interactive tree of all queries, mutations, and types |
-| **Secret Sniper** | Paste massive minified JS → instantly extract API keys, endpoints, and secrets |
-
-### Cryptography & Steganography
-| Tool | Description |
-|------|-------------|
-| **Crypto Engine** | AES / DES / TripleDES / RC4 encryption with CBC, ECB, CTR modes |
-| **Pixel Vault (Steganography)** | Hide and extract secret messages inside PNG images using LSB encoding |
-
-### Utilities
-| Tool | Description |
-|------|-------------|
-| **Encoder / Decoder** | Base64, URL, HTML, Hex, Binary, ROT13 — encode and decode anything |
-| **String Analyzer** | Hash generation (MD5, SHA-1, SHA-256, SHA-512), character analysis |
-| **CVSS Calculator** | Calculate vulnerability severity scores with the CVSS v3.1 standard |
-| **Identity Generator** | Generate fake identities for account testing |
-| **DiffScope** | Compare two code blocks side-by-side to spot changes |
-
-### Productivity
-| Tool | Description |
-|------|-------------|
-| **Rich Note Editor** | Full WYSIWYG editor with tables, code blocks, images, and markdown |
-| **Hacker Journal** | Daily encrypted journal for documenting your hunting sessions |
-| **Kanban Board** | Visual task tracker for managing targets and methodologies |
-| **Time Tracker** | Track hours spent per target for professional invoicing |
-| **Methodology Tracker** | Step-by-step checklists for OWASP, API, and mobile testing |
-| **Code Editor** | Built-in Monaco editor (same engine as VS Code) with syntax highlighting |
-| **Screenshot Annotator** | Capture and annotate screenshots for bug reports |
+### 💻 Integrated Native Terminal
+- **xterm.js Integration**: A native, highly-customizable shell environment built directly into the UI. No need to tab out to your OS terminal.
 
 ---
 
-## Screenshots
+## ⚙️ Installation
 
-<details>
-<summary><strong>Click to expand all screenshots</strong></summary>
-
-### Payload Library
-<img src="screenshots/payloads.png" alt="Payload Library" width="800" />
-
-### JWT Forger
-<img src="screenshots/jwt_forger.png" alt="JWT Forger" width="800" />
-
-### Crypto & Steganography Engine
-<img src="screenshots/crypto_stego.png" alt="Crypto & Stego" width="800" />
-
-### GraphQL Visualizer
-<img src="screenshots/graphql_viz.png" alt="GraphQL Visualizer" width="800" />
-
-### Secret Sniper (JS Regex Engine)
-<img src="screenshots/secret_sniper.png" alt="Secret Sniper" width="800" />
-
-### CORS Exploit Generator
-<img src="screenshots/cors_exploit.png" alt="CORS Exploit" width="800" />
-
-### Reverse Shell Generator
-<img src="screenshots/rev_shell.png" alt="Reverse Shell" width="800" />
-
-### WAF Bypass Engine
-<img src="screenshots/waf_bypass.png" alt="WAF Bypass" width="800" />
-
-</details>
-
----
-
-## Installation
+HOLE is designed to run natively via source to ensure complete transparency of the code you are executing. 
 
 ### Prerequisites
+- **Node.js** v20+ (v22 LTS highly recommended)
+- **Git**
 
-- **[Node.js](https://nodejs.org/) v20+** (v22 LTS recommended)
-- [Git](https://git-scm.com/)
-
-> ⚠️ **Node.js 20+ is required.** The app uses Vite 8 and Electron 42, which do not work with Node 18 or below.
-
-### Quick Start (All Platforms)
-
+### 🐧 Linux (Ubuntu / Pop!_OS / Kali / Debian)
+Our installer will automatically install Tor and configure the environment for you.
 ```bash
-# Clone the repository
-git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
+# 1. Download the repository
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
 cd HOLE
 
-# Install dependencies
-npm install
+# 2. Run the automated installer
+bash install.sh
 
-# Start the desktop app
+# 3. Launch the Workstation
 npm run electron:dev
 ```
 
-### Windows
-
-```powershell
-# Option 1: Use the install script
-.\install.bat
-
-# Option 2: Manual
-git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
+### 🍏 macOS
+```bash
+# 1. Download the repository
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
 cd HOLE
-npm install
+
+# 2. Run the automated installer
+bash install.sh
+
+# 3. Launch the Workstation
 npm run electron:dev
 ```
 
-### Linux (Ubuntu / Pop!_OS / Kali / Debian)
-
-```bash
-# Install Node.js 22 (if you don't have Node 20+)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# Clone and install
-git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
+### 🪟 Windows
+```cmd
+# 1. Download the repository
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
 cd HOLE
-npm install
 
-# Start the desktop app
+# 2. Run the automated installer
+install.bat
+
+# 3. Launch the Workstation
 npm run electron:dev
 ```
 
-### macOS
+---
+
+## 🔄 Updating HOLE
+
+Since HOLE runs natively from the source repository, updating is incredibly simple. Whenever a new feature drops, just pull the latest changes and restart:
 
 ```bash
-# Install Node.js 22 via Homebrew (if needed)
-brew install node@22
-
-# Clone and install
-git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE
 cd HOLE
+git pull origin main
 npm install
 npm run electron:dev
 ```
 
-### Build Native Installer
+---
 
-```bash
-# Build for your current platform
-npm run electron:build
-```
+## 🔒 Security & Privacy Architecture
 
-| Platform | Output |
-|----------|--------|
-| Windows | `release/HOLE Setup X.X.X.exe` |
-| Linux | `release/HOLE-X.X.X.AppImage` |
-| macOS | `release/HOLE-X.X.X.dmg` |
+HOLE was built with absolute paranoia in mind.
+- **Zero Analytics**: There are no tracking scripts, no crash reporters, and no analytics engines. 
+- **Offline First**: The application makes **zero network requests** unless explicitly routed through the Tor Engine tool.
+- **Data Sovereignty**: Your findings, API keys, and journals are saved locally in the `HOLE_Workspace` folder on your hard drive. There is no database.
 
 ---
 
-## Architecture
-
-```
-HOLE/
-├── electron/          # Electron main process (native OS access)
-│   └── main.cjs       # Window management, IPC, file system APIs
-├── src/
-│   ├── components/    # 39 React components (one per tool)
-│   ├── styles/        # CSS modules for each component
-│   ├── utils/         # File system helpers, storage abstraction
-│   ├── App.jsx        # Main router and layout
-│   └── main.jsx       # React entry point
-├── public/            # Static assets (icons, logos)
-└── package.json       # Dependencies and build config
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|-----------| 
-| **Runtime** | Electron v42 |
-| **Frontend** | React 19 + Vite 8 |
-| **Editor** | TipTap (rich text) + Monaco (code) |
-| **Crypto** | crypto-js (AES, DES, TripleDES, RC4) |
-| **Terminal** | xterm.js + node-pty |
-| **Icons** | Lucide React |
-| **Canvas** | Fabric.js (annotations) |
+## ⌨️ Keyboard Shortcuts
+Master the workstation without touching your mouse:
+- `Ctrl + N` : Create a new recon note
+- `Ctrl + S` : Save current file/payload
+- `Ctrl + Shift + P` : Open global command palette
+- `Ctrl + \` : Toggle integrated terminal
 
 ---
 
-## Security & Privacy
+## ⚖️ Disclaimer
 
-- **Zero telemetry** — No analytics, no tracking, no phone-home behavior
-- **Zero cloud** — All data stored locally on your filesystem
-- **Zero network** — Every tool operates 100% offline (except the optional Tor browser)
-- **Local storage only** — Notes, journals, and findings are saved as plain files you fully control
-- **Open source** — Audit every line of code yourself
+HOLE is designed for authorized security testing, bug bounty hunting on platforms like HackerOne/Bugcrowd, and educational purposes. The developers are not responsible for any misuse or illegal activity. Always obtain proper authorization before testing any system or endpoint you do not own.
 
----
-
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl + N` | New Note |
-| `Ctrl + S` | Save Current Note |
-| `Ctrl + Shift + P` | Toggle Privacy Mode |
-
----
-
-## Contributing
-
-Contributions are welcome! Please open an issue first to discuss what you would like to change.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/new-tool`)
-3. Commit your changes (`git commit -m 'Add new tool'`)
-4. Push to the branch (`git push origin feature/new-tool`)
-5. Open a Pull Request
-
----
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-## Disclaimer
-
-**HOLE** is designed for authorized security testing and educational purposes only. The developers are not responsible for any misuse. Always obtain proper authorization before testing any system you do not own.
-
----
-
-<p align="center">
-  <img src="public/hole-icon.png" alt="HOLE" width="60" />
+<div align="center">
   <br/>
-  <strong>Built by hackers, for hackers.</strong><br/>
-  <a href="https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE">★ Star the repo on GitHub!</a>
-</p>
+  <i>Built by hackers, for hackers.</i>
+  <br/>
+</div>

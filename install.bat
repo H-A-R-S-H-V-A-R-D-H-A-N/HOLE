@@ -1,15 +1,15 @@
 @echo off
-title BugVault Installer
+title HOLE Installer
 echo.
-echo   🔐 BugVault — Bug Bounty Tracker Installer
-echo   ============================================
+echo   🕳️ HOLE — Anonymous Bug Bounty Workstation Installer
+echo   ======================================================
 echo.
 
 REM Check for Node.js
 where node >nul 2>nul
 if %errorlevel% neq 0 (
     echo   ❌ Node.js is not installed.
-    echo   Please install Node.js 18+ from https://nodejs.org
+    echo   Please install Node.js 20+ from https://nodejs.org
     pause
     exit /b 1
 )
@@ -28,6 +28,18 @@ if %errorlevel% neq 0 (
 echo   ✅ npm detected
 echo.
 
+REM Auto-install Tor on Windows via PowerShell if not present
+echo   🛡️ Checking Tor Engine...
+where tor >nul 2>nul
+if %errorlevel% neq 0 (
+    echo   Tor is missing. Attempting to download Tor Expert Bundle...
+    powershell -Command "Invoke-WebRequest -Uri 'https://dist.torproject.org/torbrowser/14.0.6/tor-expert-bundle-windows-x86_64-14.0.6.tar.gz' -OutFile 'tor.tar.gz'"
+    echo   Please note: Windows auto-install for Tor might require manual extraction. We recommend installing Tor Browser separately.
+) else (
+    echo   ✅ Tor Engine detected
+)
+
+echo.
 REM Install dependencies
 echo   📦 Installing dependencies...
 call npm install --silent
@@ -41,11 +53,9 @@ if %errorlevel% neq 0 (
 echo.
 echo   ✅ Installation complete!
 echo.
-echo   To start BugVault, run:
+echo   To start HOLE, run:
 echo.
-echo     npm run dev
-echo.
-echo   Then open http://localhost:5173 in your browser.
+echo     npm run electron:dev
 echo.
 echo   Happy hunting! 🎯
 echo.
