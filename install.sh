@@ -35,6 +35,26 @@ fi
 echo "  ✅ npm $(npm -v) detected"
 echo ""
 
+# Auto-install Tor
+echo "  🛡️ Checking Tor Engine..."
+if ! command -v tor &> /dev/null; then
+    echo "  Tor is missing. Installing automatically..."
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update && sudo apt-get install -y tor
+    elif command -v brew &> /dev/null; then
+        brew install tor
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -Sy --noconfirm tor
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y tor
+    else
+        echo "  ⚠️ Could not automatically install Tor. Please install manually."
+    fi
+else
+    echo "  ✅ Tor Engine detected"
+fi
+
+echo ""
 # Install dependencies
 echo "  📦 Installing dependencies..."
 npm install
