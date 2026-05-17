@@ -60,7 +60,7 @@ export default function CodeEditor() {
   const loadRepos = useCallback(async () => {
     const dir = getStorageDir();
     if (dir && window.electronAPI?.listTree) {
-      const codeDir = `${dir}\\Code`;
+      const codeDir = `${dir}/Code`;
       const result = await window.electronAPI.listTree(codeDir);
       if (result.success) {
         // Find top-level directories
@@ -167,52 +167,67 @@ export default function CodeEditor() {
     }
   };
 
-  // Create Repo (or open an existing one)
-  const handleCreateRepo = async () => {
-    const res = await window.electronAPI.pickDirectory();
-    if (res.success && res.path) {
-      // Add the chosen directory as a repo if it's not already in the list
-      setRepos(prev => {
-        if (!prev.find(r => r.path === res.path)) {
-          return [...prev, { name: res.path.split(/[\\/]/).pop(), path: res.path, isDirectory: true }];
-        }
-        return prev;
-      });
-      setCurrentRepo(res.path);
-    }
+  // Create Repo
+  const handleCreateRepo = () => {
+    setPromptState({
+      title: 'Create New Repository',
+      message: 'Enter repository name:',
+      defaultValue: 'MyProject',
+      onConfirm: async (name) => {
+        setPromptState(null);
+        if (!name) return;
+        const dir = getStorageDir();
+        if (!dir) return alert('Storage directory not configured.');
+        const repoPath = `${dir}/Code/${name}`;
+        await window.electronAPI.createDir(repoPath);
+        await loadRepos();
+        setCurrentRepo(repoPath);
+      }
+    });
   };
 
   // Create Folder
-  const handleCreateFolder = async () => {
-    if (!currentRepo) {
-      const res = await window.electronAPI.pickDirectory();
-      if (!res.success) return;
-      setPromptState({
-        title: 'New Folder',
-        message: `Create folder in ${res.path}:`,
-        defaultValue: 'new_folder',
-        onConfirm: async (name) => {
-          setPromptState(null);
-          if (!name) return;
-          const newPath = `${res.path}\\${name}`;
-          await window.electronAPI.createDir(newPath);
-          alert(`Created folder: ${newPath}`);
-        }
-      });
-      return;
-    }
+  const handleCreateFolder = () => {
+    if (!currentRepo) return alert('Select or create a repository first.');
     const targetDir = selectedFolder || currentRepo;
     
     setPromptState({
       title: 'New Folder',
-      message: `Create folder in ${targetDir.split('\\').pop()}:`,
+      message: `Create folder in ${targetDir.split(/[\\/]/).pop()}:`,
       defaultValue: 'new_folder',
       onConfirm: async (name) => {
         setPromptState(null);
         if (!name) return;
-        const newPath = `${targetDir}\\${name}`;
+        const newPath = `${targetDir}/${name}`;
         await window.electronAPI.createDir(newPath);
         // Expand the parent so we can see the new folder
+        setExpandedFolders(prev => ({ ...prev, [targetDir]: true }));
+        loadTree();
+      }
+    });
+  };
+
+  // Create File
+  const handleCreateFile = () => {
+    if (!currentRepo) return alert('Select or create a repository first.');
+    const targetDir = selectedFolder || currentRepo;
+    
+    setPromptState({
+      title: 'New File',
+      message: `Create file in ${targetDir.split(/[\\/]/).pop()}:`,
+      defaultValue: 'script.js',
+      onConfirm: async (name) => {
+        setPromptState(null);
+        if (!name) return;
+        const newPath = `${targetDir}/${name}`;
+        await window.electronAPI.saveFileDirect({ filePath: newPath, content: '// Write your code here...' });
+        
+        setCurrentFile(newPath);
+        setCode('// Write your code here...');
+        const ext = name.split('.').pop();
+        const matched = LANGUAGES.find(l => l.ext === ext);
+        if (matched) setLanguage(matched.id);
+        
         setExpandedFolders(prev => ({ ...prev, [targetDir]: true }));
         loadTree();
       }
@@ -229,28 +244,18 @@ export default function CodeEditor() {
       setTimeout(() => setSaveStatus(''), 2000);
       loadTree();
     } else {
+      if (!currentRepo) return alert('Select or create a repository first.');
+      const targetDir = selectedFolder || currentRepo;
       const lang = LANGUAGES.find(l => l.id === language);
       const defaultName = `script.${lang ? lang.ext : 'txt'}`;
-
-      if (!currentRepo) {
-        const result = await window.electronAPI.saveFile({ content: code, suggestedName: defaultName });
-        if (result.success) {
-          setCurrentFile(result.path);
-          setSaveStatus('Saved!');
-          setTimeout(() => setSaveStatus(''), 2000);
-        }
-        return;
-      }
-      
-      const targetDir = selectedFolder || currentRepo;
       
       setPromptState({
         title: 'Save File',
-        message: `Enter filename (saving to ${targetDir.split('\\').pop()}):`,
+        message: `Enter filename (saving to ${targetDir.split(/[\\/]/).pop()}):`,
         defaultValue: defaultName,
         onConfirm: async (fileName) => {
           setPromptState(null);
-          const filePath = `${targetDir}\\${fileName}`;
+          const filePath = `${targetDir}/${fileName}`;
           await window.electronAPI.saveFileDirect({ filePath, content: code });
           setCurrentFile(filePath);
           setExpandedFolders(prev => ({ ...prev, [targetDir]: true }));
@@ -274,7 +279,7 @@ export default function CodeEditor() {
       // If we are in a repo, save a copy there
       if (currentRepo) {
         const targetDir = selectedFolder || currentRepo;
-        const destPath = `${targetDir}\\${result.name}`;
+        const destPath = `${targetDir}/${result.name}`;
         await window.electronAPI.saveFileDirect({ filePath: destPath, content: result.content });
         setCurrentFile(destPath);
         setExpandedFolders(prev => ({ ...prev, [targetDir]: true }));
@@ -293,7 +298,7 @@ export default function CodeEditor() {
   const handleDeleteNode = (nodePath, isDirectory) => {
     setConfirmState({
       title: `Delete ${isDirectory ? 'Folder' : 'File'}`,
-      message: `Are you sure you want to delete ${nodePath.split('\\').pop()}?`,
+      message: `Are you sure you want to delete ${nodePath.split(/[\\/]/).pop()}?`,
       onConfirm: async () => {
         if (isDirectory) {
           await window.electronAPI.deleteDir(nodePath);
@@ -391,7 +396,7 @@ export default function CodeEditor() {
                 style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: '120px', justifyContent: 'space-between' }}
               >
                 <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>
-                  {currentRepo ? currentRepo.split('\\').pop() : 'No Repo'}
+                  {currentRepo ? currentRepo.split(/[\\/]/).pop() : 'No Repo'}
                 </span>
                 <span style={{ fontSize: '10px', opacity: 0.5 }}>▼</span>
               </div>
@@ -432,7 +437,7 @@ export default function CodeEditor() {
 
           {currentFile && (
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {currentFile.split('\\Code\\').pop()}
+              {currentFile.split(/[\\/]Code[\\/]/).pop()}
             </span>
           )}
           <div className="pro-select-wrapper" style={{ position: 'relative' }}>
@@ -506,17 +511,14 @@ export default function CodeEditor() {
             <div className="pro-explorer-header" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  {currentRepo ? currentRepo.split('\\').pop() : 'Explorer'}
+                  {currentRepo ? currentRepo.split(/[\\/]/).pop() : 'Explorer'}
                 </span>
                 <div style={{ display: 'flex', gap: '2px' }}>
                   <button 
                     className="pro-sidebar-item" 
                     style={{ padding: '4px', fontSize: 0 }} 
                     title="New File"
-                    onClick={() => {
-                      setCode('');
-                      setCurrentFile(null);
-                    }}
+                    onClick={handleCreateFile}
                   >
                     <Plus size={14} />
                   </button>
