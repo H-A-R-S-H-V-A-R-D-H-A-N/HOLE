@@ -28,37 +28,50 @@ A built-in native Tor proxy controller that secures your entire workflow.
 
 * **System-Wide Ghost Mode**: Hijack your OS routing to force all system traffic (browsers, external terminals, background apps) through the Tor network.
 * **Magic IP Rotator**: Automatically rotates your Exit Node IP every 5, 10, or 30 minutes.
-* **Kill-Switch**: Drops all connections instantly if the Tor daemon fails, preventing IP leaks.
-* **Censorship Bypass**: Native support for **obfs4** and **snowflake** bridges to bypass ISP firewalls.
-* **Country Picker**: Select specific exit node countries (US, UK, DE, RU).
 
-### n8n-Style Visual Workflows (GraphQL Viz and Parallel Reality)
-Forget reading massive JSON blobs. HOLE includes an **n8n-style node-based visual editor** for mapping out attack surfaces.
+### Dashboard & Analytics
+Get a high-level view of your bounties, reports, and knowledge base.
 
-![GraphQL Visualizer Screenshot](screenshots/graphql-viz.png)
-
-* **Drag-and-Drop Nodes**: Connect inputs, endpoints, and payloads visually.
-* **GraphQL Introspection**: Paste a GraphQL schema and instantly generate a beautifully mapped, interactive node diagram of all queries and mutations.
-
-### WAF Evasion and Payload Library
-* **HTTP Request Smuggling**: Pre-calculated chunks and CL.TE / TE.CL generators.
-* **String Analyzer & Obfuscator**: Convert standard payloads into heavily encoded variants (URL, Hex, Base64, Unicode) to bypass Web Application Firewalls.
-* **Payload Library**: A massive offline database of payloads for XSS, SQLi, SSRF, LFI, and RCE.
-
-### Crypto, Stego and JWT Forger
-* **JWT Forger**: Decode JSON Web Tokens, modify headers/claims on the fly, and re-sign them. Includes a built-in brute-forcer to crack weak JWT secrets (`HMAC` / `RSA`).
-* **Crypto Toolkit**: Perform complex AES, DES, ChaCha20 encryption/decryption entirely offline.
-* **Steganography**: Hide and extract encrypted payloads within standard image files.
+![Dashboard Screenshot](screenshots/dashboard.png)
 
 ### Recon and Methodology Tracker
-* **Bounty Tracker**: A fully-fledged Kanban board specifically designed to track targets, bounties, and vulnerability statuses.
-* **Methodology Checklists**: Built-in OWASP Top 10 checklists to ensure you never miss an endpoint during manual testing.
-* **Hacker Journal**: A markdown-based daily journaling system. All notes are saved as plain `.md` files in your local workspace.
+* **Hacker Journal**: A markdown-based daily journaling system.
+![Hacker Journal Screenshot](screenshots/hacker-journal.png)
 
-### Integrated Native Terminal
-* **xterm.js Integration**: A native, highly-customizable shell environment built directly into the UI. No need to tab out to your OS terminal.
+* **Workflow (Recon Database)**: An n8n-style node-based visual editor for mapping out attack surfaces.
+![Workflow Screenshot](screenshots/workflow.png)
 
+* **Time Tracker**: Keep track of the exact time spent on specific HackerOne or Bugcrowd targets.
+![Time Tracker Screenshot](screenshots/time-tracker.png)
+
+### Code Studio PRO & Diff Scope
+* **Code Studio**: An elite Integrated Development Environment for Vulnerability Research. Create and save files directly to any folder on your PC.
+![Code Studio Screenshot](screenshots/code-studio.png)
+
+* **Diff Scope**: Character-level analysis to easily spot differences in server responses or payloads.
+![Diff Scope Screenshot](screenshots/diff-scope.png)
+
+### WAF Evasion, Payloads & Networking
+* **Terminal**: A native, highly-customizable shell environment built directly into the UI.
 ![Terminal Screenshot](screenshots/terminal.png)
+
+* **Reverse Shell Hub**: Generate payloads in 20+ formats and catch connections locally using the raw TCP listener.
+![Rev Shell Payloads](screenshots/rev-shell-payloads.png)
+![Rev Shell Listener](screenshots/rev-shell-listener.png)
+
+* **CORS Exploit Generator**: Analyze response headers and craft weaponized HTML payloads.
+![CORS Exploit Screenshot](screenshots/cors-exploit.png)
+
+* **Secret Sniper**: Zero-lag regex de-obfuscator for Minified JavaScript to hunt for API keys.
+![Secret Sniper Screenshot](screenshots/secret-sniper.png)
+
+### Crypto, Stego and JWT Forger
+* **JWT Forger**: Decode JSON Web Tokens, modify headers/claims on the fly, and re-sign them.
+![JWT Forger Screenshot](screenshots/jwt-forger.png)
+
+* **Crypto & Stego Engine**: Perform complex AES, DES, ChaCha20 encryption/decryption entirely offline, and hide payloads in images using LSB Steganography.
+![Cryptography Screenshot](screenshots/crypto-engine.png)
+![Steganography Screenshot](screenshots/stego-engine.png)
 
 ---
 
