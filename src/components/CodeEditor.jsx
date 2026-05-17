@@ -167,28 +167,40 @@ export default function CodeEditor() {
     }
   };
 
-  // Create Repo
-  const handleCreateRepo = () => {
-    setPromptState({
-      title: 'Create New Repository',
-      message: 'Enter repository name:',
-      defaultValue: 'MyProject',
-      onConfirm: async (name) => {
-        setPromptState(null);
-        if (!name) return;
-        const dir = getStorageDir();
-        if (!dir) return;
-        const repoPath = `${dir}\\Code\\${name}`;
-        await window.electronAPI.createDir(repoPath);
-        await loadRepos();
-        setCurrentRepo(repoPath);
-      }
-    });
+  // Create Repo (or open an existing one)
+  const handleCreateRepo = async () => {
+    const res = await window.electronAPI.pickDirectory();
+    if (res.success && res.path) {
+      // Add the chosen directory as a repo if it's not already in the list
+      setRepos(prev => {
+        if (!prev.find(r => r.path === res.path)) {
+          return [...prev, { name: res.path.split(/[\\/]/).pop(), path: res.path, isDirectory: true }];
+        }
+        return prev;
+      });
+      setCurrentRepo(res.path);
+    }
   };
 
   // Create Folder
-  const handleCreateFolder = () => {
-    if (!currentRepo) return alert('Select or create a repository first.');
+  const handleCreateFolder = async () => {
+    if (!currentRepo) {
+      const res = await window.electronAPI.pickDirectory();
+      if (!res.success) return;
+      setPromptState({
+        title: 'New Folder',
+        message: `Create folder in ${res.path}:`,
+        defaultValue: 'new_folder',
+        onConfirm: async (name) => {
+          setPromptState(null);
+          if (!name) return;
+          const newPath = `${res.path}\\${name}`;
+          await window.electronAPI.createDir(newPath);
+          alert(`Created folder: ${newPath}`);
+        }
+      });
+      return;
+    }
     const targetDir = selectedFolder || currentRepo;
     
     setPromptState({
@@ -217,10 +229,20 @@ export default function CodeEditor() {
       setTimeout(() => setSaveStatus(''), 2000);
       loadTree();
     } else {
-      if (!currentRepo) return alert('Select or create a repository first.');
-      const targetDir = selectedFolder || currentRepo;
       const lang = LANGUAGES.find(l => l.id === language);
       const defaultName = `script.${lang ? lang.ext : 'txt'}`;
+
+      if (!currentRepo) {
+        const result = await window.electronAPI.saveFile({ content: code, suggestedName: defaultName });
+        if (result.success) {
+          setCurrentFile(result.path);
+          setSaveStatus('Saved!');
+          setTimeout(() => setSaveStatus(''), 2000);
+        }
+        return;
+      }
+      
+      const targetDir = selectedFolder || currentRepo;
       
       setPromptState({
         title: 'Save File',

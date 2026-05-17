@@ -177,6 +177,19 @@ ipcMain.handle('save-file', async (event, { content, suggestedName, filters }) =
   }
 });
 
+// Pick arbitrary directory
+ipcMain.handle('pick-directory', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory', 'createDirectory']
+    });
+    if (result.canceled) return { success: false, cancelled: true };
+    return { success: true, path: result.filePaths[0] };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
 // Open file with dialog
 ipcMain.handle('open-file', async (event, { filters }) => {
   try {

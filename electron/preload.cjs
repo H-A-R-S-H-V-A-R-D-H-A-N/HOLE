@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Pick a folder (first launch setup)
   pickFolder: () => ipcRenderer.invoke('pick-folder'),
 
+  pickDirectory: () => ipcRenderer.invoke('pick-directory'),
+
   // Ensure Notes and Code directories exist
   ensureDirs: (kromaDir) => ipcRenderer.invoke('ensure-dirs', kromaDir),
 
