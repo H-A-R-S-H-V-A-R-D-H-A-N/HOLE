@@ -234,6 +234,34 @@ Paste massive, chaotic, minified JavaScript bundles and instantly extract every 
 
 <br/>
 
+## Encoder / Decoder (50+ Formats)
+
+Transform payloads between 50+ encoding formats instantly. Base64, URL, Hex, HTML Entity, Binary, Octal, ROT13, Morse Code, Caesar Shift, and dozens more. Essential for WAF bypass and payload obfuscation.
+
+<div align="center">
+  <img src="screenshots/encoder-decoder.png" width="90%" alt="Encoder Decoder" />
+</div>
+
+<br/>
+
+---
+
+<br/>
+
+## Auto-Detect (50+ Rules)
+
+Paste any unknown string and HOLE will automatically identify what it is. Supports 50+ definitions including hashes (MD5, SHA1, SHA256), cloud keys (AWS, GCP, Slack, Stripe, SendGrid), crypto addresses, PII patterns, and encoded data.
+
+<div align="center">
+  <img src="screenshots/auto-detect.png" width="90%" alt="Auto Detect" />
+</div>
+
+<br/>
+
+---
+
+<br/>
+
 ## Crypto and Stego Engine
 
 A dual-mode cryptography and steganography workbench. Encrypt and decrypt data with military-grade algorithms, or hide secret messages inside images using LSB pixel manipulation.
