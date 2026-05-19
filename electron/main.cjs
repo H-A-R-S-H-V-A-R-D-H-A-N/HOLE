@@ -858,16 +858,15 @@ ipcMain.handle('tor-health-check', async () => {
 // Fetch .onion or regular URL through Tor proxy
 ipcMain.handle('tor-fetch-url', async (event, url) => {
   return new Promise((resolve) => {
-    exec((process.platform === 'win32' ? 'curl.exe' : 'curl') + ' --socks5-hostname 127.0.0.1:9050 -sS -L --max-time 30 "' + url + '"', 
-      { timeout: 35000, maxBuffer: 5 * 1024 * 1024 }, 
-      (error, stdout, stderr) => {
+    const curlBin = process.platform === 'win32' ? 'curl.exe' : 'curl';
+    const args = ['--socks5-hostname', '127.0.0.1:9050', '-sS', '-L', '--max-time', '30', url];
+    execFile(curlBin, args, { timeout: 35000, maxBuffer: 5 * 1024 * 1024 }, (error, stdout, stderr) => {
         if (error) {
           const cleanError = stderr ? stderr.toString().replace('curl: ', '').trim() : 'Target offline or unreachable.';
           return resolve({ success: false, error: `Connection Failed: ${cleanError}` });
         }
         resolve({ success: true, html: stdout, length: stdout.length });
-      }
-    );
+    });
   });
 });
 
@@ -991,12 +990,12 @@ const STOP_WORDS = new Set(['about','above','after','again','against','all','am'
 ipcMain.handle('generate-wordlist', async (event, { url, useTor, doPermutations, minLength }) => {
   return new Promise((resolve) => {
     const curlBin = process.platform === 'win32' ? 'curl.exe' : 'curl';
-    let curlCmd = curlBin + ' -sS -L --max-time 20 "' + url + '"';
+    let args = ['-sS', '-L', '--max-time', '20', url];
     if (useTor) {
-      curlCmd = curlBin + ' --socks5-hostname 127.0.0.1:9050 -sS -L --max-time 30 "' + url + '"';
+      args = ['--socks5-hostname', '127.0.0.1:9050', '-sS', '-L', '--max-time', '30', url];
     }
 
-    exec(curlCmd, { timeout: 35000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+    execFile(curlBin, args, { timeout: 35000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
         const cleanError = stderr ? stderr.toString().replace('curl: ', '').trim() : error.message;
         return resolve({ success: false, error: 'Connection Failed: ' + cleanError });

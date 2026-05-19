@@ -213,7 +213,7 @@ export default function App() {
   // PERSISTENCE ENGINE: Scan /Notes directory on startup and load all .json files
   const loadNotesFromDrive = async (dir) => {
     if (!dir) return;
-    const notesDir = `${dir}\\Notes`;
+    const notesDir = `${dir}/Notes`;
     console.log('[KROMA] Scanning notes from:', notesDir);
     const result = await listFilesOnDrive(notesDir, '.json');
     if (result.success) {
@@ -287,7 +287,7 @@ export default function App() {
     // (NoteEditor already saved to disk directly when filePath is present)
     if (storageDir && window.electronAPI && !finalNote.filePath) {
       const fileName = `${finalNote.title ? finalNote.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'untitled'}_${Date.now()}.json`;
-      const filePath = `${storageDir}\\Notes\\${fileName}`;
+      const filePath = `${storageDir}/Notes/${fileName}`;
       finalNote.filePath = filePath;
       
       await window.electronAPI.saveFileDirect({
