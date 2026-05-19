@@ -78,7 +78,7 @@ export async function saveToFile(content, suggestedName = 'note.md', types = nul
   const storageDir = getStorageDir();
 
   if (isElectron() && storageDir) {
-    const filePath = `${storageDir}\\${suggestedName}`;
+    const filePath = `${storageDir}/${suggestedName}`;
     return await window.electronAPI.saveFileDirect({ filePath, content });
   }
 

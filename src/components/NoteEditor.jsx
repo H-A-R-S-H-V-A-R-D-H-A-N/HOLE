@@ -177,7 +177,7 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
     // Save directly to /Notes folder — no OS dialog
     const dir = localStorage.getItem('kroma_storage_dir');
     if (dir && window.electronAPI) {
-      const filePath = `${dir}\\Notes\\${filename}`;
+      const filePath = `${dir}/Notes/${filename}`;
       const result = await window.electronAPI.saveFileDirect({ filePath, content });
       if (result.success) {
         setSaveStatus('saved');
@@ -286,80 +286,6 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
     }
   };
 
-  const handleImportScope = async () => {
-    if (!window.electronAPI) return alert("Desktop app required for imports.");
-    setPromptState({
-      title: 'Import HackerOne Scope',
-      message: 'Enter HackerOne Program Handle (e.g., security):',
-      defaultValue: '',
-      onConfirm: async (handle) => {
-        setPromptState(null);
-        if (!handle) return;
-    
-    const savedSettings = JSON.parse(localStorage.getItem('kroma_settings') || '{}');
-    const h1Key = savedSettings.apiKeys?.find(k => k.platform === 'hackerone');
-    if (!h1Key) {
-      alert("HackerOne API key is not configured in Settings.");
-      return;
-    }
-    
-    const authHeader = 'Basic ' + btoa(h1Key.key);
-    const url = `https://api.hackerone.com/v1/hackers/programs/${handle}`;
-    
-    const result = await window.electronAPI.fetchPlatformApi(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': authHeader,
-        'Accept': 'application/json'
-      }
-    });
-    
-    if (result.success && result.data && result.data.id) {
-      const p = result.data.attributes;
-      let md = `<h2>Scope for ${p.name || handle}</h2>`;
-      if (p.offers_bounties) {
-        md += `<p>💰 <strong>Bounty Program</strong></p>`;
-      }
-      
-      const relationships = result.data.relationships || {};
-      const structured_scopes = relationships.structured_scopes?.data || [];
-      
-      let inScope = [];
-      let outScope = [];
-      
-      structured_scopes.forEach(s => {
-        const sattrs = s.attributes || {};
-        if (sattrs.eligible_for_submission) {
-          inScope.push(sattrs);
-        } else {
-          outScope.push(sattrs);
-        }
-      });
-      
-      if (inScope.length > 0) {
-        md += `<h3>In Scope</h3><ul>`;
-        inScope.forEach(s => {
-          md += `<li><strong>${s.asset_identifier}</strong> (${s.asset_type}) - ${s.eligible_for_bounty ? '💰 Bounty' : 'No Bounty'}</li>`;
-        });
-        md += `</ul>`;
-      }
-      
-      if (outScope.length > 0) {
-        md += `<h3>Out of Scope</h3><ul>`;
-        outScope.forEach(s => {
-          md += `<li><del>${s.asset_identifier}</del> (${s.asset_type})</li>`;
-        });
-        md += `</ul>`;
-      }
-      md += `<p></p>`;
-      
-      editor.commands.insertContent(md);
-    } else {
-      alert("Failed to fetch program. Make sure the handle is correct and your API key has access.");
-    }
-      }
-    });
-  };
 
   const handleInsertImage = () => {
     fileInputRef.current?.click();
@@ -398,9 +324,7 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
           />
         </div>
         <div className="editor-header-actions">
-          <button className="btn btn-ghost btn-sm" onClick={handleImportScope} title="Import HackerOne Scope">
-            <Globe size={16} /> Scope
-          </button>
+
           <button className="btn btn-ghost btn-sm" onClick={() => insertTemplate('owasp')} title="Insert OWASP Top 10 Checklist">
             <BookOpen size={16} /> OWASP Template
           </button>

@@ -104,7 +104,7 @@ export default function ReconDatabase({ storageDir, fsUpdateTrigger }) {
   const loadAvailableWorkflows = useCallback(async () => {
     if (!storageDir || !window.electronAPI) return;
     try {
-      const result = await window.electronAPI.listFiles({ dirPath: `${storageDir}\\Workflow`, extension: '.json' });
+      const result = await window.electronAPI.listFiles({ dirPath: `${storageDir}/Workflow`, extension: '.json' });
       if (result.success) {
         const wfFiles = result.files
           .filter(f => f.name.endsWith('.json'))
@@ -129,7 +129,7 @@ export default function ReconDatabase({ storageDir, fsUpdateTrigger }) {
   const loadWorkflowData = useCallback(async (workflowName) => {
     if (!storageDir || !workflowName) return;
     setIsLoaded(false);
-    const filePath = `${storageDir}\\Workflow\\${workflowName}.json`;
+    const filePath = `${storageDir}/Workflow/${workflowName}.json`;
     try {
       const result = await readFileDirect(filePath);
       if (result.success) {
@@ -160,7 +160,7 @@ export default function ReconDatabase({ storageDir, fsUpdateTrigger }) {
   const saveWorkflowData = async (currentNodes, currentEdges, workflowName) => {
     if (!storageDir || !window.electronAPI) return;
     setSaveStatus('saving');
-    const path = `${storageDir}\\Workflow\\${workflowName}.json`;
+    const path = `${storageDir}/Workflow/${workflowName}.json`;
     try {
       await window.electronAPI.saveFileDirect({
         filePath: path,
@@ -177,7 +177,7 @@ export default function ReconDatabase({ storageDir, fsUpdateTrigger }) {
     if (!newWorkflowName.trim()) return;
     const name = `Workflow_${newWorkflowName.trim().replace(/[^a-zA-Z0-9_-]/g, '')}`;
     // Save an empty workflow file to disk immediately
-    const filePath = `${storageDir}\\Workflow\\${name}.json`;
+    const filePath = `${storageDir}/Workflow/${name}.json`;
     try {
       await window.electronAPI.saveFileDirect({
         filePath,
@@ -287,7 +287,7 @@ export default function ReconDatabase({ storageDir, fsUpdateTrigger }) {
       title: 'Delete Workflow',
       message: `Are you sure you want to permanently delete "${activeWorkflow.replace('Workflow_', '')}"? This file will be removed from disk.`,
       onConfirm: async () => {
-        const filePath = `${storageDir}\\Workflow\\${activeWorkflow}.json`;
+        const filePath = `${storageDir}/Workflow/${activeWorkflow}.json`;
         try {
           await window.electronAPI.deleteFile(filePath);
         } catch(e) { console.warn(e); }
