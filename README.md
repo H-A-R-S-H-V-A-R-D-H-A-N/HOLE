@@ -387,7 +387,7 @@ The installer checks for Tor and attempts to download the Tor Expert Bundle if i
 
 <br/>
 
-## Updating
+## Updating. (MAKE SURE YOU UPDATE THIS REPO FOR THE LATEST FIX IN THE CODE ALWAYS CHECK  THE NEW UPDATE ON THE REPO )
 
 ```bash
 cd HOLE
