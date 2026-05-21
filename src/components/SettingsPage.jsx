@@ -448,6 +448,7 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
                 <li>✓ Favicon Hunter</li>
                 <li>✓ Exposure Hunter</li>
                 <li>✓ WAF Detector & Bypasser</li>
+                <li style={{ gridColumn: '1 / -1', color: '#10b981' }}>✓ Direct Priority Support from the Developer</li>
               </ul>
               <p style={{ marginTop: '12px', fontSize: '12px', fontStyle: 'italic', color: '#a78bfa' }}>...and many more premium features coming exclusively for PRO users!</p>
             </div>
