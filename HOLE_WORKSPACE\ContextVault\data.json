@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "contexts": [
+    {
+      "id": "1",
+      "name": "Admin Context",
+      "fields": [
+        {
+          "id": "f1",
+          "label": "Target Role",
+          "value": "Administrator",
+          "type": "text",
+          "icon": "shield"
+        },
+        {
+          "id": "f2",
+          "label": "Auth Token",
+          "value": "eyJhbG...",
+          "type": "code",
+          "icon": "lock"
+        }
+      ]
+    }
+  ]
+}

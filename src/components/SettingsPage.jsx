@@ -428,19 +428,37 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
           </div>
         </div>
 
-        {/* About */}
-        <div className="settings-section">
+        {/* About & PRO Upsell */}
+        <div className="settings-section" style={{ border: '1px solid rgba(124, 58, 237, 0.3)', background: 'rgba(124, 58, 237, 0.03)' }}>
           <div className="settings-section-header">
-            <Info size={20} className="settings-section-icon" />
-            <h2 className="settings-section-title">About HOLE</h2>
+            <Shield size={20} className="settings-section-icon" style={{ color: '#7c3aed' }} />
+            <h2 className="settings-section-title" style={{ color: '#7c3aed', fontWeight: '600' }}>HOLE PRO — The Ultimate Arsenal</h2>
           </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)', lineHeight: '1.8' }}>
-            <p><strong style={{ color: 'var(--text-primary)' }}>HOLE v1.0.0</strong></p>
-            <p>Your local-first bug bounty notes & progress tracker.</p>
-            <p>All data is stored locally on your machine. No cloud. No telemetry. Just you and your bugs.</p>
-            <p style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Shield size={14} /> Built with 🖤 for bug bounty hunters.
-            </p>
+          <div style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
+            <p style={{ marginBottom: '16px' }}>Ready to take your bug bounty game to the elite level? <strong>HOLE PRO</strong> is the fully-unlocked version of the workstation, packed with exclusive high-end features designed for professional security researchers.</p>
+            
+            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+              <h4 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>Premium Features Included:</h4>
+              <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px' }}>
+                <li>✓ CVE Mapper</li>
+                <li>✓ Advanced IP Tracker</li>
+                <li>✓ Email Header Analyzer</li>
+                <li>✓ Infrastructure Harvester</li>
+                <li>✓ Cloud Bucket Finder</li>
+                <li>✓ Favicon Hunter</li>
+                <li>✓ Exposure Hunter</li>
+                <li>✓ WAF Detector & Bypasser</li>
+              </ul>
+              <p style={{ marginTop: '12px', fontSize: '12px', fontStyle: 'italic', color: '#a78bfa' }}>...and many more premium features coming exclusively for PRO users!</p>
+            </div>
+
+            <p style={{ marginBottom: '16px' }}><strong>Lifetime Access. Pay once, own it forever.</strong></p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(16, 185, 129, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+              <strong style={{ color: '#10b981' }}>Special Launch Offer: 50% OFF for the first 50 users!</strong>
+              <span>To purchase your PRO license, send an email to:</span>
+              <code style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 12px', borderRadius: '4px', userSelect: 'all', cursor: 'pointer', color: '#fff' }}>harshvardhansinghrathore611@gmail.com</code>
+            </div>
           </div>
         </div>
       </div>

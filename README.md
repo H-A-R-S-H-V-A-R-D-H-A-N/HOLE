@@ -36,27 +36,51 @@ Your data stays on your hard drive. Period.
 
 <br/>
 
-## 🚀 UPGRADE TO HOLE PRO
+## HOLE PRO - The Ultimate Security Arsenal
 
-Ready to take your bug bounty game to the elite level? **HOLE PRO** is the ultimate, fully-unlocked version of the workstation, packed with exclusive high-end features designed for professional security researchers.
+For elite security researchers, penetration testers, and bug bounty hunters who demand the absolute best tools available, **HOLE PRO** offers a fully-unlocked, premium suite of advanced exploitation and analysis modules. 
 
-### 🔥 PRO Exclusive Features:
-- **CVE Mapper:** Instantly map CVEs to your targets.
-- **IP Tracker:** Advanced geolocation, ASN, and port scanning.
-- **Email Header Analyzer:** Deep dive into phishing and spoofing analysis.
-- **Auto-Exploit Integrations:** Connect directly with your favorite external exploitation scripts.
-- **Priority Updates:** Get access to the newest hacking tools before anyone else.
+### Advanced Modules Included in PRO:
+- **CVE Mapper:** Instantly map emerging CVEs directly to your defined attack surface and targets.
+- **Advanced IP Tracker:** Deep geolocation intelligence, ASN mapping, and integrated port scanning.
+- **Email Header Analyzer:** Trace email routes, extract sender IPs, and verify SPF/DKIM/DMARC authentication.
+- **Infrastructure Harvester:** Harvest emails, subdomains, URLs, social profiles, and detect subdomain takeovers automatically.
+- **Cloud Bucket Finder:** Discover exposed S3 buckets, Azure blobs, and GCP storage with zero false positives.
+- **Favicon Hunter:** Identify technologies and discover hidden infrastructure via favicon fingerprinting.
+- **Exposure Hunter:** Scan target domains for leaked source code, secrets, database dumps, and sensitive configuration files.
+- **WAF Detector & Bypasser:** Fingerprint 30+ Web Application Firewalls, test attack payloads, and discover bypass techniques.
+- **Auto-Exploit Integrations:** Connect directly with your favorite external exploitation scripts and binaries.
 
-**[View PRO Screenshots Here](https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE/tree/main/screenshots)**
+### Unrestricted Lifetime License
+We reject the subscription model. HOLE PRO is available as a single, one-time purchase. You own the software and all future updates forever.
 
-### 💎 Lifetime Access
-We hate subscriptions. HOLE PRO is a **one-time purchase**. You buy it once, and you own it forever.
+**Special Launch Offer:** We are currently offering a 50% discount for the first 50 professional users.
 
-> 🎉 **SPECIAL LAUNCH OFFER:** 50% DISCOUNT for the first 50 users!
+**How to Upgrade:**
+To purchase your lifetime license and receive the fully compiled, secure desktop package for your operating system, please contact the lead developer directly:
+**harshvardhansinghrathore611@gmail.com**
 
-### 📥 How to Buy
-Send an email to: **`harshvardhansinghrathore611@gmail.com`**
-We will securely send you the compiled `.exe` / `.AppImage` / macOS package. No complex DRM, no tracking—just pure hacking power.
+*Please note: More premium features are constantly in development and will be rolled out exclusively to PRO users.*
+
+### PRO Interface Previews
+
+<div align="center">
+  <img src="screenshots/pro_features/pro_1.png" width="90%" alt="PRO IP Tracker" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_2.png" width="90%" alt="PRO Map View" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_3.png" width="90%" alt="PRO Email Analyzer" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_4.png" width="90%" alt="PRO Harvester" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_5.png" width="90%" alt="PRO Bucket Finder" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_6.png" width="90%" alt="PRO Favicon Hunter" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_7.png" width="90%" alt="PRO Exposure Hunter" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_8.png" width="90%" alt="PRO WAF Detector" />
+</div>
 
 <br/>
 
