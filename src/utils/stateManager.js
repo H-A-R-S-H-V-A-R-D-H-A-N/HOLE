@@ -31,7 +31,7 @@ export async function syncStateToDisk() {
     }
 
     // Save everything to a single file in the app directory
-    const statePath = `${dir}/../${STATE_FILE_NAME}`;
+    const statePath = `${dir}/${STATE_FILE_NAME}`;
     await window.electronAPI.saveFileDirect({ 
       filePath: statePath, 
       content: JSON.stringify(stateData, null, 2) 
@@ -78,7 +78,7 @@ export async function loadStateFromDisk() {
   if (!dir || !window.electronAPI) return false;
 
   console.log('[HOLE] Booting Workspace...');
-  const statePath = `${dir}/../${STATE_FILE_NAME}`;
+  const statePath = `${dir}/${STATE_FILE_NAME}`;
   
   // WIPE LOCAL STORAGE FIRST to mathematically prove we are loading from the JSON file!
   const storageDirValue = localStorage.getItem('kroma_storage_dir');
