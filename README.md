@@ -84,7 +84,7 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <br/><br/>
   <img src="screenshots/pro_features/pro_9.png" width="90%" alt="PRO Technique Vault" />
   <br/><br/>
-  <img src="screenshots/pro_features/pro_10.png" width="90%" alt="PRO Feature" />
+  <img src="screenshots/pro_features/pro_10.png" width="90%" alt="PRO JS Spider" />
   <br/><br/>
   <img src="screenshots/pro_features/pro_11.png" width="90%" alt="PRO Feature" />
   <br/><br/>
