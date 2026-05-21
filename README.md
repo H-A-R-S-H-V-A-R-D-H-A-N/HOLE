@@ -50,6 +50,7 @@ For elite security researchers, penetration testers, and bug bounty hunters who 
 - **Exposure Hunter:** Scan target domains for leaked source code, secrets, database dumps, and sensitive configuration files.
 - **WAF Detector & Bypasser:** Fingerprint 30+ Web Application Firewalls, test attack payloads, and discover bypass techniques.
 - **Auto-Exploit Integrations:** Connect directly with your favorite external exploitation scripts and binaries.
+- **Direct Developer Support:** If you encounter any bugs, setup issues, or need help with a target, you get direct, priority 1-on-1 support from the creator.
 
 ### Unrestricted Lifetime License
 We reject the subscription model. HOLE PRO is available as a single, one-time purchase. You own the software and all future updates forever.
