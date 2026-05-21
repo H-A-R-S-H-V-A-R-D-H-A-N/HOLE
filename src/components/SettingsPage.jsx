@@ -19,7 +19,7 @@ import {
   Share,
   HardDrive
 } from 'lucide-react';
-import { getStorageDir, pickStorageFolder } from '../utils/fileSystem';
+import { getStorageDir, pickStorageFolder, listFilesOnDrive, readFileDirect } from '../utils/fileSystem';
 import '../styles/Settings.css';
 
 const defaultSettings = {
@@ -86,13 +86,29 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
 
   const handleExportVault = async () => {
     // Export everything in localStorage that belongs to HOLE
-    const backup = {};
+    const backup = { localData: {}, notes: [] };
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && (key.startsWith('kroma_') || key.startsWith('hole_'))) {
-        backup[key] = localStorage.getItem(key);
+        backup.localData[key] = localStorage.getItem(key);
       }
     }
+    
+    // Export all physical notes
+    const storageDir = getStorageDir();
+    if (storageDir && window.electronAPI) {
+      const notesResult = await listFilesOnDrive(`${storageDir}/Notes`, '.json');
+      if (notesResult.success && notesResult.files) {
+        for (const file of notesResult.files) {
+          if (file.isDirectory) continue;
+          const fileContent = await readFileDirect(file.path);
+          if (fileContent.success) {
+            backup.notes.push({ name: file.name, content: fileContent.content });
+          }
+        }
+      }
+    }
+
     const content = JSON.stringify(backup, null, 2);
     
     if (window.electronAPI) {
@@ -122,11 +138,30 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
     if (result.success && result.content) {
       try {
         const backup = JSON.parse(result.content);
-        for (const [key, val] of Object.entries(backup)) {
+        
+        // Handle backwards compatibility (if it was an old backup format)
+        const isNewFormat = backup.localData !== undefined;
+        const localData = isNewFormat ? backup.localData : backup;
+        
+        for (const [key, val] of Object.entries(localData)) {
           if (key.startsWith('kroma_') || key.startsWith('hole_')) {
             localStorage.setItem(key, val);
           }
         }
+        
+        // Restore notes
+        if (backup.notes && backup.notes.length > 0) {
+          const storageDir = getStorageDir();
+          if (storageDir) {
+            for (const note of backup.notes) {
+              await window.electronAPI.saveFileDirect({
+                filePath: `${storageDir}/Notes/${note.name}`,
+                content: note.content
+              });
+            }
+          }
+        }
+        
         alert("Vault imported successfully! Reloading HOLE to apply changes...");
         window.location.reload();
       } catch (err) {
