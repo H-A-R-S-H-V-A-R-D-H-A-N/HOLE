@@ -30,3 +30,5 @@ release/
 # OS files
 Thumbs.db
 Desktop.ini
+hole_workspace.json
+HOLE_WORKSPACE/

@@ -35,6 +35,17 @@ import ReverseShell from './components/ReverseShell';
 import SecretSniper from './components/SecretSniper';
 import CORSExploit from './components/CORSExploit';
 import SupportPage from './components/SupportPage';
+import CVEMapper from './components/CVEMapper';
+import IPTracker from './components/IPTracker';
+import EmailHeaderAnalyzer from './components/EmailHeaderAnalyzer';
+import Harvester from './components/Harvester';
+import BucketFinder from './components/BucketFinder';
+import FaviconHunter from './components/FaviconHunter';
+import ExposureHunter from './components/ExposureHunter';
+import WAFDetector from './components/WAFDetector';
+import JSSpider from './components/JSSpider';
+import TechniqueVault from './components/TechniqueVault';
+
 
 
 import { isStorageConfigured, pickStorageFolder, getStorageDir, deleteFileFromDrive, listFilesOnDrive, readFileDirect } from './utils/fileSystem';
@@ -240,26 +251,27 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!isStorageConfigured()) {
-      setShowSetup(true);
-    } else {
-      const dir = getStorageDir();
-      setStorageDirState(dir);
-      // Ensure Notes/Code directories exist (in case user deleted them)
-      if (window.electronAPI?.ensureDirs) {
-        window.electronAPI.ensureDirs(dir);
+    async function init() {
+      // Hardcode storage to HOLE_WORKSPACE in app root
+      let dir = getStorageDir();
+      if (!dir && window.electronAPI) {
+        const appPath = await window.electronAPI.getAppPath();
+        dir = `${appPath}/HOLE_WORKSPACE`;
+        localStorage.setItem('kroma_storage_dir', dir);
       }
-      loadNotesFromDrive(dir);
+      if (dir) {
+        setStorageDirState(dir);
+        if (window.electronAPI?.ensureDirs) {
+          window.electronAPI.ensureDirs(dir);
+        }
+        loadNotesFromDrive(dir);
+      }
     }
+    init();
   }, [fsUpdateTrigger]);
 
   const handlePickFolder = useCallback(async () => {
-    const result = await pickStorageFolder();
-    if (result.success) {
-      setStorageDirState(result.path);
-      setShowSetup(false);
-      loadNotesFromDrive(result.path);
-    }
+    // Disabled, now using automatic app root
   }, []);
 
   // Toast system
@@ -370,6 +382,17 @@ export default function App() {
       case 'resources': return 'Resources';
       case 'catcher': return 'Blind Catcher';
       case 'revshell': return 'Rev Shell';
+      case 'cve-mapper': return 'CVE Mapper';
+      case 'ip-tracker': return 'IP Tracker';
+      case 'email-headers': return 'Email Analyzer';
+      case 'harvester': return 'Harvester';
+      case 'bucket-finder': return 'Bucket Finder';
+      case 'favicon-hunter': return 'Favicon Hunter';
+      case 'exposure-hunter': return 'Exposure Hunter';
+      case 'waf-detector': return 'WAF Detector';
+      case 'js-spider': return 'JS Spider';
+      case 'technique-vault': return 'Technique Vault';
+
       case 'support': return 'About';
       default: return 'HOLE';
     }
@@ -522,6 +545,37 @@ export default function App() {
           <div style={{ display: activeView === 'revshell' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <ReverseShell />
           </div>
+          <div style={{ display: activeView === 'cve-mapper' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <CVEMapper />
+          </div>
+          <div style={{ display: activeView === 'ip-tracker' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <IPTracker />
+          </div>
+          <div style={{ display: activeView === 'email-headers' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <EmailHeaderAnalyzer />
+          </div>
+          <div style={{ display: activeView === 'harvester' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <Harvester />
+          </div>
+          <div style={{ display: activeView === 'bucket-finder' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <BucketFinder />
+          </div>
+          <div style={{ display: activeView === 'favicon-hunter' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <FaviconHunter />
+          </div>
+          <div style={{ display: activeView === 'exposure-hunter' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <ExposureHunter />
+          </div>
+          <div style={{ display: activeView === 'waf-detector' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <WAFDetector />
+          </div>
+          <div style={{ display: activeView === 'js-spider' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <JSSpider />
+          </div>
+          <div style={{ display: activeView === 'technique-vault' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <TechniqueVault />
+          </div>
+
           {activeView === 'support' && <SupportPage />}
         </div>
       </div>

@@ -4,24 +4,27 @@
 const isElectron = () => window.electronAPI?.isElectron === true;
 
 /**
- * Get the storage directory from localStorage.
+ * Get the storage directory. Now hardcoded to the app directory (HOLE code folder).
  */
 export function getStorageDir() {
   return localStorage.getItem('kroma_storage_dir') || null;
 }
 
-/**
- * Set the storage directory in localStorage.
- */
-export function setStorageDir(dir) {
-  localStorage.setItem('kroma_storage_dir', dir);
+export async function initStorageDir() {
+  if (isElectron()) {
+    const appPath = await window.electronAPI.getAppPath();
+    const storagePath = `${appPath}/HOLE_WORKSPACE`;
+    localStorage.setItem('kroma_storage_dir', storagePath);
+    return storagePath;
+  }
+  return null;
 }
 
 /**
  * Check if storage directory has been configured.
  */
 export function isStorageConfigured() {
-  return !!getStorageDir();
+  return !!localStorage.getItem('kroma_storage_dir');
 }
 
 /**
