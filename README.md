@@ -73,6 +73,8 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <br/><br/>
   <img src="screenshots/pro_features/tool_map_view.png" width="90%" alt="PRO Map View" />
   <br/><br/>
+  <img src="screenshots/pro_features/tool_cve_mapper.png" width="90%" alt="PRO CVE Mapper" />
+  <br/><br/>
   <img src="screenshots/pro_features/tool_email_analyzer.png" width="90%" alt="PRO Email Analyzer" />
   <br/><br/>
   <img src="screenshots/pro_features/tool_harvester.png" width="90%" alt="PRO Harvester" />
