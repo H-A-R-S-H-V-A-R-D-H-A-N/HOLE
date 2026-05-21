@@ -36,6 +36,34 @@ Your data stays on your hard drive. Period.
 
 <br/>
 
+## 🚀 UPGRADE TO HOLE PRO
+
+Ready to take your bug bounty game to the elite level? **HOLE PRO** is the ultimate, fully-unlocked version of the workstation, packed with exclusive high-end features designed for professional security researchers.
+
+### 🔥 PRO Exclusive Features:
+- **CVE Mapper:** Instantly map CVEs to your targets.
+- **IP Tracker:** Advanced geolocation, ASN, and port scanning.
+- **Email Header Analyzer:** Deep dive into phishing and spoofing analysis.
+- **Auto-Exploit Integrations:** Connect directly with your favorite external exploitation scripts.
+- **Priority Updates:** Get access to the newest hacking tools before anyone else.
+
+**[View PRO Screenshots Here](https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE/tree/main/screenshots)**
+
+### 💎 Lifetime Access
+We hate subscriptions. HOLE PRO is a **one-time purchase**. You buy it once, and you own it forever.
+
+> 🎉 **SPECIAL LAUNCH OFFER:** 50% DISCOUNT for the first 50 users!
+
+### 📥 How to Buy
+Send an email to: **`harshvardhansinghrathore611@gmail.com`**
+We will securely send you the compiled `.exe` / `.AppImage` / macOS package. No complex DRM, no tracking—just pure hacking power.
+
+<br/>
+
+---
+
+<br/>
+
 ## Tor Engine and Ghost Mode
 
 A native Tor daemon controller embedded directly into the workstation. Start, stop, and manage Tor circuits without ever opening a terminal. Force your entire operating system through the Tor network with a single button.
