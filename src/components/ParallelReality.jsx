@@ -11,7 +11,7 @@ export default function ParallelReality({ storageDir, fsUpdateTrigger }) {
   const [confirmState, setConfirmState] = useState(null);
 
   const getVaultPath = () => {
-    return storageDir ? `${storageDir}\\ContextVault\\data.json` : null;
+    return storageDir ? `${storageDir}/ContextVault/data.json` : null;
   };
 
   useEffect(() => {

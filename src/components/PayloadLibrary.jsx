@@ -29,7 +29,7 @@ export default function PayloadLibrary({ storageDir, fsUpdateTrigger }) {
   const [isPending, startTransition] = useTransition();
 
   const getPayloadsPath = () => {
-    return storageDir ? `${storageDir}\\Payloads\\data.json` : null;
+    return storageDir ? `${storageDir}/Payloads/data.json` : null;
   };
 
   useEffect(() => {
