@@ -20,7 +20,7 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
   const [confirmState, setConfirmState] = useState(null);
 
   const getTrackerPath = () => {
-    return storageDir ? `${storageDir}\\TimeTracker\\sessions.json` : null;
+    return storageDir ? `${storageDir}/TimeTracker/sessions.json` : null;
   };
 
   const getJournalPath = () => {

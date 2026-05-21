@@ -52,7 +52,7 @@ export default function MethodologyTracker({ storageDir, fsUpdateTrigger }) {
   const [promptState, setPromptState] = useState(null); // { title, message, defaultValue, onConfirm }
 
   const getMethodologyPath = () => {
-    return storageDir ? `${storageDir}\\Methodology\\data.json` : null;
+    return storageDir ? `${storageDir}/Methodology/data.json` : null;
   };
 
   useEffect(() => {

@@ -16,7 +16,7 @@ export default function UnknownSpace({ storageDir, fsUpdateTrigger }) {
   const [confirmState, setConfirmState] = useState(null);
 
   const getSpacePath = () => {
-    return storageDir ? `${storageDir}\\UnknownSpace\\data.json` : null;
+    return storageDir ? `${storageDir}/UnknownSpace/data.json` : null;
   };
 
   useEffect(() => {
