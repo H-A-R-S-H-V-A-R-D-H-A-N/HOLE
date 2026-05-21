@@ -106,7 +106,8 @@ ipcMain.handle('pick-folder', async () => {
 // Ensure all section directories exist on startup
 ipcMain.handle('ensure-dirs', async (event, kromaDir) => {
   try {
-    const sectionDirs = ['Notes', 'Code', 'Journal', 'Workflow', 'Methodology', 'Payloads', 'ContextVault', 'UnknownSpace', 'TimeTracker', 'Kanban', 'BountyTracker', 'Screenshots', 'Videos', 'HOLE_Techniques'];
+    // Only physical files get folders now. All state data is in hole_workspace.json.
+    const sectionDirs = ['Notes', 'Code', 'Screenshots', 'Videos', 'HOLE_Techniques'];
     sectionDirs.forEach(dir => {
       const dirPath = path.join(kromaDir, dir);
       if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
