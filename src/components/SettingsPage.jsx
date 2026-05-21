@@ -85,18 +85,21 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
   const apiKeys = settings.apiKeys || {};
 
   const handleExportVault = async () => {
-    const backup = {
-      settings: localStorage.getItem('kroma_settings'),
-      payloads: localStorage.getItem('kroma_payloads'),
-      autosave: localStorage.getItem('kroma_autosave')
-    };
+    // Export everything in localStorage that belongs to HOLE
+    const backup = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('kroma_') || key.startsWith('hole_'))) {
+        backup[key] = localStorage.getItem(key);
+      }
+    }
     const content = JSON.stringify(backup, null, 2);
     
     if (window.electronAPI) {
       const result = await window.electronAPI.saveFile({ 
         content,
         suggestedName: `Hole_Backup_${new Date().toISOString().split('T')[0]}.hole`,
-        filters: [{ name: 'HOLE Backup', extensions: ['kroma'] }]
+        filters: [{ name: 'HOLE Backup', extensions: ['hole'] }]
       });
       if (result.success) alert("Vault Exported Successfully!");
     } else {
@@ -113,15 +116,17 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
     if (!window.electronAPI) return alert("Desktop app required for easy import.");
     const result = await window.electronAPI.openFile({
       properties: ['openFile'],
-      filters: [{ name: 'HOLE Backup', extensions: ['kroma', 'json'] }]
+      filters: [{ name: 'HOLE Backup', extensions: ['hole', 'json'] }]
     });
     
     if (result.success && result.content) {
       try {
         const backup = JSON.parse(result.content);
-        if (backup.settings) localStorage.setItem('hole_settings', backup.settings);
-        if (backup.payloads) localStorage.setItem('hole_payloads', backup.payloads);
-        if (backup.autosave) localStorage.setItem('hole_autosave', backup.autosave);
+        for (const [key, val] of Object.entries(backup)) {
+          if (key.startsWith('kroma_') || key.startsWith('hole_')) {
+            localStorage.setItem(key, val);
+          }
+        }
         alert("Vault imported successfully! Reloading HOLE to apply changes...");
         window.location.reload();
       } catch (err) {
@@ -190,29 +195,6 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
       </div>
 
       <div className="settings-sections">
-        {/* System Settings */}
-        <div className="settings-section">
-          <div className="settings-section-header">
-            <HardDrive size={20} className="settings-section-icon" />
-            <h2 className="settings-section-title">System & Storage</h2>
-          </div>
-
-          <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-            <div className="settings-row-info" style={{ width: '100%' }}>
-              <span className="settings-row-label">Storage Location</span>
-              <span className="settings-row-desc">
-                Current: <strong>{getStorageDir() || 'Not Configured'}</strong>
-              </span>
-            </div>
-            <button className="btn btn-secondary btn-sm" onClick={handleChangeStorage}>
-              <FolderOpen size={14} /> Change Storage Location
-            </button>
-            <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px' }}>
-              Note: Changing this will reload the app. Your new location will automatically have /Notes and /Code directories created inside it.
-            </p>
-          </div>
-        </div>
-
         {/* Editor Settings */}
         <div className="settings-section">
           <div className="settings-section-header">
@@ -408,26 +390,6 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
                 <CloudDownload size={16} /> Import Vault Backup
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Keyboard Shortcuts */}
-        <div className="settings-section">
-          <div className="settings-section-header">
-            <Keyboard size={20} className="settings-section-icon" />
-            <h2 className="settings-section-title">Keyboard Shortcuts</h2>
-          </div>
-          <div className="shortcuts-grid">
-            {shortcuts.map((s) => (
-              <div key={s.label} className="shortcut-item">
-                <span className="shortcut-label">{s.label}</span>
-                <div className="shortcut-keys">
-                  {s.keys.map((k) => (
-                    <span key={k} className="shortcut-key">{k}</span>
-                  ))}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
