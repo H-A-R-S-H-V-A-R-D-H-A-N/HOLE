@@ -77,9 +77,17 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <br/><br/>
   <img src="screenshots/pro_features/pro_6.png" width="90%" alt="PRO Favicon Hunter" />
   <br/><br/>
-  <img src="screenshots/pro_features/pro_7.png" width="90%" alt="PRO Exposure Hunter" />
+  <img src="screenshots/pro_features/pro_7.png" width="90%" alt="PRO Feature" />
   <br/><br/>
-  <img src="screenshots/pro_features/pro_8.png" width="90%" alt="PRO WAF Detector" />
+  <img src="screenshots/pro_features/pro_8.png" width="90%" alt="PRO Feature" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_9.png" width="90%" alt="PRO Technique Vault" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_10.png" width="90%" alt="PRO Feature" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_11.png" width="90%" alt="PRO Feature" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_12.png" width="90%" alt="PRO Feature" />
 </div>
 
 <br/>
