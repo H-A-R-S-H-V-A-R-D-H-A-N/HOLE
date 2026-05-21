@@ -52,6 +52,9 @@ For elite security researchers, penetration testers, and bug bounty hunters who 
 - **Auto-Exploit Integrations:** Connect directly with your favorite external exploitation scripts and binaries.
 - **Direct Developer Support:** If you encounter any bugs, setup issues, or need help with a target, you get direct, priority 1-on-1 support from the creator.
 
+> 💡 **PRO TIP: Not all Dangling CNAMEs are Exploitable!**
+> Tools like the HOLE PRO Infrastructure Harvester are excellent at finding dangling CNAMEs. However, remember the golden rule of takeovers: just because it points to `elb.amazonaws.com` or `*.github.io` doesn't mean you can claim it! AWS ELB hostnames are randomly generated, and GitHub requires root domain verification for `*.github.com`. Always attempt to place a benign `hacker.html` file on the endpoint to prove exploitation before submitting your bounty report to avoid N/A resolutions!
+
 ### Unrestricted Lifetime License
 We reject the subscription model. HOLE PRO is available as a single, one-time purchase. You own the software and all future updates forever.
 
@@ -80,7 +83,7 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <br/><br/>
   <img src="screenshots/pro_features/pro_7.png" width="90%" alt="PRO Feature" />
   <br/><br/>
-  <img src="screenshots/pro_features/pro_8.png" width="90%" alt="PRO Feature" />
+  <img src="screenshots/pro_features/pro_8.png" width="90%" alt="PRO WAF Detector" />
   <br/><br/>
   <img src="screenshots/pro_features/pro_9.png" width="90%" alt="PRO Technique Vault" />
   <br/><br/>
