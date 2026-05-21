@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // Pick a folder (first launch setup)
+  getAppPath: () => ipcRenderer.invoke('get-app-path'),
   pickFolder: () => ipcRenderer.invoke('pick-folder'),
 
   pickDirectory: () => ipcRenderer.invoke('pick-directory'),
@@ -113,4 +114,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onShellDisconnect: (callback) => {
     ipcRenderer.on('shell-disconnect', (e) => callback());
   },
+
+  // Native Backend (Go)
+  mapCves: (options) => ipcRenderer.invoke('map-cves', options),
+  trackIP: (options) => ipcRenderer.invoke('track-ip', options),
+  getPublicIP: () => ipcRenderer.invoke('get-public-ip'),
+  harvestDomain: (options) => ipcRenderer.invoke('harvest-domain', options),
+  findBuckets: (options) => ipcRenderer.invoke('find-buckets', options),
+  faviconHunt: (options) => ipcRenderer.invoke('favicon-hunt', options),
+  exposureHunt: (options) => ipcRenderer.invoke('exposure-hunt', options),
+  wafDetect: (options) => ipcRenderer.invoke('waf-detect', options),
+  jsSpider: (options) => ipcRenderer.invoke('js-spider', options),
+  categorySave: (options) => ipcRenderer.invoke('category-save', options),
+  categoryDelete: (options) => ipcRenderer.invoke('category-delete', options),
+  techniquesLoad: (options) => ipcRenderer.invoke('techniques-load', options),
+  techniquesSave: (options) => ipcRenderer.invoke('techniques-save', options),
+  techniquesDelete: (options) => ipcRenderer.invoke('techniques-delete', options),
 });

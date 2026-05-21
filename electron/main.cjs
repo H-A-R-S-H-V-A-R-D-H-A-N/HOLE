@@ -1,7 +1,7 @@
 const { app, BrowserWindow, shell, dialog, ipcMain, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { spawn, exec } = require('child_process');
+const { spawn, exec, execFile } = require('child_process');
 const net = require('net');
 const http = require('http');
 const os = require('os');
@@ -106,7 +106,7 @@ ipcMain.handle('pick-folder', async () => {
 // Ensure all section directories exist on startup
 ipcMain.handle('ensure-dirs', async (event, kromaDir) => {
   try {
-    const sectionDirs = ['Notes', 'Code', 'Journal', 'Workflow', 'Methodology', 'Payloads', 'ContextVault', 'UnknownSpace', 'TimeTracker', 'Kanban', 'BountyTracker', 'Screenshots', 'Videos'];
+    const sectionDirs = ['Notes', 'Code', 'Journal', 'Workflow', 'Methodology', 'Payloads', 'ContextVault', 'UnknownSpace', 'TimeTracker', 'Kanban', 'BountyTracker', 'Screenshots', 'Videos', 'HOLE_Techniques'];
     sectionDirs.forEach(dir => {
       const dirPath = path.join(kromaDir, dir);
       if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
@@ -135,6 +135,10 @@ ipcMain.handle('ensure-dirs', async (event, kromaDir) => {
   } catch (err) {
     return { success: false, error: err.message };
   }
+});
+
+ipcMain.handle('get-app-path', () => {
+  return process.cwd();
 });
 
 // Save file directly to a path (no dialog, used after storage dir is set)
@@ -376,6 +380,316 @@ ipcMain.handle('save-media', async (event, { workspacePath, filename, base64Data
   } catch (err) {
     return { success: false, error: err.message };
   }
+});
+
+// ---- Native Backend (Go) Integration ---- //
+
+ipcMain.handle('map-cves', async (event, { service, version }) => {
+  return new Promise((resolve) => {
+    try {
+      const isWin = process.platform === 'win32';
+      const binaryName = isWin ? 'cve_mapper.exe' : 'cve_mapper';
+      const binPath = path.join(__dirname, '..', 'bin', binaryName);
+      
+      if (!fs.existsSync(binPath)) {
+        resolve({ success: false, error: 'CVE Mapper binary not found. Please compile it first.' });
+        return;
+      }
+
+      // Execute the Go binary
+      execFile(binPath, ['--service', service, '--version', version], { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+        if (error) {
+          // Try to parse JSON error from stdout if possible
+          try {
+            const errObj = JSON.parse(stdout);
+            if (errObj.error) {
+              resolve({ success: false, error: errObj.error });
+              return;
+            }
+          } catch (e) {
+            // Not JSON
+          }
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+
+        try {
+          const results = JSON.parse(stdout);
+          resolve({ success: true, data: results });
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse CVE data from backend.' });
+        }
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+ipcMain.handle('track-ip', async (event, { ip, scanPorts }) => {
+  return new Promise((resolve) => {
+    try {
+      const isWin = process.platform === 'win32';
+      const binaryName = isWin ? 'ip_tracker.exe' : 'ip_tracker';
+      const binPath = path.join(__dirname, '..', 'bin', binaryName);
+
+      if (!fs.existsSync(binPath)) {
+        resolve({ success: false, error: 'IP Tracker binary not found. Please compile it first.' });
+        return;
+      }
+
+      const args = ['--ip', ip];
+      if (scanPorts) args.push('--ports');
+
+      execFile(binPath, args, { maxBuffer: 1024 * 1024 * 10, timeout: 30000 }, (error, stdout, stderr) => {
+        if (error) {
+          try {
+            const errObj = JSON.parse(stdout);
+            if (errObj.error) { resolve({ success: false, error: errObj.error }); return; }
+          } catch (e) {}
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+        try {
+          const results = JSON.parse(stdout);
+          resolve(results);
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse IP tracker data.' });
+        }
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+ipcMain.handle('harvest-domain', async (event, { domain }) => {
+  return new Promise((resolve) => {
+    try {
+      const isWin = process.platform === 'win32';
+      const binaryName = isWin ? 'harvester.exe' : 'harvester';
+      const binPath = path.join(__dirname, '..', 'bin', binaryName);
+
+      if (!fs.existsSync(binPath)) {
+        resolve({ success: false, error: 'Harvester binary not found.' });
+        return;
+      }
+
+      execFile(binPath, ['--domain', domain], { maxBuffer: 1024 * 1024 * 50, timeout: 300000 }, (error, stdout, stderr) => {
+        if (error) {
+          try {
+            const errObj = JSON.parse(stdout);
+            if (errObj.error) { resolve({ success: false, error: errObj.error }); return; }
+          } catch (e) {}
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+        try {
+          resolve(JSON.parse(stdout));
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse harvester data.' });
+        }
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+// ---- Cloud Bucket Finder ---- //
+ipcMain.handle('find-buckets', async (event, { company }) => {
+  const binPath = path.join(__dirname, '..', 'bin', 'bucket_finder');
+  if (!fs.existsSync(binPath)) {
+    return { success: false, error: 'bucket_finder binary not found.' };
+  }
+  return new Promise((resolve) => {
+    try {
+      execFile(binPath, ['--company', company], { maxBuffer: 1024 * 1024 * 20, timeout: 180000 }, (error, stdout, stderr) => {
+        if (error) {
+          try {
+            const errObj = JSON.parse(stdout);
+            if (errObj.error) { resolve({ success: false, error: errObj.error }); return; }
+          } catch (e) {}
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+        try {
+          resolve(JSON.parse(stdout));
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse bucket data.' });
+        }
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+// ---- Favicon Hunter ---- //
+ipcMain.handle('favicon-hunt', async (event, { domain }) => {
+  const binPath = path.join(__dirname, '..', 'bin', 'favicon_hunter');
+  if (!fs.existsSync(binPath)) {
+    return { success: false, error: 'favicon_hunter binary not found.' };
+  }
+  return new Promise((resolve) => {
+    try {
+      execFile(binPath, ['--domain', domain], { maxBuffer: 1024 * 1024 * 10, timeout: 30000 }, (error, stdout, stderr) => {
+        if (error) {
+          try {
+            const errObj = JSON.parse(stdout);
+            if (errObj.error) { resolve({ success: false, error: errObj.error }); return; }
+          } catch (e) {}
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+        try {
+          resolve(JSON.parse(stdout));
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse favicon data.' });
+        }
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+// ---- Exposure Hunter ---- //
+ipcMain.handle('exposure-hunt', async (event, { domain }) => {
+  const binPath = path.join(__dirname, '..', 'bin', 'exposure_hunter');
+  if (!fs.existsSync(binPath)) {
+    return { success: false, error: 'exposure_hunter binary not found.' };
+  }
+  return new Promise((resolve) => {
+    try {
+      execFile(binPath, ['--domain', domain], { maxBuffer: 1024 * 1024 * 20, timeout: 300000 }, (error, stdout, stderr) => {
+        if (error) {
+          try { const e = JSON.parse(stdout); if (e.error) { resolve({ success: false, error: e.error }); return; } } catch (e) {}
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+        try { resolve(JSON.parse(stdout)); } catch (e) { resolve({ success: false, error: 'Failed to parse data.' }); }
+      });
+    } catch (err) { resolve({ success: false, error: err.message }); }
+  });
+});
+
+// ---- WAF Detector ---- //
+ipcMain.handle('waf-detect', async (event, { domain }) => {
+  const binPath = path.join(__dirname, '..', 'bin', 'waf_detector');
+  if (!fs.existsSync(binPath)) {
+    return { success: false, error: 'waf_detector binary not found.' };
+  }
+  return new Promise((resolve) => {
+    try {
+      execFile(binPath, ['--domain', domain], { maxBuffer: 1024 * 1024 * 20, timeout: 300000 }, (error, stdout, stderr) => {
+        if (error) {
+          try { const e = JSON.parse(stdout); if (e.error) { resolve({ success: false, error: e.error }); return; } } catch (e) {}
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+        try { resolve(JSON.parse(stdout)); } catch (e) { resolve({ success: false, error: 'Failed to parse data.' }); }
+      });
+    } catch (err) { resolve({ success: false, error: err.message }); }
+  });
+});
+
+// ---- JS Endpoint Spider ---- //
+ipcMain.handle('js-spider', async (event, { domain }) => {
+  const binPath = path.join(__dirname, '..', 'bin', 'js_spider');
+  if (!fs.existsSync(binPath)) {
+    return { success: false, error: 'js_spider binary not found.' };
+  }
+  return new Promise((resolve) => {
+    try {
+      execFile(binPath, ['--domain', domain], { maxBuffer: 1024 * 1024 * 20, timeout: 120000 }, (error, stdout, stderr) => {
+        if (error) {
+          try { const e = JSON.parse(stdout); if (e.error) { resolve({ success: false, error: e.error }); return; } } catch (e) {}
+          resolve({ success: false, error: stderr || error.message });
+          return;
+        }
+        try { resolve(JSON.parse(stdout)); } catch (e) { resolve({ success: false, error: 'Failed to parse data.' }); }
+      });
+    } catch (err) { resolve({ success: false, error: err.message }); }
+  });
+});
+
+// ---- Technique Vault ---- //
+function getTechniquesDir(storageDir) {
+  const baseDir = path.join(storageDir, 'HOLE_Techniques');
+  if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
+  return baseDir;
+}
+
+ipcMain.handle('techniques-load', async (event, { storageDir }) => {
+  try {
+    const baseDir = getTechniquesDir(storageDir);
+    const data = {};
+    let categories = [];
+    
+    const catFilePath = path.join(baseDir, 'categories.json');
+    if (fs.existsSync(catFilePath)) {
+      try { categories = JSON.parse(fs.readFileSync(catFilePath, 'utf-8')); } catch(e) {}
+    }
+
+    const folders = fs.readdirSync(baseDir, { withFileTypes: true });
+    for (const folder of folders) {
+      if (!folder.isDirectory()) continue;
+      const catId = folder.name;
+      const catDir = path.join(baseDir, catId);
+      const files = fs.readdirSync(catDir).filter(f => f.endsWith('.json'));
+      data[catId] = [];
+      for (const file of files) {
+        try {
+          const raw = fs.readFileSync(path.join(catDir, file), 'utf-8');
+          data[catId].push(JSON.parse(raw));
+        } catch (e) { /* skip corrupt files */ }
+      }
+      data[catId].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    return { success: true, data, categories, baseDir };
+  } catch (err) { return { success: false, error: err.message }; }
+});
+
+ipcMain.handle('category-save', async (event, { storageDir, categories }) => {
+  try {
+    const baseDir = getTechniquesDir(storageDir);
+    const catFilePath = path.join(baseDir, 'categories.json');
+    fs.writeFileSync(catFilePath, JSON.stringify(categories, null, 2), 'utf-8');
+    return { success: true };
+  } catch (err) { return { success: false, error: err.message }; }
+});
+
+ipcMain.handle('category-delete', async (event, { storageDir, categoryId, categories }) => {
+  try {
+    const baseDir = getTechniquesDir(storageDir);
+    const catDir = path.join(baseDir, categoryId);
+    if (fs.existsSync(catDir)) {
+      fs.rmSync(catDir, { recursive: true, force: true });
+    }
+    const catFilePath = path.join(baseDir, 'categories.json');
+    fs.writeFileSync(catFilePath, JSON.stringify(categories, null, 2), 'utf-8');
+    return { success: true };
+  } catch (err) { return { success: false, error: err.message }; }
+});
+
+ipcMain.handle('techniques-save', async (event, { storageDir, categoryId, technique }) => {
+  try {
+    const baseDir = getTechniquesDir(storageDir);
+    const catDir = path.join(baseDir, categoryId);
+    if (!fs.existsSync(catDir)) fs.mkdirSync(catDir, { recursive: true });
+    fs.writeFileSync(path.join(catDir, technique.id + '.json'), JSON.stringify(technique, null, 2), 'utf-8');
+    return { success: true };
+  } catch (err) { return { success: false, error: err.message }; }
+});
+
+ipcMain.handle('techniques-delete', async (event, { storageDir, categoryId, techniqueId }) => {
+  try {
+    const baseDir = getTechniquesDir(storageDir);
+    const fp = path.join(baseDir, categoryId, techniqueId + '.json');
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    return { success: true };
+  } catch (err) { return { success: false, error: err.message }; }
 });
 
 // ---- Tor Mode ---- //
@@ -1250,6 +1564,32 @@ ipcMain.handle('get-local-ip', () => {
     }
   }
   return '127.0.0.1';
+});
+
+ipcMain.handle('get-public-ip', async () => {
+  const apis = [
+    'http://ip-api.com/json/?fields=query',
+    'http://api.ipify.org?format=json',
+  ];
+  for (const apiUrl of apis) {
+    try {
+      const result = await new Promise((resolve, reject) => {
+        const lib = apiUrl.startsWith('https') ? require('https') : http;
+        lib.get(apiUrl, { timeout: 5000 }, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              resolve(parsed.query || parsed.ip || null);
+            } catch { reject(new Error('Parse failed')); }
+          });
+        }).on('error', reject);
+      });
+      if (result) return { success: true, ip: result };
+    } catch { continue; }
+  }
+  return { success: false, error: 'All IP detection services failed.' };
 });
 
 ipcMain.handle('listener-status', () => {
