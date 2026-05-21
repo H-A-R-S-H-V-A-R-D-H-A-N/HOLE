@@ -241,12 +241,15 @@ export default function App() {
 
   useEffect(() => {
     async function init() {
-      // Hardcode storage to HOLE_WORKSPACE in app root
+      // Forcefully set the storage directory to HOLE_WORKSPACE in app root every time
       let dir = getStorageDir();
-      if (!dir && window.electronAPI) {
+      if (window.electronAPI) {
         const appPath = await window.electronAPI.getAppPath();
-        dir = `${appPath}/HOLE_WORKSPACE`;
-        localStorage.setItem('kroma_storage_dir', dir);
+        const expectedDir = `${appPath}/HOLE_WORKSPACE`;
+        if (dir !== expectedDir) {
+          dir = expectedDir;
+          localStorage.setItem('kroma_storage_dir', dir);
+        }
       }
       if (dir) {
         setStorageDirState(dir);
