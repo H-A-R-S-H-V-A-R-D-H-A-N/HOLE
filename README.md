@@ -69,27 +69,29 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
 ### PRO Interface Previews
 
 <div align="center">
-  <img src="screenshots/pro_features/tool_ip_tracker.png" width="90%" alt="PRO IP Tracker" />
+  <img src="screenshots/pro_features/pro_1.png" width="90%" alt="PRO Feature 1" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_map_view.png" width="90%" alt="PRO Map View" />
+  <img src="screenshots/pro_features/pro_2.png" width="90%" alt="PRO Feature 2" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_cve_mapper.png" width="90%" alt="PRO CVE Mapper" />
+  <img src="screenshots/pro_features/pro_3.png" width="90%" alt="PRO Feature 3" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_email_analyzer.png" width="90%" alt="PRO Email Analyzer" />
+  <img src="screenshots/pro_features/pro_4.png" width="90%" alt="PRO Feature 4" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_harvester.png" width="90%" alt="PRO Harvester" />
+  <img src="screenshots/pro_features/pro_5.png" width="90%" alt="PRO Feature 5" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_bucket_finder.png" width="90%" alt="PRO Bucket Finder" />
+  <img src="screenshots/pro_features/pro_6.png" width="90%" alt="PRO Feature 6" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_favicon_hunter.png" width="90%" alt="PRO Favicon Hunter" />
+  <img src="screenshots/pro_features/pro_7.png" width="90%" alt="PRO Feature 7" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_waf_detector.png" width="90%" alt="PRO WAF Detector" />
+  <img src="screenshots/pro_features/pro_8.png" width="90%" alt="PRO Feature 8" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_js_spider.png" width="90%" alt="PRO JS Spider" />
+  <img src="screenshots/pro_features/pro_9.png" width="90%" alt="PRO Feature 9" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_technique_vault_1.png" width="90%" alt="PRO Technique Vault" />
+  <img src="screenshots/pro_features/pro_10.png" width="90%" alt="PRO Feature 10" />
   <br/><br/>
-  <img src="screenshots/pro_features/tool_technique_vault_2.png" width="90%" alt="PRO Technique Vault" />
+  <img src="screenshots/pro_features/pro_11.png" width="90%" alt="PRO Feature 11" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_12.png" width="90%" alt="PRO Feature 12" />
 </div>
 
 <br/>
