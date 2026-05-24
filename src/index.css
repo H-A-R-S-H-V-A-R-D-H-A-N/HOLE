@@ -165,8 +165,8 @@ input, textarea, select {
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--accent-primary-dim);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15), 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 /* ---- Custom Scrollbar — Sleek & Minimal ---- */
@@ -433,8 +433,19 @@ input:focus, textarea:focus, select:focus {
   background: var(--accent-primary-dim);
 }
 
-/* ---- Card Styles — Premium Glass ---- */
+/* ---- Animated Angle Property for Snake Borders ---- */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes spin-angle {
+  to { --angle: 360deg; }
+}
+
+/* ---- Card Styles — Premium Glass with Universal Snake Border ---- */
 .card {
+  position: relative;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -444,15 +455,36 @@ input:focus, textarea:focus, select:focus {
   transition: all var(--transition-base);
 }
 
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px; /* Border thickness */
+  background: conic-gradient(from var(--angle, 0deg), transparent 60%, var(--snake-color, rgba(255,255,255,0.8)) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: spin-angle 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
 .card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  border-color: transparent;
+  box-shadow: var(--shadow-md), 0 10px 30px rgba(0,0,0,0.5);
+  transform: translateY(-2px);
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 .card-interactive:hover {
   transform: translateY(-3px);
-  border-color: var(--border-accent);
+  border-color: transparent;
   box-shadow: var(--shadow-glow), var(--shadow-md);
   cursor: pointer;
 }
@@ -561,3 +593,52 @@ input:focus, textarea:focus, select:focus {
 .toast-error { border-left: 3px solid var(--accent-red); }
 .toast-info { border-left: 3px solid var(--accent-primary); }
 .toast-warning { border-left: 3px solid var(--accent-yellow); }
+
+/* ---- Snake Light Animation ---- */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.snake-card {
+  position: relative;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.02);
+  clip-path: inset(0 round 16px);
+  -webkit-clip-path: inset(0 round 16px);
+  display: flex;
+  flex-direction: column;
+}
+
+.snake-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent 70%, var(--snake-color, #A78BFA) 100%);
+  animation: spin 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.snake-card:hover::before {
+  opacity: 1;
+}
+
+.snake-card-inner {
+  position: absolute;
+  inset: 1px;
+  background-color: rgba(10, 10, 15, 0.95);
+  border-radius: 15px;
+  z-index: 1;
+}
+
+.snake-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  width: 100%;
+}
