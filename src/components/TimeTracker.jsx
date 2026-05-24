@@ -24,7 +24,7 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
   };
 
   const getJournalPath = () => {
-    return storageDir ? `${storageDir}\\Journal\\HackerJournal_data.json` : null;
+    return storageDir ? `${storageDir}/Journal/HackerJournal_data.json` : null;
   };
 
   // Load Initial Data
