@@ -114,6 +114,8 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <img src="screenshots/pro_features/pro_22.png" width="90%" alt="PRO Feature 22" />
   <br/><br/>
   <img src="screenshots/pro_features/pro_23.png" width="90%" alt="PRO Feature 23" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_24.png" width="90%" alt="PRO Feature 24" />
 </div>
 
 <br/>
