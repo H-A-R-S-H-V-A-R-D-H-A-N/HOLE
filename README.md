@@ -92,6 +92,28 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <img src="screenshots/pro_features/pro_11.png" width="90%" alt="PRO Feature 11" />
   <br/><br/>
   <img src="screenshots/pro_features/pro_12.png" width="90%" alt="PRO Feature 12" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_13.png" width="90%" alt="PRO Feature 13" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_14.png" width="90%" alt="PRO Feature 14" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_15.png" width="90%" alt="PRO Feature 15" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_16.png" width="90%" alt="PRO Feature 16" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_17.png" width="90%" alt="PRO Feature 17" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_18.png" width="90%" alt="PRO Feature 18" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_19.png" width="90%" alt="PRO Feature 19" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_20.png" width="90%" alt="PRO Feature 20" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_21.png" width="90%" alt="PRO Feature 21" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_22.png" width="90%" alt="PRO Feature 22" />
+  <br/><br/>
+  <img src="screenshots/pro_features/pro_23.png" width="90%" alt="PRO Feature 23" />
 </div>
 
 <br/>
