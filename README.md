@@ -81,6 +81,8 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <br/><br/>
   <img src="screenshots/pro_features/pro_6.png" width="90%" alt="PRO Feature 6" />
   <br/><br/>
+  <img src="screenshots/pro_features/pro_6_1.png" width="90%" alt="PRO Feature 6.1" />
+  <br/><br/>
   <img src="screenshots/pro_features/pro_7.png" width="90%" alt="PRO Feature 7" />
   <br/><br/>
   <img src="screenshots/pro_features/pro_8.png" width="90%" alt="PRO Feature 8" />
@@ -114,8 +116,6 @@ To purchase your lifetime license and receive the fully compiled, secure desktop
   <img src="screenshots/pro_features/pro_22.png" width="90%" alt="PRO Feature 22" />
   <br/><br/>
   <img src="screenshots/pro_features/pro_23.png" width="90%" alt="PRO Feature 23" />
-  <br/><br/>
-  <img src="screenshots/pro_features/pro_24.png" width="90%" alt="PRO Feature 24" />
 </div>
 
 <br/>
