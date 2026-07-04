@@ -291,6 +291,77 @@ A focused session timer for tracking exactly how many hours you spend on each bu
 
 <br/>
 
+## Advanced Scanners & Engines
+
+HOLE now includes all previously PRO-exclusive scanners, running directly from your machine.
+
+<div align="center">
+  <img src="screenshots/pro_features/tool_js_spider.png" width="90%" alt="JS Spider" />
+  <br/><br/>
+  <img src="screenshots/pro_features/tool_bucket_finder.png" width="90%" alt="Cloud Bucket Finder" />
+  <br/><br/>
+  <img src="screenshots/pro_features/tool_waf_detector.png" width="90%" alt="WAF Detector" />
+</div>
+
+<br/>
+
+**Included Engines:**
+- **CVE Mapper:** Instantly map emerging CVEs directly to your defined attack surface
+- **Email Header Analyzer:** Trace email routes, extract sender IPs, and verify SPF/DKIM/DMARC
+- **Infrastructure Harvester:** Harvest emails, subdomains, URLs, social profiles
+- **Favicon Hunter:** Identify technologies and discover hidden infrastructure via favicon fingerprinting
+- **Exposure Hunter:** Scan target domains for leaked source code and database dumps
+
+<br/>
+
+---
+
+<br/>
+
+## Technique Vault
+
+A comprehensive, offline library of advanced exploitation techniques and methodologies. Never forget a bypass again.
+
+<div align="center">
+  <img src="screenshots/pro_features/pro_4.png" width="90%" alt="Technique Vault" />
+</div>
+
+<br/>
+
+---
+
+<br/>
+
+## Auto-Detect & Encoder
+
+Instantly analyze obfuscated strings or manually encode/decode them using built-in hex, base64, HTML, and URL operations.
+
+<div align="center">
+  <img src="screenshots/auto-detect.png" width="90%" alt="Auto Detect" />
+  <br/><br/>
+  <img src="screenshots/encoder-decoder.png" width="90%" alt="Encoder / Decoder" />
+</div>
+
+<br/>
+
+---
+
+<br/>
+
+## Payload Library
+
+A massive, categorized library of ready-to-use payloads for XSS, SQLi, SSRF, LFI, and RCE.
+
+<div align="center">
+  <img src="screenshots/payloads.png" width="90%" alt="Payload Library" />
+</div>
+
+<br/>
+
+---
+
+<br/>
+
 ## Full Tool List
 
 Beyond the tools shown above, HOLE includes the following integrated modules:
