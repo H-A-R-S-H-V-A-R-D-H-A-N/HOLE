@@ -24,7 +24,7 @@
   <img src="public/hole-icon.png" width="120" alt="HOLE">
   <h1>H O L E</h1>
   <p><strong>The Anonymous Bug Bounty Workstation</strong></p>
-  <p>A fully offline, native desktop arsenal built for elite penetration testers and bug bounty hunters.<br/>39 integrated security tools. Zero telemetry. Complete local data sovereignty.</p>
+  <p>A fully offline, native desktop arsenal built for elite penetration testers and bug bounty hunters.<br/>An ever-growing arsenal of integrated security tools. Zero telemetry. Complete local data sovereignty.</p>
 
   <br/>
 
@@ -60,7 +60,7 @@ Your data stays on your hard drive. Period.
 
 ## Comprehensive Feature List
 
-HOLE combines 39 separate hacking utilities into a single, cohesive ecosystem.
+HOLE combines dozens of separate hacking utilities into a single, cohesive ecosystem.
 
 ### Tor Engine and Ghost Mode
 
@@ -262,6 +262,18 @@ A dual-mode cryptography and steganography workbench. Encrypt and decrypt data w
 **Benefits:**
 - **Diff Scope:** Character-level comparison tool for spotting differences between server responses or configuration changes.
 - **Time Tracker:** A focused session timer for tracking exactly how many hours you spend on each bug bounty target.
+
+<br/>
+
+### IP Tracker
+
+Trace, map, and analyze any IP address globally to reveal ASN, geolocation, and ISP data instantly.
+
+<div align="center">
+  <img src="screenshots/pro_features/pro_1.png" width="90%" alt="IP Tracker" />
+</div>
+
+<br/>
 
 <br/>
 
