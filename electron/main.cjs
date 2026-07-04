@@ -706,7 +706,7 @@ function getTorPath() {
   ];
   // On Linux/macOS, also check system-installed tor
   if (!isWin) {
-    locations.push('/usr/bin/tor', '/usr/local/bin/tor');
+    locations.push('/usr/bin/tor', '/usr/local/bin/tor', '/usr/sbin/tor', '/opt/homebrew/bin/tor');
   }
   for (const loc of locations) {
     if (fs.existsSync(loc)) return loc;
