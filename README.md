@@ -106,7 +106,7 @@ HOLE combines dozens of separate hacking utilities into a single, cohesive ecosy
 * **Time Tracker:** A focused session timer designed to track exactly how many hours you spend hacking each specific target.
 
 ### Anonymous Utilities
-* **Temp Mail:** Generate disposable email addresses natively through multi-provider fallback APIs (`mail.tm`, `temp-mail.io`) to bypass registration blocks.
+* **Temp Mail:** Generate disposable email addresses natively through a multi-provider fallback architecture to seamlessly bypass strict registration blocks without revealing internal mechanisms.
 * **Identity Generator:** Create tracking identities using plus-addressing (e.g., `email+admin@gmail.com`) to manage multiple user privilege levels across web applications.
 
 <br/>
