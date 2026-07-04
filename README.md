@@ -1,4 +1,16 @@
 <div align="center">
+  <div align="right">
+    <a href="https://www.paypal.com/paypalme/harshvardhansingh611">
+      <img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal">
+    </a>
+    <a href="upi://pay?pa=harshvardhansinghrathore611@oksbi">
+      <img src="https://img.shields.io/badge/UPI-Donate-22C55E?style=for-the-badge" alt="UPI">
+    </a>
+    <a href="https://www.instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_">
+      <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram">
+    </a>
+  </div>
+  <br/>
   <img src="public/hole-icon.png" width="120" alt="HOLE">
   <h1>H O L E</h1>
   <p><strong>The Ultimate Open-Source Bug Bounty Arsenal</strong></p>
@@ -95,14 +107,6 @@ npm run make
 
 If HOLE helps you in your bug bounty journey, consider supporting the project:
 
-- **PayPal** — [Donate via PayPal](https://www.paypal.com/paypalme/harshvardhansingh611) (International)
-- **UPI (India)** — `harshvardhansinghrathore611@oksbi`
-- **Instagram** — [Follow me](https://www.instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_) to support the journey
-
-### Scan to Pay (UPI)
-<img src="public/upi-qr.jpg" width="200" alt="UPI QR Code">
-
-*Other ways to support:*
 - **Star this repo** — It helps others discover HOLE
 - **Report bugs** — Open an issue if you find something broken
 
