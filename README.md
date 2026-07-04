@@ -86,8 +86,6 @@ A full IDE with Monaco Editor (the same engine behind VS Code) built directly in
 </div>
 
 **Benefits:**
-- **Save ANY file type:** Fully supports writing, editing, and saving HTML, CSS, JS, Python, Go, Rust, and SQL directly to your local file system.
-- **Instant HTML Rendering:** Write a malicious landing page or phishing template in HTML, and when you open the file, HOLE will render the link as a live HTML preview directly in the editor in full detail!
 - 25+ language modes with full syntax highlighting.
 
 <br/>
@@ -116,6 +114,8 @@ A calendar-based daily logging system.
 
 **Benefits:**
 - Pick any date, type what you tested, and it saves instantly as a plain markdown file on your disk. No accounts, no sync, no nonsense.
+- **Save ANY file type:** Fully supports writing, editing, and saving HTML, CSS, JS, Python, Go, Rust, and SQL directly to your local file system.
+- **Instant HTML Rendering:** Write a malicious landing page or phishing template in HTML, and when you open the file, HOLE will render the link as a live HTML preview directly in the editor in full detail!
 
 <br/>
 
