@@ -443,20 +443,25 @@ ipcMain.handle('track-ip', async (event, { ip, scanPorts }) => {
       if (scanPorts) args.push('--ports');
 
       execFile(binPath, args, { maxBuffer: 1024 * 1024 * 10, timeout: 30000 }, (error, stdout, stderr) => {
-        if (error) {
+        // Always try to parse stdout as JSON first (binary returns structured JSON for both success and error)
+        if (stdout && stdout.trim()) {
           try {
-            const errObj = JSON.parse(stdout);
-            if (errObj.error) { resolve({ success: false, error: errObj.error }); return; }
-          } catch (e) {}
-          resolve({ success: false, error: stderr || error.message });
+            const results = JSON.parse(stdout.trim());
+            resolve(results);
+            return;
+          } catch (e) {
+            // stdout wasn't valid JSON, fall through to error handling
+          }
+        }
+
+        if (error) {
+          // Provide a clean error message instead of raw "Command failed: /path/..."
+          const cleanError = stderr ? stderr.trim() : 'IP lookup failed. The geolocation API may be temporarily unavailable.';
+          resolve({ success: false, error: cleanError });
           return;
         }
-        try {
-          const results = JSON.parse(stdout);
-          resolve(results);
-        } catch (e) {
-          resolve({ success: false, error: 'Failed to parse IP tracker data.' });
-        }
+
+        resolve({ success: false, error: 'Failed to parse IP tracker data.' });
       });
     } catch (err) {
       resolve({ success: false, error: err.message });
@@ -464,19 +469,19 @@ ipcMain.handle('track-ip', async (event, { ip, scanPorts }) => {
   });
 });
 
-ipcMain.handle('harvest-domain', async (event, { domain }) => {
+ipcMain.handle('recon-scan', async (event, { domain }) => {
   return new Promise((resolve) => {
     try {
       const isWin = process.platform === 'win32';
-      const binaryName = isWin ? 'harvester.exe' : 'harvester';
+      const binaryName = isWin ? 'recon_engine.exe' : 'recon_engine';
       const binPath = path.join(__dirname, '..', 'bin', binaryName);
 
       if (!fs.existsSync(binPath)) {
-        resolve({ success: false, error: 'Harvester binary not found.' });
+        resolve({ success: false, error: 'Recon Engine binary not found.' });
         return;
       }
 
-      execFile(binPath, ['--domain', domain], { maxBuffer: 1024 * 1024 * 50, timeout: 300000 }, (error, stdout, stderr) => {
+      execFile(binPath, ['--domain', domain], { maxBuffer: 1024 * 1024 * 100, timeout: 600000 }, (error, stdout, stderr) => {
         if (error) {
           try {
             const errObj = JSON.parse(stdout);
@@ -488,9 +493,325 @@ ipcMain.handle('harvest-domain', async (event, { domain }) => {
         try {
           resolve(JSON.parse(stdout));
         } catch (e) {
-          resolve({ success: false, error: 'Failed to parse harvester data.' });
+          resolve({ success: false, error: 'Failed to parse recon data.' });
         }
       });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+// ---- Target Command (Hybrid API & DOM Extractor) ---- //
+ipcMain.handle('target-command-parse', async (event, { url, apiKeys = {} }) => {
+  return new Promise(async (resolve) => {
+    try {
+      // 1. HACKERONE API FAST-TRACK
+      if (url.includes('hackerone.com')) {
+        try {
+          const handleMatch = url.match(/hackerone\.com\/([^/?]+)/);
+          if (handleMatch) {
+            const handle = handleMatch[1].replace('policy_scopes', '');
+            
+            // Phase A: Try Public GraphQL (No Auth Needed - Works for Public Programs)
+            const qScopes = { 
+              query: `query TeamScope($handle: String!) { team(handle: $handle) { in_scope_assets: structured_scopes(search: "", archived: false, eligible_for_bounty: true) { edges { node { asset_identifier asset_type max_severity } } } out_of_scope_assets: structured_scopes(search: "", archived: false, eligible_for_bounty: false) { edges { node { asset_identifier asset_type } } } } }`, 
+              variables: { handle } 
+            };
+            
+            const gqlRes = await fetch("https://hackerone.com/graphql", {
+              method: "POST", 
+              headers: { "Content-Type": "application/json" }, 
+              body: JSON.stringify(qScopes)
+            });
+            const gqlData = await gqlRes.json();
+            
+            let result = { 
+              success: true, 
+              programName: handle.charAt(0).toUpperCase() + handle.slice(1), 
+              url: url, 
+              platform: 'HackerOne', 
+              inScope: [], 
+              outOfScope: [], 
+              inScopeVulns: [], 
+              outOfScopeVulns: [], 
+              bountyTable: [], 
+              policy: '' 
+            };
+            
+            // If GraphQL successfully returns the team (Public Program!)
+            if (gqlData && gqlData.data && gqlData.data.team) {
+              const team = gqlData.data.team;
+              team.in_scope_assets?.edges?.forEach(e => {
+                if (e.node) result.inScope.push({ asset: e.node.asset_identifier, type: e.node.asset_type });
+              });
+              team.out_of_scope_assets?.edges?.forEach(e => {
+                if (e.node) result.outOfScope.push({ asset: e.node.asset_identifier, type: e.node.asset_type });
+              });
+              result.bountyTable = [
+                { severity: "Critical", amount: "See Page" },
+                { severity: "High", amount: "See Page" },
+                { severity: "Medium", amount: "See Page" },
+                { severity: "Low", amount: "See Page" }
+              ];
+              return resolve(result);
+            }
+            
+            // Phase B: If Team is Null (Private Program), use REST API Auth
+            if (!apiKeys.HackerOne) {
+              return resolve({ success: false, error: 'This appears to be a Private Program. Please add your HackerOne API Key in Settings to extract it.' });
+            }
+            
+            const headers = {
+              "Accept": "application/json"
+            };
+            headers["Authorization"] = "Basic " + Buffer.from(apiKeys.HackerOne.trim()).toString('base64');
+            const resPol = await fetch(`https://api.hackerone.com/v1/hackers/programs/${handle}`, { headers });
+            
+            if (!resPol.ok) {
+              console.log(`[HackerOne API] Failed with HTTP ${resPol.status}. Falling back to DOM Extractor.`);
+              throw new Error("API_FALLBACK");
+            }
+
+            const polData = await resPol.json();
+            const inc = polData?.relationships?.structured_scopes?.data || [];
+            if (inc.length > 0) {
+              inc.forEach(item => {
+                const attr = item.attributes;
+                if (attr) {
+                  if (attr.eligible_for_bounty) {
+                    result.inScope.push({ asset: attr.asset_identifier, type: attr.asset_type });
+                  } else {
+                    result.outOfScope.push({ asset: attr.asset_identifier, type: attr.asset_type });
+                  }
+                }
+              });
+            }
+
+            result.bountyTable = [
+              { severity: "Critical", amount: "See Page" },
+              { severity: "High", amount: "See Page" },
+              { severity: "Medium", amount: "See Page" },
+              { severity: "Low", amount: "See Page" }
+            ];
+
+            return resolve(result);
+          }
+        } catch (e) {
+          if (e.message !== "API_FALLBACK") {
+            console.error('HackerOne API Parsing Error:', e);
+          }
+        }
+        // If we reach here, it will proceed to DOM Extractor
+      } else if (url.includes('bugcrowd.com')) {
+        if (!apiKeys.Bugcrowd) {
+          return resolve({ success: false, error: 'Please add the Bugcrowd API Key in the Settings page to extract programs from this platform.' });
+        }
+        // Bugcrowd logic ...
+      }
+
+      // 3. INTIGRITI API FAST-TRACK
+      if (url.includes('intigriti.com')) {
+        if (!apiKeys.Intigriti) {
+          return resolve({ success: false, error: 'Please add the Intigriti API Key in the Settings page to extract programs from this platform.' });
+        }
+      }
+
+      // 4. YESWEHACK API FAST-TRACK
+      if (url.includes('yeswehack.com')) {
+        if (!apiKeys.YesWeHack) {
+          return resolve({ success: false, error: 'Please add the YesWeHack API Key in the Settings page to extract programs from this platform.' });
+        }
+      }
+
+      // 5. UNIVERSAL DOM FALLBACK (For Private/Self-Hosted Programs)
+      // No API Key required for these domains.
+
+      const hiddenWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          webSecurity: false // allow cross-origin
+        }
+      });
+
+      hiddenWindow.webContents.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
+
+      hiddenWindow.loadURL(url);
+
+      // DOM Extraction Payload
+      const extractPayload = `
+        (function() {
+          try {
+            const result = {
+              success: true,
+              programName: document.title.split('-')[0].replace('Bug Bounty', '').trim() || window.location.hostname,
+              url: window.location.href,
+              platform: 'Universal DOM Scanner',
+              inScope: [],
+              outOfScope: [],
+              inScopeVulns: [],
+              outOfScopeVulns: [],
+              bountyTable: [],
+              policy: ''
+            };
+
+            const domainRegex = /(?:\\*\\.)?[a-zA-Z0-9][a-zA-Z0-9-_]*\\.[a-zA-Z]{2,}/;
+            const seenDomains = new Set();
+            const seenVulns = new Set();
+
+            const commonVulns = ['Cross-site Scripting', 'XSS', 'SQL Injection', 'SQLi', 'Server-Side Request Forgery', 'SSRF', 'Remote Code Execution', 'RCE', 'Cross-Site Request Forgery', 'CSRF', 'XML External Entity', 'XXE', 'Clickjacking', 'Self-XSS', 'Denial of Service', 'DoS', 'DDoS', 'Spam', 'Social Engineering', 'Phishing'];
+
+            // 1. Scopes Extraction (Smarter)
+            const elements = document.querySelectorAll('td, li, code, a, span, .daisy-table-cell, [role="cell"]');
+            elements.forEach(el => {
+              let text = el.innerText || '';
+              if (el.tagName === 'A') text = el.getAttribute('href') || text;
+              
+              const match = text.match(domainRegex);
+              if (match) {
+                let domain = match[0].toLowerCase();
+                if (!domain.includes('hackerone.com') && !domain.includes('bugcrowd.com') && !seenDomains.has(domain)) {
+                  seenDomains.add(domain);
+                  let parentText = (el.closest('tr')?.innerText || el.closest('ul')?.innerText || el.parentElement?.innerText || '').toLowerCase();
+                  let isOutOfScope = parentText.includes('out of scope') || parentText.includes('ineligible') || parentText.includes('exclude');
+                  let itemType = domain.startsWith('*.') ? 'WILDCARD' : 'URL';
+                  
+                  if (isOutOfScope) {
+                    result.outOfScope.push({ asset: domain, type: itemType });
+                  } else {
+                    result.inScope.push({ asset: domain, type: itemType });
+                  }
+                }
+              }
+            });
+
+            // 2. Vulnerability Extraction (Smarter, check all text nodes)
+            const allTextNodes = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while(node = allTextNodes.nextNode()) {
+              const text = node.nodeValue.toLowerCase().trim();
+              commonVulns.forEach(vk => {
+                const lowerVk = vk.toLowerCase();
+                if(text === lowerVk || (text.includes(lowerVk) && text.length < 30)) {
+                   if (!seenVulns.has(lowerVk)) {
+                     seenVulns.add(lowerVk);
+                     let parent = node.parentElement;
+                     let scopeText = '';
+                     for(let i=0; i<3; i++) {
+                       if(parent) { scopeText += parent.innerText.toLowerCase() + ' '; parent = parent.parentElement; }
+                     }
+                     let isOutOfScope = scopeText.includes('out of scope') || scopeText.includes('exclude') || scopeText.includes('do not report') || scopeText.includes('ineligible');
+                     if(isOutOfScope) result.outOfScopeVulns.push({ name: vk, status: 'Out of Scope' });
+                     else result.inScopeVulns.push({ name: vk, status: 'In Scope' });
+                   }
+                }
+              });
+            }
+
+            // 3. Extract Bounties (Smarter, check divs/spans for $ signs)
+            const severities = ['Critical', 'High', 'Medium', 'Low'];
+            const bountyRegex = /\\$([0-9,]+)/;
+            const containers = document.querySelectorAll('div, tr, li');
+            containers.forEach(c => {
+               const text = c.innerText;
+               if (text && text.includes('$') && text.length < 150) {
+                 severities.forEach(sev => {
+                    if (text.includes(sev)) {
+                       const match = text.match(bountyRegex);
+                       if (match) {
+                         const existing = result.bountyTable.find(b => b.severity === sev);
+                         if (!existing || parseInt(existing.amount.replace(/[^0-9]/g, '')) < parseInt(match[1].replace(/[^0-9]/g, ''))) {
+                            result.bountyTable = result.bountyTable.filter(b => b.severity !== sev);
+                            result.bountyTable.push({ severity: sev, amount: '$' + match[1] });
+                         }
+                       }
+                    }
+                 });
+               }
+            });
+
+            if (result.bountyTable.length === 0) {
+              result.bountyTable = [
+                {severity: 'Critical', amount: 'See Page'},
+                {severity: 'High', amount: 'See Page'},
+                {severity: 'Medium', amount: 'See Page'},
+                {severity: 'Low', amount: 'See Page'}
+              ];
+            }
+
+            // 4. Extract Policy (Clean!)
+            let policyContent = '';
+            const policyContainers = document.querySelectorAll('.daisy-markdown, .markdown-body, [data-testid="policy-content"], .program-policy, #policy');
+            if (policyContainers.length > 0) {
+              policyContent = policyContainers[0].innerText;
+            } else {
+              let maxText = 0;
+              document.querySelectorAll('div, article, section').forEach(el => {
+                 let clone = el.cloneNode(true);
+                 clone.querySelectorAll('nav, header, footer, script, style, .sidebar, [role="navigation"]').forEach(n => n.remove());
+                 const text = clone.innerText || '';
+                 if (text.length > maxText && text.length < 30000 && !text.includes('Skip to main content')) {
+                    maxText = text.length;
+                    policyContent = text;
+                 }
+              });
+            }
+            
+            result.policy = policyContent.replace(/Skip to main content.*/i, '').replace(/Learn more about HackerOne.*/i, '').trim().substring(0, 3000) + (policyContent.length > 3000 ? '...' : '');
+
+            console.log('EXTRACTED_DATA:' + JSON.stringify(result));
+            return result;
+          } catch(err) {
+            console.log('EXTRACTED_DATA:' + JSON.stringify({ success: false, error: err.message }));
+            return { success: false, error: err.message };
+          }
+        })();
+      `;
+
+      // Execute DOM extraction and fallback to API logic if necessary
+      hiddenWindow.webContents.executeJavaScript(extractPayload).catch(err => {
+        console.error("Extraction Payload Error:", err);
+        resolve(apiData || { success: false, error: 'Extraction failed: ' + err.message });
+      });
+
+      // Handle the data returned from DOM execution via console message
+      hiddenWindow.webContents.on('console-message', (e, level, msg) => {
+        if (msg.startsWith('EXTRACTED_DATA:')) {
+          try {
+            const data = JSON.parse(msg.replace('EXTRACTED_DATA:', ''));
+            hiddenWindow.destroy();
+            
+            // MAGIC MERGE: If API fetched perfect scopes, use them, but attach DOM's policy/bounties.
+            if (apiData) {
+              apiData.policy = data.policy || apiData.policy;
+              apiData.bountyTable = data.bountyTable && data.bountyTable.length > 0 ? data.bountyTable : apiData.bountyTable;
+              apiData.inScopeVulns = data.inScopeVulns && data.inScopeVulns.length > 0 ? data.inScopeVulns : apiData.inScopeVulns;
+              apiData.outOfScopeVulns = data.outOfScopeVulns && data.outOfScopeVulns.length > 0 ? data.outOfScopeVulns : apiData.outOfScopeVulns;
+              
+              if (apiData.inScope.length === 0 && data.inScope.length > 0) apiData.inScope = data.inScope;
+              if (apiData.outOfScope.length === 0 && data.outOfScope.length > 0) apiData.outOfScope = data.outOfScope;
+              
+              resolve(apiData);
+            } else {
+              resolve(data);
+            }
+          } catch (err) {
+            hiddenWindow.destroy();
+            resolve(apiData || { success: false, error: 'Failed to parse extracted data.' });
+          }
+        }
+      });
+
+      // Wait 8 seconds for fallback
+      setTimeout(async () => {
+        if (!hiddenWindow.isDestroyed()) {
+          hiddenWindow.close();
+          resolve(apiData || { success: false, error: 'DOM Extraction timed out.' });
+        }
+      }, 8000);
+
     } catch (err) {
       resolve({ success: false, error: err.message });
     }
@@ -633,6 +954,10 @@ ipcMain.handle('techniques-load', async (event, { storageDir }) => {
       try { categories = JSON.parse(fs.readFileSync(catFilePath, 'utf-8')); } catch(e) {}
     }
 
+    const catIds = new Set(categories.map(c => c.id));
+    const defaultColors = ['#EF4444', '#F97316', '#22C55E', '#3B82F6', '#A855F7', '#06B6D4', '#EC4899', '#6366F1'];
+    let colorIdx = 0;
+
     const folders = fs.readdirSync(baseDir, { withFileTypes: true });
     for (const folder of folders) {
       if (!folder.isDirectory()) continue;
@@ -647,7 +972,19 @@ ipcMain.handle('techniques-load', async (event, { storageDir }) => {
         } catch (e) { /* skip corrupt files */ }
       }
       data[catId].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Auto-recover orphaned categories: directory exists but no category entry
+      if (!catIds.has(catId) && data[catId].length > 0) {
+        categories.push({ id: catId, name: `Recovered: ${data[catId][0]?.title || catId}`, emoji: '🔄', color: defaultColors[colorIdx++ % defaultColors.length] });
+        catIds.add(catId);
+      }
     }
+
+    // Persist recovered categories so they don't keep re-appearing as "Recovered"
+    if (categories.length > 0) {
+      fs.writeFileSync(catFilePath, JSON.stringify(categories, null, 2), 'utf-8');
+    }
+
     return { success: true, data, categories, baseDir };
   } catch (err) { return { success: false, error: err.message }; }
 });

@@ -73,6 +73,8 @@
     "highlight.js": "^11.11.1",
     "lowlight": "^3.3.0",
     "lucide-react": "^1.14.0",
+    "mark.js": "^8.11.1",
+    "marked": "^18.0.5",
     "node-pty": "^1.1.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

@@ -39,7 +39,10 @@ import {
   Heart,
   Coffee,
   Crosshair,
-  Mail
+  Cloud,
+  Mail,
+  Radar,
+  MapPin
 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import '../styles/Sidebar.css';
@@ -93,12 +96,12 @@ const navSections = [
     title: 'Tools',
     items: [
       { id: 'temp-mail', label: 'Temp Mail', icon: Mail },
+      { id: 'target-command', label: 'Target Command', icon: Target },
       { id: 'methodology', label: 'Methodology', icon: GitBranch },
       { id: 'recondb', label: 'Workflow', icon: Database },
       { id: 'code-editor', label: 'Code Studio', icon: Code2 },
       { id: 'cvss-calculator', label: 'CVSS Calculator', icon: Calculator },
       { id: 'identity', label: 'Identity Gen', icon: AtSign },
-      { id: 'auto-detect', label: 'Auto-Detect', icon: Scan },
       { id: 'encoder', label: 'Encoder/Decoder', icon: Binary },
       { id: 'diff', label: 'Diff Scope', icon: GitCompare },
       { id: 'annotator', label: 'Annotator', icon: Camera },
@@ -116,7 +119,23 @@ const navSections = [
       { id: 'graphql-visualizer', label: 'GraphQL Viz', icon: Database },
       { id: 'secret-sniper', label: 'Secret Sniper', icon: Crosshair },
       { id: 'cors-exploit', label: 'CORS Exploit', icon: Globe },
+      { id: 'cve-mapper', label: 'CVE Mapper', icon: AlertTriangle },
+      { id: 'email-headers', label: 'Email Analyzer', icon: Mail },
       { id: 'revshell', label: 'Rev Shell', icon: TerminalSquare },
+      { id: 'technique-vault', label: 'Technique Vault', icon: Book },
+    ],
+  },
+  {
+    title: 'Scanners',
+    items: [
+      { id: 'recon-engine', label: 'Recon Engine', icon: Radar },
+      { id: 'auto-detect', label: 'Auto-Detect', icon: Scan },
+      { id: 'ip-tracker', label: 'IP Tracker', icon: MapPin },
+      { id: 'bucket-finder', label: 'Cloud Buckets', icon: Cloud },
+      { id: 'favicon-hunter', label: 'Favicon Hunter', icon: Eye },
+      { id: 'exposure-hunter', label: 'Exposure Hunter', icon: ShieldOff },
+      { id: 'waf-detector', label: 'WAF Detector', icon: ShieldAlert },
+      { id: 'js-spider', label: 'JS Spider', icon: Code2 },
     ],
   },
   {
@@ -135,7 +154,7 @@ const holeLetters = ['H', 'O', 'L', 'E'];
 
 export default function Sidebar({ activeView, onViewChange, notes, onNewNote, onSelectNote, onDeleteNote, customSections = [], privacyMode, setPrivacyMode }) {
   const [expandedSections, setExpandedSections] = useState({
-    Main: true, Tools: true, Notes: true, Platforms: true, 'Custom Sections': true,
+    Main: true, Tools: true, Scanners: true, Notes: true, Platforms: true, 'Custom Sections': true,
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 

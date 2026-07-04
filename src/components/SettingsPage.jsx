@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Settings as SettingsIcon,
   Palette,
@@ -20,6 +20,7 @@ import {
   HardDrive
 } from 'lucide-react';
 import { getStorageDir, pickStorageFolder, listFilesOnDrive, readFileDirect } from '../utils/fileSystem';
+import ConfirmModal from './ConfirmModal';
 import '../styles/Settings.css';
 
 const defaultSettings = {
@@ -57,6 +58,10 @@ const shortcuts = [
 export default function SettingsPage({ settings: propSettings, onSettingsChange }) {
   const [settings, setSettings] = useState({ ...defaultSettings, ...propSettings });
 
+  useEffect(() => {
+    setSettings(prev => ({ ...prev, ...propSettings }));
+  }, [propSettings]);
+
   const updateSetting = (key, value) => {
     const updated = { ...settings, [key]: value };
     setSettings(updated);
@@ -71,11 +76,20 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
   };
 
   const deleteApiKey = (platform) => {
-    const currentKeys = settings.apiKeys || {};
-    const updatedKeys = { ...currentKeys };
-    delete updatedKeys[platform];
-    updateSetting('apiKeys', updatedKeys);
+    setConfirmModal({
+      title: 'Delete API Key',
+      message: `Are you sure you want to delete the API key for ${platform}? You will lose access to its private programs.`,
+      onConfirm: () => {
+        const currentKeys = settings.apiKeys || {};
+        const updatedKeys = { ...currentKeys };
+        delete updatedKeys[platform];
+        updateSetting('apiKeys', updatedKeys);
+        setConfirmModal(null);
+      }
+    });
   };
+
+  const [confirmModal, setConfirmModal] = useState(null);
 
   const [showKey, setShowKey] = useState({});
   const toggleKeyVisibility = (platform) => {
@@ -86,7 +100,7 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
 
   const handleExportVault = async () => {
     // Export everything in localStorage that belongs to HOLE
-    const backup = { localData: {}, notes: [] };
+    const backup = { localData: {}, files: [] };
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && (key.startsWith('kroma_') || key.startsWith('hole_'))) {
@@ -94,18 +108,35 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
       }
     }
     
-    // Export all physical notes
+    // Export ALL files recursively in the workspace
     const storageDir = getStorageDir();
     if (storageDir && window.electronAPI) {
-      const notesResult = await listFilesOnDrive(`${storageDir}/Notes`, '.json');
-      if (notesResult.success && notesResult.files) {
-        for (const file of notesResult.files) {
-          if (file.isDirectory) continue;
-          const fileContent = await readFileDirect(file.path);
-          if (fileContent.success) {
-            backup.notes.push({ name: file.name, content: fileContent.content });
+      const treeResult = await window.electronAPI.listTree(storageDir);
+      if (treeResult.success && treeResult.tree) {
+        
+        // Exclude binary extensions from being read as text
+        const excludeExts = ['.png', '.jpg', '.jpeg', '.gif', '.mp4', '.webm', '.pdf', '.zip'];
+        
+        const walkTree = async (nodes, currentPath) => {
+          for (const node of nodes) {
+            if (node.isDirectory && node.children) {
+              await walkTree(node.children, `${currentPath}/${node.name}`);
+            } else if (!node.isDirectory) {
+              const ext = node.name.toLowerCase().substring(node.name.lastIndexOf('.'));
+              if (excludeExts.includes(ext)) continue;
+              
+              const fileContent = await window.electronAPI.readFileDirect(node.path);
+              if (fileContent.success) {
+                // Keep relative path so we can restore the exact folder structure
+                backup.files.push({ 
+                  relativePath: `${currentPath}/${node.name}`.replace(/^\//, ''), 
+                  content: fileContent.content 
+                });
+              }
+            }
           }
-        }
+        };
+        await walkTree(treeResult.tree, '');
       }
     }
 
@@ -149,10 +180,20 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
           }
         }
         
-        // Restore notes
-        if (backup.notes && backup.notes.length > 0) {
-          const storageDir = getStorageDir();
-          if (storageDir) {
+        const storageDir = getStorageDir();
+        if (storageDir) {
+          // 1. Restore all workspace files
+          if (backup.files && backup.files.length > 0) {
+            for (const file of backup.files) {
+              await window.electronAPI.saveFileDirect({
+                filePath: `${storageDir}/${file.relativePath}`,
+                content: file.content
+              });
+            }
+          }
+          
+          // 2. Backward compatibility for old "notes" array backups
+          if (backup.notes && backup.notes.length > 0) {
             for (const note of backup.notes) {
               await window.electronAPI.saveFileDirect({
                 filePath: `${storageDir}/Notes/${note.name}`,
@@ -165,7 +206,7 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
         alert("Vault imported successfully! Reloading HOLE to apply changes...");
         window.location.reload();
       } catch (err) {
-        alert("Invalid backup file.");
+        alert("Invalid backup file. " + err.message);
       }
     }
   };
@@ -282,34 +323,6 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
           </div>
         </div>
 
-        {/* Save & Export Settings */}
-        <div className="settings-section">
-          <div className="settings-section-header">
-            <Save size={20} className="settings-section-icon" />
-            <h2 className="settings-section-title">Save & Export</h2>
-          </div>
-
-
-
-          <div className="settings-row">
-            <div className="settings-row-info">
-              <span className="settings-row-label">Default Export Format</span>
-              <span className="settings-row-desc">The default file format when saving</span>
-            </div>
-            <select
-              className="settings-select"
-              value={settings.defaultFormat}
-              onChange={(e) => updateSetting('defaultFormat', e.target.value)}
-            >
-              <option value="json">HOLE JSON (.json)</option>
-              <option value="md">Markdown (.md)</option>
-              <option value="html">HTML (.html)</option>
-            </select>
-          </div>
-
-
-        </div>
-
 
 
         {/* Appearance */}
@@ -406,6 +419,8 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
           })}
         </div>
 
+
+
         {/* Sync & Backup Settings */}
         <div className="settings-section">
           <div className="settings-section-header">
@@ -428,41 +443,23 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
           </div>
         </div>
 
-        {/* About & PRO Upsell */}
-        <div className="settings-section" style={{ border: '1px solid rgba(124, 58, 237, 0.3)', background: 'rgba(124, 58, 237, 0.03)' }}>
+        {/* About */}
+        <div className="settings-section">
           <div className="settings-section-header">
-            <Shield size={20} className="settings-section-icon" style={{ color: '#7c3aed' }} />
-            <h2 className="settings-section-title" style={{ color: '#7c3aed', fontWeight: '600' }}>HOLE PRO — The Ultimate Arsenal</h2>
+            <Info size={20} className="settings-section-icon" />
+            <h2 className="settings-section-title">About HOLE</h2>
           </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
-            <p style={{ marginBottom: '16px' }}>Ready to take your bug bounty game to the elite level? <strong>HOLE PRO</strong> is the fully-unlocked version of the workstation, packed with exclusive high-end features designed for professional security researchers.</p>
-            
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-              <h4 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>Premium Features Included:</h4>
-              <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px' }}>
-                <li>✓ CVE Mapper</li>
-                <li>✓ Advanced IP Tracker</li>
-                <li>✓ Email Header Analyzer</li>
-                <li>✓ Infrastructure Harvester</li>
-                <li>✓ Cloud Bucket Finder</li>
-                <li>✓ Favicon Hunter</li>
-                <li>✓ Exposure Hunter</li>
-                <li>✓ WAF Detector & Bypasser</li>
-                <li style={{ gridColumn: '1 / -1', color: '#10b981' }}>✓ Direct Priority Support from the Developer</li>
-              </ul>
-              <p style={{ marginTop: '12px', fontSize: '12px', fontStyle: 'italic', color: '#a78bfa' }}>...and many more premium features coming exclusively for PRO users!</p>
-            </div>
-
-            <p style={{ marginBottom: '16px' }}><strong>Lifetime Access. Pay once, own it forever.</strong></p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(16, 185, 129, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-              <strong style={{ color: '#10b981' }}>Special Launch Offer: 50% OFF for the first 50 users!</strong>
-              <span>To purchase your PRO license, send an email to:</span>
-              <code style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 12px', borderRadius: '4px', userSelect: 'all', cursor: 'pointer', color: '#fff' }}>harshvardhansinghrathore611@gmail.com</code>
-            </div>
+          <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)', lineHeight: '1.8' }}>
+            <p><strong style={{ color: 'var(--text-primary)' }}>HOLE v1.0.0</strong></p>
+            <p>Your local-first bug bounty notes & progress tracker.</p>
+            <p>All data is stored locally on your machine. No cloud. No telemetry. Just you and your bugs.</p>
+            <p style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={14} /> Built with 🖤 for bug bounty hunters.
+            </p>
           </div>
         </div>
       </div>
+      {confirmModal && <ConfirmModal {...confirmModal} onCancel={() => setConfirmModal(null)} />}
     </div>
   );
 }

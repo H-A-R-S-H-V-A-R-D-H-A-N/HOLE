@@ -205,8 +205,16 @@ export function htmlToMarkdown(html) {
   md = md.replace(/<\/?[uo]l[^>]*>/gi, '\n');
   md = md.replace(/<p>(.*?)<\/p>/gi, '$1\n\n');
   md = md.replace(/<hr\s*\/?>/gi, '---\n\n');
-  md = md.replace(/<[^>]+>/g, '');
+  md = md.replace(/<br\s*\/?>/gi, '\n');
+  // Strip all HTML EXCEPT span and mark (so text color and highlight survive)
+  md = md.replace(/<\/?(?!(span|mark)\b)[^>]+>/gi, '');
   md = md.replace(/\n{3,}/g, '\n\n');
+  
+  // Unescape HTML entities that TipTap or escapedContent created
+  md = md.replace(/&lt;/g, '<');
+  md = md.replace(/&gt;/g, '>');
+  md = md.replace(/&amp;/g, '&');
+  
   return md.trim();
 }
 

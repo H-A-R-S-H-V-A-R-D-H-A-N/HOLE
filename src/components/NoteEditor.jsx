@@ -16,6 +16,9 @@ import { TextAlign } from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { Image as TiptapImage } from '@tiptap/extension-image';
+import SearchAndReplace from '../utils/SearchAndReplace';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import CodeBlockComponent from './CodeBlockComponent';
 import { common, createLowlight } from 'lowlight';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
@@ -26,10 +29,12 @@ import {
   Highlighter, Undo2, Redo2,
   AlignLeft, AlignCenter, AlignRight,
   Table as TableIcon, Save, FolderOpen,
-  Download, FileText, X, Palette,
-  Copy, CheckCheck, BookOpen, Globe, Image as ImageIcon
+  Download, FileText, X, Palette, Paintbrush,
+  Copy, CheckCheck, BookOpen, Globe, Image as ImageIcon,
+  Maximize2, Minimize2, Trash2
 } from 'lucide-react';
 import { saveToFile, openFile, htmlToMarkdown, createNoteExport, parseNoteImport, saveMedia } from '../utils/fileSystem';
+import { markdownToHtml } from '../utils/markdownParser';
 import PromptModal from './PromptModal';
 import '../styles/Editor.css';
 
@@ -43,12 +48,36 @@ const highlightColors = [
   { name: 'Purple', color: '#8B5CF6', dataColor: 'purple' },
 ];
 
-export default function NoteEditor({ initialId, initialContent, initialTitle, initialMeta, onSaveNote, settings }) {
+const textColors = [
+  { name: 'Default', color: 'inherit' },
+  { name: 'Red', color: '#EF4444' },
+  { name: 'Blue', color: '#3B82F6' },
+  { name: 'Green', color: '#10B981' },
+  { name: 'Yellow', color: '#F59E0B' },
+  { name: 'Purple', color: '#8B5CF6' },
+  { name: 'Pink', color: '#EC4899' },
+];
+
+const formatColorsList = [
+  { name: 'Default (Cyan)', color: '#00D4FF' },
+  { name: 'Green', color: '#10B981' },
+  { name: 'Red', color: '#EF4444' },
+  { name: 'Yellow', color: '#F59E0B' },
+  { name: 'Purple', color: '#8B5CF6' },
+  { name: 'Pink', color: '#EC4899' },
+  { name: 'White', color: '#FFFFFF' },
+];
+
+export default function NoteEditor({ initialId, initialContent, initialTitle, initialMeta, initialFilePath, onSaveNote, settings }) {
   const [title, setTitle] = useState(initialTitle || '');
   const [severity, setSeverity] = useState(initialMeta?.severity || 'info');
   const [tags, setTags] = useState(initialMeta?.tags || []);
   const [tagInput, setTagInput] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showHighlightColors, setShowHighlightColors] = useState(false);
+  const [showTextColors, setShowTextColors] = useState(false);
+  const [showFormatColors, setShowFormatColors] = useState(false);
+  const [formatColor, setFormatColor] = useState(initialMeta?.formatColor || localStorage.getItem('hole_format_color') || '#00D4FF');
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle');
@@ -58,6 +87,16 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
   const fileInputRef = useRef(null);
   const [promptState, setPromptState] = useState(null);
   const noteIdRef = useRef(initialId || Date.now().toString());
+  const filePathRef = useRef(initialFilePath || null);
+
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.classList.add('editor-is-fullscreen');
+    } else {
+      document.body.classList.remove('editor-is-fullscreen');
+    }
+    return () => document.body.classList.remove('editor-is-fullscreen');
+  }, [isFullscreen]);
 
   const editor = useEditor({
     extensions: [
@@ -72,6 +111,7 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
         underline: false,
       }),
       Highlight.configure({ multicolor: true }),
+      SearchAndReplace.configure({ searchResultClass: 'search-highlight' }),
       Underline,
       Link.configure({
         openOnClick: false,
@@ -80,7 +120,11 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
           rel: 'noopener noreferrer',
         },
       }),
-      CodeBlockLowlight.configure({ lowlight }),
+      CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockComponent);
+        },
+      }).configure({ lowlight, defaultLanguage: 'bash' }),
       Placeholder.configure({
         placeholder: 'Start writing your notes... Use the toolbar above for formatting.',
       }),
@@ -136,13 +180,22 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
   });
 
   useEffect(() => {
-    if (editor && initialContent) {
-      if (typeof initialContent === 'string') {
-        editor.commands.setContent(initialContent);
-      } else {
-        editor.commands.setContent(initialContent);
+    if (editor) {
+      window.tiptapEditor = editor;
+      if (initialContent) {
+        if (typeof initialContent === 'string') {
+          editor.commands.setContent(initialContent);
+        } else {
+          editor.commands.setContent(initialContent);
+        }
       }
     }
+    
+    return () => {
+      if (window.tiptapEditor === editor) {
+        window.tiptapEditor = null;
+      }
+    };
   }, [initialContent, editor]);
 
   useEffect(() => {
@@ -158,28 +211,53 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
 
 
 
-  const handleSave = useCallback(async (format = 'json') => {
-    if (!editor) return;
+  // Save with a specific filename — format is derived from the extension
+  const handleSaveWithFilename = useCallback(async (chosenFilename) => {
+    if (!editor || !chosenFilename) return;
     setSaveStatus('saving');
 
-    let content, filename;
-    if (format === 'md') {
+    const ext = chosenFilename.split('.').pop()?.toLowerCase() || 'json';
+    let content;
+    let renderType = 'tiptap';
+
+    if (ext === 'md' || ext === 'markdown') {
       content = htmlToMarkdown(editor.getHTML());
-      filename = `${(title || 'note').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
-    } else if (format === 'html') {
-      content = `<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:Inter,sans-serif;background:#0A0E17;color:#E8ECF4;padding:40px;max-width:800px;margin:0 auto}pre{background:#0D1117;padding:16px;border-radius:10px;border:1px solid #1B2332;overflow-x:auto}code{font-family:'JetBrains Mono',monospace}a{color:#00D4FF}mark{background:rgba(245,158,11,0.3);color:#FCD34D;padding:1px 4px;border-radius:3px}blockquote{border-left:3px solid #8B5CF6;padding:8px 24px;background:rgba(139,92,246,0.15);border-radius:0 10px 10px 0}</style></head><body>${editor.getHTML()}</body></html>`;
-      filename = `${(title || 'note').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+      renderType = 'markdown';
+    } else if (ext === 'html' || ext === 'htm') {
+      const plainText = editor.getText();
+      if (plainText.trim().toLowerCase().startsWith('<!doctype html') || plainText.trim().toLowerCase().startsWith('<html')) {
+        content = plainText;
+      } else {
+        content = `<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:Inter,sans-serif;background:#0A0E17;color:#E8ECF4;padding:40px;max-width:800px;margin:0 auto}</style></head><body>\n${plainText}\n</body></html>`;
+      }
+      renderType = 'html';
+    } else if (ext === 'txt' || ext === 'log' || ext === 'rst') {
+      content = editor.getText();
+      renderType = 'plain';
+    } else if (ext === 'json') {
+      content = createNoteExport(title, editor.getJSON(), editor.getHTML(), { severity, tags, formatColor });
+      renderType = 'tiptap';
+    } else if (ext === 'csv') {
+      content = editor.getText();
+      renderType = 'csv';
     } else {
-      content = createNoteExport(title, editor.getJSON(), editor.getHTML(), { severity, tags });
-      filename = `${(title || 'note').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${noteIdRef.current}.json`;
+      // For any other extension (.xml, .yaml, etc.) — save raw text
+      content = editor.getText();
+      renderType = 'code';
     }
 
-    // Save directly to /Notes folder — no OS dialog
     const dir = localStorage.getItem('kroma_storage_dir');
     if (dir && window.electronAPI) {
-      const filePath = `${dir}/Notes/${filename}`;
+      // Reuse existing filePath if saving to same extension, prevent duplicates
+      let filePath;
+      if (filePathRef.current && filePathRef.current.endsWith(chosenFilename)) {
+        filePath = filePathRef.current;
+      } else {
+        filePath = `${dir}/Notes/${chosenFilename}`;
+      }
       const result = await window.electronAPI.saveFileDirect({ filePath, content });
       if (result.success) {
+        filePathRef.current = filePath;
         setSaveStatus('saved');
         if (onSaveNote) {
           onSaveNote({
@@ -187,7 +265,9 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
             title: title || 'Untitled',
             content: editor.getJSON(),
             html: editor.getHTML(),
-            metadata: initialMeta || {},
+            rawContent: content,
+            renderType: renderType,
+            metadata: { ...(initialMeta || {}), formatColor },
             severity,
             tags,
             savedAt: new Date().toISOString(),
@@ -203,12 +283,32 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [editor, title, severity, tags, onSaveNote, initialId, initialMeta]);
+  }, [editor, title, severity, tags, formatColor, onSaveNote, initialId, initialMeta]);
+
+  // Open the save prompt asking for filename
+  const handleSaveClick = useCallback(() => {
+    // Default filename: derive from existing filePath or generate from title
+    let defaultName;
+    if (filePathRef.current) {
+      defaultName = filePathRef.current.split('/').pop();
+    } else {
+      defaultName = `${(title || 'note').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+    }
+    setPromptState({
+      title: 'Save Note',
+      message: 'Enter filename with extension (.json, .md, .html, .txt, .xml, .yaml, etc.)',
+      defaultValue: defaultName,
+      onConfirm: (filename) => {
+        setPromptState(null);
+        handleSaveWithFilename(filename);
+      },
+    });
+  }, [title, handleSaveWithFilename]);
 
   const handleSaveRef = useRef();
   useEffect(() => {
-    handleSaveRef.current = handleSave;
-  }, [handleSave]);
+    handleSaveRef.current = handleSaveClick;
+  }, [handleSaveClick]);
 
   // Open file
   const handleOpen = useCallback(async () => {
@@ -224,11 +324,15 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
           return;
         }
       }
-      // For .md, .html, .txt — set as HTML or plain text
-      if (result.name.endsWith('.html')) {
+      // For .md files — parse markdown to HTML before loading into Tiptap
+      if (result.name.endsWith('.md') || result.name.endsWith('.markdown')) {
+        const parsedHtml = markdownToHtml(result.content);
+        editor.commands.setContent(parsedHtml);
+      } else if (result.name.endsWith('.html') || result.name.endsWith('.htm')) {
+        // HTML files — load directly
         editor.commands.setContent(result.content);
       } else {
-        // Wrap plain text/markdown in paragraphs
+        // Plain text fallback
         const lines = result.content.split('\n');
         const html = lines.map(l => `<p>${l || '<br>'}</p>`).join('');
         editor.commands.setContent(html);
@@ -310,7 +414,7 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
   if (!editor) return null;
 
   return (
-    <div className="editor-page">
+    <div className={`editor-page ${isFullscreen ? 'editor-fullscreen-mode' : ''}`} style={{ '--accent-primary': formatColor }}>
       <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={onFileSelected} />
       {/* Header */}
       <div className="editor-header">
@@ -331,17 +435,13 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
           <button className="btn btn-ghost btn-sm" onClick={handleOpen} title="Open File">
             <FolderOpen size={16} /> Open
           </button>
-          <div style={{ position: 'relative' }}>
-            <button className="btn btn-primary btn-sm" onClick={() => handleSave('json')} title="Save as KROMA JSON">
-              <Save size={16} />
-              {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : 'Save'}
-            </button>
-          </div>
-          <button className="btn btn-secondary btn-sm" onClick={() => handleSave('md')} title="Export as Markdown">
-            <Download size={14} /> .md
+          <button className="btn btn-primary btn-sm" onClick={handleSaveClick} title="Save Note">
+            <Save size={16} />
+            {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : 'Save'}
           </button>
-          <button className="btn btn-secondary btn-sm" onClick={() => handleSave('html')} title="Export as HTML">
-            <Download size={14} /> .html
+          <div className="toolbar-divider" style={{ margin: '0 8px', height: '20px' }}></div>
+          <button className="btn btn-ghost btn-sm" onClick={() => setIsFullscreen(!isFullscreen)} title="Toggle Fullscreen">
+            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
         </div>
       </div>
@@ -441,8 +541,8 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
           <div className="highlight-dropdown">
             <button
               className={`toolbar-btn ${editor.isActive('highlight') ? 'active' : ''}`}
-              onClick={() => setShowHighlightColors(!showHighlightColors)}
-              title="Highlight"
+              onClick={() => { setShowHighlightColors(!showHighlightColors); setShowTextColors(false); }}
+              title="Highlight Background"
             >
               <Highlighter size={18} />
             </button>
@@ -471,6 +571,65 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
                 >
                   <X size={12} />
                 </button>
+              </div>
+            )}
+          </div>
+
+          <div className="highlight-dropdown">
+            <button
+              className={`toolbar-btn ${editor.isActive('textStyle') ? 'active' : ''}`}
+              onClick={() => { setShowTextColors(!showTextColors); setShowHighlightColors(false); }}
+              title="Text Color"
+            >
+              <Palette size={18} />
+            </button>
+            {showTextColors && (
+              <div className="highlight-colors">
+                {textColors.map(({ name, color }) => (
+                  <button
+                    key={name}
+                    className="highlight-color-btn"
+                    style={{ backgroundColor: color === 'inherit' ? 'var(--text-primary)' : color }}
+                    title={name}
+                    onClick={() => {
+                      if (color === 'inherit') {
+                        editor.chain().focus().unsetColor().run();
+                      } else {
+                        editor.chain().focus().setColor(color).run();
+                      }
+                      setShowTextColors(false);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="toolbar-group">
+          <div className="highlight-dropdown">
+            <button
+              className="toolbar-btn"
+              onClick={() => { setShowFormatColors(!showFormatColors); setShowTextColors(false); setShowHighlightColors(false); }}
+              title="Formatting Theme Color (Lists, Quotes, Checkboxes)"
+              style={{ color: formatColor === '#FFFFFF' ? 'var(--text-primary)' : formatColor }}
+            >
+              <Paintbrush size={18} />
+            </button>
+            {showFormatColors && (
+              <div className="highlight-colors">
+                {formatColorsList.map(({ name, color }) => (
+                  <button
+                    key={name}
+                    className="highlight-color-btn"
+                    style={{ backgroundColor: color }}
+                    title={name}
+                    onClick={() => {
+                      setFormatColor(color);
+                      setShowFormatColors(false);
+                    }}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -557,6 +716,37 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
           }} title="Insert Table">
             <TableIcon size={18} />
           </button>
+          
+          {editor.isActive('table') && (
+            <>
+              <div className="toolbar-divider" />
+              <button className="toolbar-btn" onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add Column Before">
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>+Col Left</span>
+              </button>
+              <button className="toolbar-btn" onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add Column After">
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>+Col Right</span>
+              </button>
+              <button className="toolbar-btn" onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete Column">
+                <span style={{ fontSize: '12px', color: 'var(--accent-red)' }}>-Col</span>
+              </button>
+              
+              <div className="toolbar-divider" />
+              <button className="toolbar-btn" onClick={() => editor.chain().focus().addRowBefore().run()} title="Add Row Above">
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>+Row Up</span>
+              </button>
+              <button className="toolbar-btn" onClick={() => editor.chain().focus().addRowAfter().run()} title="Add Row Below">
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>+Row Down</span>
+              </button>
+              <button className="toolbar-btn" onClick={() => editor.chain().focus().deleteRow().run()} title="Delete Row">
+                <span style={{ fontSize: '12px', color: 'var(--accent-red)' }}>-Row</span>
+              </button>
+              
+              <div className="toolbar-divider" />
+              <button className="toolbar-btn" onClick={() => editor.chain().focus().deleteTable().run()} title="Delete Table">
+                <Trash2 size={16} color="var(--accent-red)" />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -612,6 +802,32 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
         <div className="editor-footer-right">
         </div>
       </div>
+
+      {isFullscreen && (
+        <button
+          className="btn btn-ghost"
+          onClick={() => setIsFullscreen(false)}
+          title="Exit Full Screen"
+          style={{
+            position: 'fixed',
+            top: '16px',
+            right: '16px',
+            zIndex: 10000,
+            padding: '8px',
+            backgroundColor: 'var(--bg-elevated)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-default)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+          }}
+        >
+          <Minimize2 size={16} />
+        </button>
+      )}
 
       {promptState && (
         <PromptModal

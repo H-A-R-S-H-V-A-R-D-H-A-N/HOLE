@@ -139,8 +139,9 @@ export default function NotesList({
             const isImp = note.metadata?.isImportant;
             const sectionColor = note.metadata?.customSection ? getSectionColor(note.metadata.customSection) : 'transparent';
             
-            // Extract a brief text preview from HTML
-            const plainText = note.html ? note.html.replace(/<[^>]+>/g, '').substring(0, 150) : 'No content';
+            // Extract a brief text preview from HTML or rawContent
+            const previewSource = note.html || note.rawContent || '';
+            const plainText = previewSource ? previewSource.replace(/<[^>]+>/g, '').substring(0, 150) : 'No content';
 
             return (
               <div 

@@ -18,6 +18,7 @@ import DiffScope from './components/DiffScope';
 import ScreenshotAnnotator from './components/ScreenshotAnnotator';
 import MethodologyTracker from './components/MethodologyTracker';
 import IdentityGenerator from './components/IdentityGenerator';
+import { markdownToHtml } from './utils/markdownParser';
 import ReconDatabase from './components/ReconDatabase';
 import CodeEditor from './components/CodeEditor';
 import CVSSCalculator from './components/CVSSCalculator';
@@ -27,6 +28,7 @@ import UnknownSpace from './components/UnknownSpace';
 import TorMode from './components/TorMode';
 import TerminalView from './components/TerminalView';
 import WAFEvasion from './components/WAFEvasion';
+import SearchOverlay from './components/SearchOverlay';
 import ResourcesPartners from './components/ResourcesPartners';
 import JWTForger from './components/JWTForger';
 import CryptoStego from './components/CryptoStego';
@@ -35,6 +37,17 @@ import ReverseShell from './components/ReverseShell';
 import SecretSniper from './components/SecretSniper';
 import CORSExploit from './components/CORSExploit';
 import SupportPage from './components/SupportPage';
+import CVEMapper from './components/CVEMapper';
+import IPTracker from './components/IPTracker';
+import EmailHeaderAnalyzer from './components/EmailHeaderAnalyzer';
+import ReconEngine from './components/ReconEngine';
+import TargetCommand from './components/TargetCommand';
+import BucketFinder from './components/BucketFinder';
+import FaviconHunter from './components/FaviconHunter';
+import ExposureHunter from './components/ExposureHunter';
+import WAFDetector from './components/WAFDetector';
+import JSSpider from './components/JSSpider';
+import TechniqueVault from './components/TechniqueVault';
 import TempMail from './components/TempMail';
 
 
@@ -48,6 +61,7 @@ export default function App() {
   const [editorTitle, setEditorTitle] = useState('');
   const [editorMeta, setEditorMeta] = useState(null);
   const [editorNoteId, setEditorNoteId] = useState(null);
+  const [editorFilePath, setEditorFilePath] = useState(null);
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem('kroma_settings');
@@ -66,6 +80,8 @@ export default function App() {
   const [newSectionColor, setNewSectionColor] = useState('#3B82F6');
   const [privacyMode, setPrivacyMode] = useState(false);
   const [fsUpdateTrigger, setFsUpdateTrigger] = useState(0);
+  const [showSearchOverlay, setShowSearchOverlay] = useState(false);
+  const appContainerRef = useRef(null);
 
   const [activeContext, setActiveContext] = useState(() => localStorage.getItem('kroma_active_context') || '');
   const [clipboardHistory, setClipboardHistory] = useState(() => {
@@ -127,6 +143,22 @@ export default function App() {
       }
     }
   }, []);
+
+  // Global Hotkeys (Ctrl+F for search)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        // Only override default browser search if we are in Editor or Reader
+        if (activeView === 'editor' || activeView === 'read') {
+          e.preventDefault();
+          setShowSearchOverlay(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [activeView]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -211,33 +243,80 @@ export default function App() {
     localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
   };
 
-  // PERSISTENCE ENGINE: Scan /Notes directory on startup and load all .json files
+  // PERSISTENCE ENGINE: Scan /Notes directory on startup and load all supported file types
   const loadNotesFromDrive = async (dir) => {
     if (!dir) return;
     const notesDir = `${dir}/Notes`;
-    console.log('[KROMA] Scanning notes from:', notesDir);
-    const result = await listFilesOnDrive(notesDir, '.json');
-    if (result.success) {
-      const loadedNotes = [];
-      for (const file of result.files) {
+    console.log('[HOLE] Scanning notes from:', notesDir);
+
+    const loadedNotes = [];
+
+    const allFilesResult = await listFilesOnDrive(notesDir, '');
+    if (allFilesResult.success) {
+      for (const file of allFilesResult.files) {
         if (file.isDirectory) continue;
+        
         const fileContent = await readFileDirect(file.path);
-        if (fileContent.success) {
+        if (!fileContent.success) continue;
+
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        const title = file.name.replace(/\.[^.]+$/i, '').replace(/_/g, ' ');
+        const savedAt = new Date(file.lastModified || Date.now()).toISOString();
+
+        if (ext === 'json') {
           try {
             const data = JSON.parse(fileContent.content);
-            // Use the note's own ID if it has one, otherwise fallback to filename
-            const noteId = data.id || file.name;
-            loadedNotes.push({ ...data, id: noteId, filePath: file.path });
+            if (data.type === 'doc' || data.content) {
+              // It's a Tiptap note
+              const noteId = data.id || file.name;
+              loadedNotes.push({ ...data, id: noteId, filePath: file.path, renderType: 'tiptap' });
+              continue;
+            }
           } catch (e) {
-            console.warn('[KROMA] Failed to parse note:', file.name, e);
+            // Not JSON or invalid JSON, fall through to default handling
           }
         }
+
+        const renderTypeMap = {
+          md: 'markdown', markdown: 'markdown',
+          html: 'html', htm: 'html',
+          csv: 'csv',
+          txt: 'plain', log: 'plain', rst: 'plain',
+        };
+        const renderType = renderTypeMap[ext] || 'code';
+        const tag = ext || 'text';
+
+        // Retrieve persisted metadata for non-tiptap files (like .md)
+        let storedMetadata = { severity: 'info', tags: [tag] };
+        try {
+          const metaMap = JSON.parse(localStorage.getItem('hole_file_metadata') || '{}');
+          if (metaMap[file.path]) {
+            storedMetadata = { ...storedMetadata, ...metaMap[file.path] };
+          }
+        } catch(e) {}
+
+        loadedNotes.push({
+          id: `${renderType}_${file.name}`,
+          title,
+          rawContent: fileContent.content,
+          html: null,
+          renderType,
+          metadata: storedMetadata,
+          savedAt,
+          filePath: file.path,
+        });
       }
-      console.log('[KROMA] Loaded', loadedNotes.length, 'notes from disk');
-      setNotes(loadedNotes);
-    } else {
-      console.warn('[KROMA] Failed to scan notes directory:', result.error);
     }
+
+    // Sort loaded notes alphabetically by title as requested
+    loadedNotes.sort((a, b) => {
+      const titleA = (a.title || '').toLowerCase();
+      const titleB = (b.title || '').toLowerCase();
+      return titleA.localeCompare(titleB);
+    });
+
+    console.log('[HOLE] Loaded', loadedNotes.length, 'notes from disk');
+    setNotes(loadedNotes);
   };
 
   useEffect(() => {
@@ -281,6 +360,7 @@ export default function App() {
     setEditorContent('');
     setEditorTitle('');
     setEditorMeta({ severity: 'info', tags: [] });
+    setEditorFilePath(null);
     setActiveView('editor');
     addToast(`New note created`, 'success');
   }, [addToast]);
@@ -288,17 +368,34 @@ export default function App() {
   const handleSaveNote = useCallback(async (noteData) => {
     let finalNote = { ...noteData };
     
-    // Only write to disk if the note doesn't already have a filePath 
-    // (NoteEditor already saved to disk directly when filePath is present)
-    if (storageDir && window.electronAPI && !finalNote.filePath) {
-      const fileName = `${finalNote.title ? finalNote.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'untitled'}_${Date.now()}.json`;
-      const filePath = `${storageDir}/Notes/${fileName}`;
-      finalNote.filePath = filePath;
-      
-      await window.electronAPI.saveFileDirect({
-        filePath: filePath,
-        content: JSON.stringify(finalNote, null, 2)
-      });
+    if (storageDir && window.electronAPI) {
+      if (!finalNote.filePath) {
+        // Brand new note without a file path
+        const fileName = `${finalNote.title ? finalNote.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'untitled'}_${Date.now()}.json`;
+        finalNote.filePath = `${storageDir}/Notes/${fileName}`;
+        
+        await window.electronAPI.saveFileDirect({
+          filePath: finalNote.filePath,
+          content: JSON.stringify(finalNote, null, 2)
+        });
+      } else {
+        // Existing note being updated (e.g., from NotesList 'Move to Section' or archiving)
+        // We must write the updated metadata to disk so it survives app reloads.
+        // We only do this for 'tiptap' (JSON) notes, since we can't write JSON metadata into a raw .md file directly.
+        if (finalNote.renderType === 'tiptap') {
+          await window.electronAPI.saveFileDirect({
+            filePath: finalNote.filePath,
+            content: JSON.stringify(finalNote, null, 2)
+          });
+        }
+        
+        // Always persist metadata to a localStorage sidecar map so metadata for .md and .txt files survives reloads
+        try {
+          const metaMap = JSON.parse(localStorage.getItem('hole_file_metadata') || '{}');
+          metaMap[finalNote.filePath] = finalNote.metadata;
+          localStorage.setItem('hole_file_metadata', JSON.stringify(metaMap));
+        } catch(e) {}
+      }
     }
 
     setNotes(prev => {
@@ -314,14 +411,30 @@ export default function App() {
 
   const handleSelectNote = useCallback((note, targetView = 'read') => {
     if (targetView === 'editor') {
+      let contentToEdit = note.content;
+      if (!contentToEdit && note.rawContent) {
+        const langMap = { html: 'html', plain: 'text', csv: 'csv', markdown: 'markdown' };
+        const extMatch = (note.filePath || note.id).match(/\.([^.]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'text';
+        const lang = note.renderType === 'html' ? 'html' : (langMap[note.renderType] || ext);
+        if (lang === 'markdown' || lang === 'text') {
+          // Do not double escape &gt; and &lt; if they are already present
+          const textContent = note.rawContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          contentToEdit = `<p>${textContent.replace(/\n/g, '<br>')}</p>`;
+        } else {
+          const escapedContent = note.rawContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          contentToEdit = `<pre><code class="language-${lang}">${escapedContent}</code></pre>`;
+        }
+      }
       setEditorNoteId(note.id);
-      setEditorContent(note.content);
+      setEditorContent(contentToEdit);
       setEditorTitle(note.title);
       setEditorMeta({
         severity: note.severity || note.metadata?.severity || 'info',
         tags: note.tags || note.metadata?.tags || [],
         ...note.metadata
       });
+      setEditorFilePath(note.filePath || null);
       setActiveView('editor');
     } else {
       setSelectedNoteForRead(note);
@@ -375,7 +488,19 @@ export default function App() {
       case 'resources': return 'Resources';
       case 'catcher': return 'Blind Catcher';
       case 'revshell': return 'Rev Shell';
+      case 'cve-mapper': return 'CVE Mapper';
+      case 'ip-tracker': return 'IP Tracker';
+      case 'email-headers': return 'Email Analyzer';
+      case 'target-command': return 'Target Command';
+      case 'recon-engine': return 'Recon Engine';
+      case 'bucket-finder': return 'Bucket Finder';
+      case 'favicon-hunter': return 'Favicon Hunter';
+      case 'exposure-hunter': return 'Exposure Hunter';
+      case 'waf-detector': return 'WAF Detector';
+      case 'js-spider': return 'JS Spider';
+      case 'technique-vault': return 'Technique Vault';
       case 'temp-mail': return 'Temp Mail';
+
       case 'support': return 'About';
       default: return 'HOLE';
     }
@@ -468,19 +593,25 @@ export default function App() {
               customSections={settings.customSections || []}
               onManageSections={() => setShowSectionsModal(true)}
             />
-          ) : null}
-          {activeView === 'read' && <NoteReader note={selectedNoteForRead} />}
-          {activeView === 'editor' && (
+          ) : activeView === 'read' && selectedNoteForRead ? (
+            <NoteReader 
+              note={selectedNoteForRead} 
+              onClose={() => setActiveView('dashboard')} 
+              showSearchOverlay={showSearchOverlay}
+              setShowSearchOverlay={setShowSearchOverlay}
+            />
+          ) : activeView === 'editor' ? (
             <NoteEditor
               key={editorTitle + (editorMeta?.severity || '')}
               initialId={editorNoteId}
               initialContent={editorContent}
               initialTitle={editorTitle}
               initialMeta={editorMeta}
+              initialFilePath={editorFilePath}
               onSaveNote={handleSaveNote}
               settings={settings}
             />
-          )}
+          ) : null}
           {activeView === 'settings' && <SettingsPage settings={settings} onSettingsChange={setSettings} />}
           {activeView === 'payloads' && <PayloadLibrary storageDir={storageDir} fsUpdateTrigger={fsUpdateTrigger} />}
           {activeView === 'bounty' && <BountyTracker />}
@@ -528,9 +659,43 @@ export default function App() {
           <div style={{ display: activeView === 'revshell' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <ReverseShell />
           </div>
+          <div style={{ display: activeView === 'cve-mapper' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <CVEMapper />
+          </div>
+          <div style={{ display: activeView === 'ip-tracker' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <IPTracker />
+          </div>
+          <div style={{ display: activeView === 'email-headers' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <EmailHeaderAnalyzer />
+          </div>
+          <div style={{ display: activeView === 'target-command' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <TargetCommand storageDir={storageDir} fsUpdateTrigger={fsUpdateTrigger} />
+          </div>
+          <div style={{ display: activeView === 'recon-engine' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <ReconEngine storageDir={storageDir} fsUpdateTrigger={fsUpdateTrigger} />
+          </div>
+          <div style={{ display: activeView === 'bucket-finder' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <BucketFinder />
+          </div>
+          <div style={{ display: activeView === 'favicon-hunter' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <FaviconHunter />
+          </div>
+          <div style={{ display: activeView === 'exposure-hunter' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <ExposureHunter />
+          </div>
+          <div style={{ display: activeView === 'waf-detector' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <WAFDetector />
+          </div>
+          <div style={{ display: activeView === 'js-spider' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <JSSpider />
+          </div>
+          <div style={{ display: activeView === 'technique-vault' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <TechniqueVault />
+          </div>
           <div style={{ display: activeView === 'temp-mail' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <TempMail />
           </div>
+
           {activeView === 'support' && <SupportPage />}
         </div>
       </div>
@@ -641,6 +806,14 @@ export default function App() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Global Search Overlay (Disabled for reader because it is rendered inside NoteReader to support native fullscreen) */}
+      {showSearchOverlay && (activeView === 'editor' || activeView === 'read') && (
+        <SearchOverlay 
+          onClose={() => setShowSearchOverlay(false)} 
+          targetView={activeView}
+        />
       )}
     </div>
   );

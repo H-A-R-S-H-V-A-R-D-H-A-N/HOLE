@@ -283,7 +283,7 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
               </div>
             ) : (
               <div className="pro-target-list">
-                {notes.slice(0, 5).map(note => (
+                {[...notes].sort((a, b) => new Date(b.updatedAt || b.savedAt || 0) - new Date(a.updatedAt || a.savedAt || 0)).slice(0, 5).map(note => (
                   <div key={note.id} className="pro-target-item" onClick={() => {
                     // Quick hack to force read view: in real app you'd use a dedicated function
                     // App.jsx will handle opening read if view is 'read'
