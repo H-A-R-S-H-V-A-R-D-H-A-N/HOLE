@@ -95,10 +95,16 @@ npm run make
 
 If HOLE helps you in your bug bounty journey, consider supporting the project:
 
+- **PayPal** — [Donate via PayPal](https://www.paypal.com/paypalme/harshvardhansingh611) (International)
+- **UPI (India)** — `harshvardhansinghrathore611@oksbi`
+- **Instagram** — [Follow me](https://www.instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_) to support the journey
+
+### Scan to Pay (UPI)
+<img src="public/upi-qr.jpg" width="200" alt="UPI QR Code">
+
+*Other ways to support:*
 - **Star this repo** — It helps others discover HOLE
 - **Report bugs** — Open an issue if you find something broken
-- **Suggest features** — We love hearing from the community
-- **Sponsor** — Support via GitHub Sponsors
 
 ---
 

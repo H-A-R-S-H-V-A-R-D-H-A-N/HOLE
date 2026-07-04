@@ -95,7 +95,7 @@ export default function SupportPage() {
                   transition: 'all 0.3s ease',
                   minWidth: '250px'
                 }}
-                onClick={() => window.open('https://paypal.me/harshvardhansingh611', '_blank')}
+                onClick={() => window.open('https://www.paypal.com/paypalme/harshvardhansingh611', '_blank')}
               >
                 <div style={{
                   width: '48px', height: '48px', borderRadius: '12px',
@@ -116,34 +116,44 @@ export default function SupportPage() {
               <div
                 style={{
                   flex: 1,
-                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(21, 128, 61, 0.08))',
+                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(21, 128, 61, 0.05))',
                   border: '1px solid rgba(34, 197, 94, 0.2)',
                   borderRadius: 'var(--radius-lg)',
-                  padding: '20px',
+                  padding: '24px',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '16px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
+                  justifyContent: 'center',
+                  gap: '12px',
                   minWidth: '250px'
                 }}
-                onClick={() => {
-                  navigator.clipboard.writeText('harshvardhansinghrathore611@oksbi');
-                  alert('UPI ID copied to clipboard! You can paste it in GPay, PhonePe, or Paytm.');
-                }}
               >
-                <div style={{
-                  width: '48px', height: '48px', borderRadius: '12px',
-                  background: 'rgba(34, 197, 94, 0.15)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>
-                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#22C55E' }}>₹</span>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#22C55E' }}>₹</span> UPI (India Only)
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>UPI (India Only)</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: '1.5' }}>
-                    Click to copy UPI ID for GPay, PhonePe, or Paytm.
-                  </div>
+                
+                {/* QR Code Placeholder */}
+                <div style={{ 
+                  width: '160px', 
+                  height: '160px', 
+                  background: '#fff', 
+                  borderRadius: '12px', 
+                  padding: '8px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+                }}>
+                  <img src="upi-qr.jpg" alt="UPI QR Code" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} />
+                </div>
+                
+                <div 
+                  style={{ fontSize: '12px', color: 'var(--text-muted)', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '6px', transition: 'all 0.2s', marginTop: '4px' }}
+                  onClick={() => {
+                    navigator.clipboard.writeText('harshvardhansinghrathore611@oksbi');
+                    alert('UPI ID copied to clipboard!');
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                  onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+                >
+                  Click to copy: <strong>harshvardhansinghrathore611@oksbi</strong>
                 </div>
               </div>
             </div>
@@ -190,9 +200,9 @@ export default function SupportPage() {
                 gap: '16px',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-              }}
-              onClick={() => window.open('https://instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_', '_blank')}
-            >
+                }}
+                onClick={() => window.open('https://www.instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_', '_blank')}
+              >
               <div style={{
                 width: '48px', height: '48px', borderRadius: '12px',
                 background: 'rgba(225, 48, 108, 0.15)',
