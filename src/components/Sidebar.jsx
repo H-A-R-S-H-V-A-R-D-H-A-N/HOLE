@@ -92,6 +92,7 @@ const navSections = [
   {
     title: 'Tools',
     items: [
+      { id: 'temp-mail', label: 'Temp Mail', icon: Mail },
       { id: 'methodology', label: 'Methodology', icon: GitBranch },
       { id: 'recondb', label: 'Workflow', icon: Database },
       { id: 'code-editor', label: 'Code Studio', icon: Code2 },
@@ -116,7 +117,6 @@ const navSections = [
       { id: 'secret-sniper', label: 'Secret Sniper', icon: Crosshair },
       { id: 'cors-exploit', label: 'CORS Exploit', icon: Globe },
       { id: 'revshell', label: 'Rev Shell', icon: TerminalSquare },
-      { id: 'temp-mail', label: 'Temp Mail', icon: Mail },
     ],
   },
   {

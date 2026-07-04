@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mail, RefreshCw, Copy, CheckCircle2, Inbox, Trash2, ArrowLeft, ExternalLink, ShieldAlert, Sparkles, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, RefreshCw, Copy, CheckCircle2, Inbox, Trash2, ArrowLeft, ExternalLink, Sparkles } from 'lucide-react';
 
-const API_BASE = 'https://www.1secmail.com/api/v1/';
+const API_BASE = 'https://api.mail.tm';
 
 export default function TempMail() {
-  const [email, setEmail] = useState(() => localStorage.getItem('kroma_temp_mail') || '');
+  const [account, setAccount] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('kroma_temp_mail_account')) || null; } catch(e) { return null; }
+  });
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -12,30 +14,44 @@ export default function TempMail() {
   const [messageDetails, setMessageDetails] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState(false);
 
-  // Poll for messages
   useEffect(() => {
-    if (!email) return;
-
+    if (!account?.token) return;
+    
     fetchMessages(true);
-    const interval = setInterval(() => {
-      fetchMessages(false);
-    }, 8000); // Check every 8 seconds
-
+    const interval = setInterval(() => fetchMessages(false), 8000);
     return () => clearInterval(interval);
-  }, [email]);
+  }, [account]);
 
   const generateEmail = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}?action=genRandomMailbox&count=1`);
-      const data = await res.json();
-      if (data && data.length > 0) {
-        const newEmail = data[0];
-        setEmail(newEmail);
-        localStorage.setItem('kroma_temp_mail', newEmail);
-        setMessages([]);
-        setActiveMessage(null);
-      }
+      const domainsRes = await fetch(`${API_BASE}/domains?page=1`);
+      const domainsData = await domainsRes.json();
+      if (!domainsData || !domainsData['hydra:member'] || domainsData['hydra:member'].length === 0) throw new Error("No domains");
+      
+      const domain = domainsData['hydra:member'][0].domain;
+      const address = Math.random().toString(36).substring(2, 12) + '@' + domain;
+      const password = Math.random().toString(36).substring(2, 12) + 'XYZ!';
+
+      const accountRes = await fetch(`${API_BASE}/accounts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, password })
+      });
+      if (!accountRes.ok) throw new Error("Account creation failed");
+
+      const tokenRes = await fetch(`${API_BASE}/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, password })
+      });
+      const tokenData = await tokenRes.json();
+      
+      const newAccount = { address, password, token: tokenData.token, id: tokenData.id };
+      setAccount(newAccount);
+      localStorage.setItem('kroma_temp_mail_account', JSON.stringify(newAccount));
+      setMessages([]);
+      setActiveMessage(null);
     } catch (e) {
       console.error('Failed to generate email:', e);
     }
@@ -43,14 +59,15 @@ export default function TempMail() {
   };
 
   const fetchMessages = async (showLoader = false) => {
-    if (!email) return;
+    if (!account?.token) return;
     if (showLoader) setLoading(true);
     
     try {
-      const [login, domain] = email.split('@');
-      const res = await fetch(`${API_BASE}?action=getMessages&login=${login}&domain=${domain}`);
+      const res = await fetch(`${API_BASE}/messages`, {
+        headers: { 'Authorization': `Bearer ${account.token}` }
+      });
       const data = await res.json();
-      setMessages(data || []);
+      setMessages(data['hydra:member'] || []);
     } catch (e) {
       console.error('Failed to fetch messages:', e);
     }
@@ -64,8 +81,9 @@ export default function TempMail() {
     setMessageDetails(null);
     
     try {
-      const [login, domain] = email.split('@');
-      const res = await fetch(`${API_BASE}?action=readMessage&login=${login}&domain=${domain}&id=${msg.id}`);
+      const res = await fetch(`${API_BASE}/messages/${msg.id}`, {
+        headers: { 'Authorization': `Bearer ${account.token}` }
+      });
       const data = await res.json();
       setMessageDetails(data);
     } catch (e) {
@@ -76,20 +94,28 @@ export default function TempMail() {
   };
 
   const copyToClipboard = () => {
-    if (!email) return;
-    navigator.clipboard.writeText(email);
+    if (!account?.address) return;
+    navigator.clipboard.writeText(account.address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const deleteEmail = () => {
-    setEmail('');
-    localStorage.removeItem('kroma_temp_mail');
+  const deleteEmail = async () => {
+    if (account?.token && account?.id) {
+      try {
+        await fetch(`${API_BASE}/accounts/${account.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${account.token}` }
+        });
+      } catch (e) { console.error('Failed to delete account on server', e); }
+    }
+    setAccount(null);
+    localStorage.removeItem('kroma_temp_mail_account');
     setMessages([]);
     setActiveMessage(null);
   };
 
-  if (!email) {
+  if (!account) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#020202', color: '#FFF' }}>
         <div style={{ textAlign: 'center', maxWidth: '400px' }}>
@@ -98,7 +124,7 @@ export default function TempMail() {
           </div>
           <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '12px', letterSpacing: '-0.5px' }}>Ephemeral Inbox</h2>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', lineHeight: '1.6', marginBottom: '32px' }}>
-            Generate a disposable email address for testing registration flows, bypassing filters, and analyzing blind interactions.
+            Generate a disposable email address for testing registration flows, bypassing filters, and analyzing blind interactions. Powered by mail.tm.
           </p>
           <button 
             onClick={generateEmail}
@@ -130,7 +156,7 @@ export default function TempMail() {
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; }}
             >
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', color: '#FFF' }}>{email}</span>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', color: '#FFF' }}>{account.address}</span>
               {copied ? <CheckCircle2 size={16} color="#10B981" /> : <Copy size={16} color="rgba(255,255,255,0.4)" />}
             </div>
             
@@ -162,8 +188,8 @@ export default function TempMail() {
                   style={{ padding: '16px', borderRadius: '12px', backgroundColor: activeMessage?.id === msg.id ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)', border: '1px solid', borderColor: activeMessage?.id === msg.id ? 'rgba(255,255,255,0.1)' : 'transparent', cursor: 'pointer', transition: 'all 0.2s' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#FFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{msg.from}</div>
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>{new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#FFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{msg.from.address || msg.from.name}</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                   </div>
                   <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {msg.subject || 'No Subject'}
@@ -187,11 +213,11 @@ export default function TempMail() {
               <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#FFF', margin: '0 0 16px 0', lineHeight: 1.3 }}>{activeMessage.subject || 'No Subject'}</h1>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#FFF' }}>
-                  {activeMessage.from.charAt(0).toUpperCase()}
+                  {(activeMessage.from.name || activeMessage.from.address).charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#E2E8F0' }}>{activeMessage.from}</div>
-                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{new Date(activeMessage.date).toLocaleString()}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#E2E8F0' }}>{activeMessage.from.name ? `${activeMessage.from.name} <${activeMessage.from.address}>` : activeMessage.from.address}</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{new Date(activeMessage.createdAt).toLocaleString()}</div>
                 </div>
               </div>
             </div>
@@ -202,16 +228,16 @@ export default function TempMail() {
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><RefreshCw className="spin" size={24} color="rgba(255,255,255,0.2)" /></div>
               ) : messageDetails ? (
                 <div style={{ backgroundColor: '#FFF', borderRadius: '12px', padding: '32px', color: '#000', minHeight: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
-                  {messageDetails.htmlBody ? (
+                  {messageDetails.html && messageDetails.html.length > 0 ? (
                     <iframe 
                       title="Email Content"
-                      srcDoc={messageDetails.htmlBody} 
+                      srcDoc={messageDetails.html[0]} 
                       style={{ width: '100%', height: '600px', border: 'none' }}
-                      sandbox="allow-same-origin"
+                      sandbox="allow-same-origin allow-popups"
                     />
                   ) : (
                     <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '14px', lineHeight: 1.6 }}>
-                      {messageDetails.textBody}
+                      {messageDetails.text}
                     </div>
                   )}
                   
@@ -220,10 +246,10 @@ export default function TempMail() {
                       <div style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', marginBottom: '12px' }}>Attachments</div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {messageDetails.attachments.map((att, i) => (
-                          <div key={i} style={{ padding: '8px 16px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <a key={i} href={API_BASE + att.downloadUrl} target="_blank" rel="noreferrer" style={{ padding: '8px 16px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
                             <ExternalLink size={14} />
                             {att.filename}
-                          </div>
+                          </a>
                         ))}
                       </div>
                     </div>
