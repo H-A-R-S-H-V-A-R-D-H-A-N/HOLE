@@ -1,4 +1,28 @@
 <div align="center">
+  <div align="right">
+    <a href="https://www.paypal.com/paypalme/harshvardhansingh611">
+      <img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal">
+    </a>
+    <a href="upi://pay?pa=harshvardhansinghrathore611@oksbi">
+      <img src="https://img.shields.io/badge/UPI-Donate-22C55E?style=for-the-badge" alt="UPI">
+    </a>
+    <a href="https://www.instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_">
+      <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram">
+    </a>
+  </div>
+  <br/>
+  <img src="public/hole-icon.png" width="120" alt="HOLE">
+  <h1>H O L E</h1>
+  <p><strong>The Anonymous Bug Bounty Workstation</strong></p>
+  <p>A fully offline, native desktop arsenal built for elite penetration testers and bug bounty hunters.<br/>39 integrated security tools. Zero telemetry. Complete local data sovereignty.</p>
+
+  <br/>
+
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0D1117?style=for-the-badge&labelColor=161B22&color=7C3AED" />
+  <img src="https://img.shields.io/badge/License-MIT-0D1117?style=for-the-badge&labelColor=161B22&color=10B981" />
+  <img src="https://img.shields.io/badge/Network-100%25_Offline-0D1117?style=for-the-badge&labelColor=161B22&color=EF4444" />
+  <img src="https://img.shields.io/badge/Tor-Ghost_Mode-0D1117?style=for-the-badge&labelColor=161B22&color=06B6D4" />
+
   <br/><br/>
 
   <img src="screenshots/dashboard.png" width="90%" alt="HOLE Dashboard" />

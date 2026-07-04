@@ -16,6 +16,7 @@ export default function TempNumber() {
     { id: 'united-kingdom', name: 'United Kingdom', flag: '🇬🇧' },
     { id: 'canada', name: 'Canada', flag: '🇨🇦' },
     { id: 'france', name: 'France', flag: '🇫🇷' },
+    { id: 'india', name: 'India', flag: '🇮🇳' },
     { id: 'netherlands', name: 'Netherlands', flag: '🇳🇱' },
     { id: 'belgium', name: 'Belgium', flag: '🇧🇪' },
     { id: 'sweden', name: 'Sweden', flag: '🇸🇪' }
