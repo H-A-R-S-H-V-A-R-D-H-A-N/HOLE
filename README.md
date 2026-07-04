@@ -1,17 +1,25 @@
 <div align="center">
-  <div align="right">
-    <a href="https://www.paypal.com/paypalme/harshvardhansingh611">
-      <img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal">
-    </a>
-    <a href="upi://pay?pa=harshvardhansinghrathore611@oksbi">
-      <img src="https://img.shields.io/badge/UPI-Donate-22C55E?style=for-the-badge" alt="UPI">
-    </a>
-    <a href="https://www.instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_">
-      <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram">
-    </a>
-    <br/>
-    <img src="public/upi-qr.jpg" width="150" alt="UPI QR Code">
-  </div>
+  
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <h2>🤝 Support HOLE Development</h2>
+      <p>If you find this project useful, please consider supporting it!</p>
+      <br/>
+      <a href="https://www.paypal.com/paypalme/harshvardhansingh611">
+        <img src="https://img.shields.io/badge/Donate_via_PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal">
+      </a>
+      <br/><br/>
+      <a href="https://www.instagram.com/__h_a_r_s_h_v_a_r_d_h_a_n_">
+        <img src="https://img.shields.io/badge/Follow_on_Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram">
+      </a>
+    </td>
+    <td align="center" width="50%">
+      <b>Scan to Donate (UPI)</b><br/><br/>
+      <img src="public/upi-qr.jpg" width="220" alt="UPI QR Code">
+    </td>
+  </tr>
+</table>
   <br/>
   <img src="public/hole-icon.png" width="120" alt="HOLE">
   <h1>H O L E</h1>
