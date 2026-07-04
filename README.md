@@ -8,24 +8,23 @@
 
   [![GitHub Stars](https://img.shields.io/github/stars/H-A-R-S-H-V-A-R-D-H-A-N/HOLE?style=for-the-badge&color=8B5CF6)](https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE)
   [![License](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge)](LICENSE)
-  [![Made with Love](https://img.shields.io/badge/Made%20with-❤️-EF4444?style=for-the-badge)](https://github.com/H-A-R-S-H-V-A-R-D-H-A-N)
 </div>
 
 <br/>
 
 ---
 
-## 🚀 Why HOLE?
+## Why HOLE?
 
-HOLE was originally split into a free version and a paid "PRO" version. **We've decided to make everything free and open-source.** Every module, every engine, every feature — available to everyone.
+HOLE was originally split into a free version and a paid "PRO" version. We've decided to make everything free and open-source. Every module, every engine, every feature — available to everyone.
 
 No paywalls. No premium tiers. Just a powerful tool for the security community.
 
 ---
 
-## ⚡ All Features Included
+## All Features Included
 
-### 🛡️ Core Tools
+### Core Tools
 - **Note Editor** — Rich markdown editor with severity tagging and metadata
 - **Hacker Journal** — Track your daily recon and findings
 - **Payload Library** — Curated, organized payload collections
@@ -50,7 +49,7 @@ No paywalls. No premium tiers. Just a powerful tool for the security community.
 - **CORS Exploit** — Test and exploit CORS misconfigurations
 - **Secret Sniper** — Find hardcoded secrets and API keys
 
-### 🔍 Scanners & Recon Engines
+### Scanners & Recon Engines
 - **Recon Engine** — Comprehensive subdomain and infrastructure discovery
 - **CVE Mapper** — Map emerging CVEs to your attack surface
 - **IP Tracker** — Deep geolocation, ASN mapping, and port scanning
@@ -62,7 +61,7 @@ No paywalls. No premium tiers. Just a powerful tool for the security community.
 - **JS Spider** — Crawl and analyze JavaScript files for endpoints
 - **Target Command** — Centralized target management dashboard
 
-### 🔐 Privacy & Security
+### Privacy & Security
 - **Privacy Mode** — Blur sensitive information on screen
 - **WebRTC Leak Prevention** — Block WebRTC when proxies are active
 - **DNS Leak Protection** — Prevent DNS leaks through Tor
@@ -70,7 +69,7 @@ No paywalls. No premium tiers. Just a powerful tool for the security community.
 
 ---
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v18+)
@@ -78,46 +77,38 @@ No paywalls. No premium tiers. Just a powerful tool for the security community.
 
 ### Install & Run
 ```bash
-# Clone the repository
 git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
 cd HOLE
-
-# Install dependencies
 npm install
-
-# Run in development mode
 npm run dev
 ```
 
 ### Build for Distribution
 ```bash
-# Build the UI
 npm run build
-
-# Package as executable (.deb, .AppImage, .exe)
 npm run make
 ```
 
 ---
 
-## 💛 Support the Project
+## Support the Project
 
 If HOLE helps you in your bug bounty journey, consider supporting the project:
 
-- ⭐ **Star this repo** — It helps others discover HOLE
-- 🐛 **Report bugs** — Open an issue if you find something broken
-- 💡 **Suggest features** — We love hearing from the community
-- ☕ **Buy me a coffee** — [Support link coming soon]
+- **Star this repo** — It helps others discover HOLE
+- **Report bugs** — Open an issue if you find something broken
+- **Suggest features** — We love hearing from the community
+- **Sponsor** — Support via GitHub Sponsors
 
 ---
 
-## 📝 License
+## License
 
 This project is open-source and available under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
-  <p><strong>Built with ❤️ for the bug bounty community</strong></p>
+  <p><strong>Built for the bug bounty community</strong></p>
   <p>by <a href="https://github.com/H-A-R-S-H-V-A-R-D-H-A-N">@H-A-R-S-H-V-A-R-D-H-A-N</a></p>
 </div>
