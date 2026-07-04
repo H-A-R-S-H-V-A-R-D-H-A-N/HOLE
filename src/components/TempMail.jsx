@@ -127,7 +127,13 @@ export default function TempMail() {
   const [activeIdx, setActiveIdx] = useState(() => {
     try { return parseInt(localStorage.getItem('kroma_temp_mail_active') || '0'); } catch { return 0; }
   });
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    const acc = (JSON.parse(localStorage.getItem('kroma_temp_mail_accounts')) || [])[parseInt(localStorage.getItem('kroma_temp_mail_active') || '0')];
+    if (acc) {
+      try { return JSON.parse(localStorage.getItem(`kroma_temp_mail_msgs_${acc.id}`)) || []; } catch { return []; }
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -175,6 +181,7 @@ export default function TempMail() {
     try {
       const msgs = await fetchMessagesFromProvider(account);
       setMessages(msgs);
+      localStorage.setItem(`kroma_temp_mail_msgs_${account.id}`, JSON.stringify(msgs));
     } catch (e) { console.error('Fetch error:', e); }
     if (showLoader) setLoading(false);
   };
@@ -205,8 +212,13 @@ export default function TempMail() {
   };
 
   const switchAccount = (idx) => {
+    const acc = accounts[idx];
     setActiveIdx(idx);
-    setMessages([]);
+    try {
+      const cached = JSON.parse(localStorage.getItem(`kroma_temp_mail_msgs_${acc?.id}`)) || [];
+      setMessages(cached);
+    } catch { setMessages([]); }
+    setLoading(true);
     setActiveMessage(null);
     localStorage.setItem('kroma_temp_mail_active', String(idx));
   };
@@ -216,6 +228,7 @@ export default function TempMail() {
     if (account.providerType === 'mailtm') {
       try { await fetch(`${account.providerBase}/accounts/${account.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${account.token}` } }); } catch {}
     }
+    localStorage.removeItem(`kroma_temp_mail_msgs_${account.id}`);
     const newAccounts = accounts.filter((_, i) => i !== activeIdx);
     const newIdx = Math.max(0, activeIdx - 1);
     setAccounts(newAccounts);
@@ -294,7 +307,12 @@ export default function TempMail() {
         </div>
 
         <div className="tm-messages">
-          {messages.length === 0 ? (
+          {loading && messages.length === 0 ? (
+            <div className="tm-empty">
+              <RefreshCw size={28} className="tm-spin" style={{ opacity: 0.3 }} />
+              <div className="tm-empty-text" style={{ marginTop: 16 }}>Loading inbox...</div>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="tm-empty">
               <Inbox size={40} />
               <div className="tm-empty-text">Inbox empty</div>
