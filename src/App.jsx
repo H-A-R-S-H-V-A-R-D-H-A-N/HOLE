@@ -29,7 +29,7 @@ import TorMode from './components/TorMode';
 import TerminalView from './components/TerminalView';
 import WAFEvasion from './components/WAFEvasion';
 import SearchOverlay from './components/SearchOverlay';
-import ResourcesPartners from './components/ResourcesPartners';
+
 import JWTForger from './components/JWTForger';
 import CryptoStego from './components/CryptoStego';
 import GraphQLVisualizer from './components/GraphQLVisualizer';
@@ -485,7 +485,7 @@ export default function App() {
       case 'unknown-space': return 'Unknown Space';
       case 'archived-notes': return 'Archived Notes';
       case 'waf-evasion': return 'WAF Bypass';
-      case 'resources': return 'Resources';
+
       case 'catcher': return 'Blind Catcher';
       case 'revshell': return 'Rev Shell';
       case 'cve-mapper': return 'CVE Mapper';
@@ -640,7 +640,7 @@ export default function App() {
             <TerminalView />
           </div>
           {activeView === 'waf-evasion' && <WAFEvasion />}
-          {activeView === 'resources' && <ResourcesPartners />}
+
           <div style={{ display: activeView === 'jwt-forger' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <JWTForger />
           </div>

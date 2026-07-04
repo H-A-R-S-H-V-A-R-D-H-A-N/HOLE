@@ -90,7 +90,6 @@ const navSections = [
       { id: 'editor', label: 'Editor', icon: FileEdit },
       { id: 'journal', label: 'Hacker Journal', icon: Book },
       { id: 'payloads', label: 'Payloads', icon: Layers },
-      { id: 'resources', label: 'Resources', icon: Heart },
     ],
   },
   {
