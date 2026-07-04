@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" width="50%">
-      <h2>🤝 Support HOLE Development</h2>
+      <h2>Support HOLE Development</h2>
       <p>If you find this project useful, please consider supporting it!</p>
       <br/>
       <a href="https://www.paypal.com/paypalme/harshvardhansingh611">
@@ -57,78 +57,57 @@ Your data stays on your hard drive. Period.
 
 ## Comprehensive Feature List
 
-HOLE combines dozens of separate hacking utilities into a single, cohesive ecosystem. Here is what is included out of the box:
+HOLE combines dozens of separate hacking utilities into a single, cohesive ecosystem. Here is every tool and engine included out of the box:
 
-### 🛡️ Tor Engine and Ghost Mode
-A native Tor daemon controller embedded directly into the workstation. Start, stop, and manage Tor circuits without ever opening a terminal. Force your entire operating system through the Tor network with a single button.
-- **System-Wide Ghost Mode** hijacks your OS proxy settings to force ALL system traffic (browsers, terminals, background apps) through the active Tor connection, preventing IP leaks entirely.
-- Rotates exit node circuits on demand or on a timer (every 5, 10, or 30 minutes).
-- Native support for `obfs4` and `snowflake` bridges to bypass ISP-level censorship.
+### Core Workstation Features
+* **Dashboard:** The central control center providing a high-level view of your workstation, recent files, and active proxy status.
+* **Tor Engine and Ghost Mode:** A native Tor daemon controller embedded directly into the workstation. Start, stop, and manage Tor circuits without opening a terminal. The System-Wide Ghost Mode hijacks your OS proxy settings to force ALL system traffic (browsers, terminals, background apps) through the active Tor connection, preventing IP leaks entirely.
+* **Integrated Terminal:** A native xterm.js terminal embedded in the UI. Run any shell command without tabbing out. Supports Bash, Zsh, Fish, and PowerShell with full ANSI color rendering. Easily route your terminal environment through the Tor proxy.
+* **Code Studio PRO:** A full IDE with Monaco Editor (the same engine behind VS Code) built directly into the workstation. Includes 25+ language modes with full syntax highlighting.
 
-### 💻 Code Studio PRO
-A full IDE with Monaco Editor (the same engine behind VS Code) built directly into the workstation. 
-- 25+ language modes with full syntax highlighting.
-- Built-in live syntax validation and code formatting.
+### Reconnaissance & Scanning Engines
+* **Target Command & Recon Engine:** The central scanning hub. Perform deep DNS profiling, Subdomain enumeration, Port scanning, SSL certificate extraction, and WHOIS lookups.
+* **Wildcard Scanner:** A batch scanning engine capable of executing multiple scanning modules (WAF detection, JS Spidering, Bucket scanning) concurrently across wildcard domains and tracking the real-time status of each.
+* **WAF Detector:** Fingerprint over 30+ WAF providers and run automated bypass tests to see which payload mutations bypass the firewall.
+* **Cloud Bucket Finder:** Discover and validate misconfigured cloud storage buckets (AWS S3, Google Cloud, Azure).
+* **JS Spider:** Automatically extract hidden JavaScript files, API endpoints, and configuration secrets from target domains.
+* **Exposure Hunter:** Scan target domains specifically for leaked source code files, `.env` files, `.git` exposures, and database dumps.
+* **Favicon Hunter:** Generate MurmurHash3 hashes from favicons to instantly identify underlying technologies and hidden infrastructure.
+* **Email Header Analyzer:** Trace email routing infrastructure, extract sender IPs, and verify SPF, DKIM, and DMARC configurations.
+* **IP Tracker:** Trace, map, and analyze any IP address globally to reveal ASN, geolocation, and ISP data instantly.
 
-### 🗺️ Visual Workflow Builder (Recon Database)
-An n8n-style drag-and-drop node editor for mapping out attack surfaces visually. 
-- Stop reading massive JSON blobs. Connect subdomains, endpoints, and services into interactive maps that actually make sense.
-- GraphQL schema introspection: paste a schema and auto-generate a full node map of all queries and mutations.
+### Exploitation & Payload Crafting
+* **Reverse Shell Hub:** Generate reverse shell payloads in 20+ formats (Bash, Python, Perl, PowerShell, etc.) and catch incoming connections with the built-in raw TCP listener.
+* **JWT Forger:** Decode, modify, re-sign, and brute-force JSON Web Tokens entirely offline. Supports custom secret signing and the `alg: none` exploit technique.
+* **CORS Exploit Generator:** Paste raw HTTP response headers to instantly generate a weaponized `index.html` exploit payload, ready for proof-of-concept submissions.
+* **WAF Evasion Engine:** Chain together over 50+ obfuscation mutations (including HTML entities, Case mutations, and URL encodings) to bypass strict Web Application Firewalls.
+* **Secret Sniper:** Paste massive, chaotic, minified JavaScript bundles and instantly extract every API key, token, endpoint, and secret. Uses a zero-lag regex de-obfuscator that detects AWS keys, Stripe tokens, JWTs, and dozens more.
+* **Payload Library:** A massive, categorized, offline library of ready-to-use payloads for XSS, SQLi, SSRF, LFI, and RCE vulnerabilities.
+* **Technique Vault:** A comprehensive, offline repository of advanced exploitation techniques and methodologies, ensuring you never forget a bypass.
+* **Wordlist Generator:** Scrape targets to generate highly tailored wordlists for directory brute-forcing and parameter fuzzing.
 
-### 📓 Hacker Journal
-A calendar-based daily logging system.
-- Pick any date, type what you tested, and it saves instantly as a plain markdown file on your disk. No accounts, no sync, no nonsense.
-- **Save ANY file type:** Fully supports writing, editing, and saving HTML, CSS, JS, Python, Go, Rust, and SQL directly to your local file system.
-- **Instant HTML Rendering:** Write a malicious landing page or phishing template in HTML, and when you open the file, HOLE will render the link as a live HTML preview directly in the editor in full detail!
+### Analysis & Cryptography
+* **String Analyzer & Auto-Detect:** Automatically analyze obfuscated strings and identify the hash type or encoding format.
+* **Encoder & Decoder:** Manually encode or decode strings using built-in Base64, Hex, HTML, and URL operations.
+* **Crypto Engine:** Encrypt and decrypt data using military-grade algorithms entirely offline.
+* **Steganography Engine:** Hide secret messages and payloads directly inside image files using Least Significant Bit (LSB) pixel manipulation.
+* **CVSS Calculator:** Interactive Common Vulnerability Scoring System (CVSS v3) calculator to properly score your bug bounty submissions.
+* **Diff Scope:** Character-level visual comparison tool specifically designed for spotting differences between server responses or configuration changes.
 
-### 🖥️ Integrated Terminal
-A native xterm.js terminal embedded in the UI. 
-- Run any shell command without tabbing out. Supports Bash, Zsh, Fish, and PowerShell with full ANSI color rendering.
-- Inject Tor proxy into the terminal environment with one checkbox.
+### Note Taking & Workflow Management
+* **Hacker Journal:** A calendar-based daily logging system. Pick any date, type what you tested, and it saves instantly as a plain markdown file. 
+* **Live HTML Rendering (Journal):** Write a malicious landing page or phishing template in HTML, save it in the Hacker Journal, and when you open the file, HOLE will render the file as a live HTML preview directly in the editor in full detail.
+* **Visual Workflow Builder:** An n8n-style drag-and-drop node editor for mapping out attack surfaces visually. Includes GraphQL schema introspection to auto-generate a full node map of all queries and mutations.
+* **Kanban Board & Methodology Tracker:** Structured checklists and drag-and-drop progress tracking to enforce strict, repeatable bug bounty methodologies.
+* **Bounty Tracker:** A financial tracking dashboard to monitor submitted bugs, pending payouts, and overall statistics.
+* **Parallel Reality:** A context vault designed for managing multiple testing scenarios and privilege escalation contexts side-by-side.
+* **Unknown Space:** A specialized scratchpad for isolating anomalies, tracking hypotheses, and documenting unverified behaviors.
+* **Screenshot Annotator:** Capture, crop, and annotate screenshots with highlights and text boxes specifically for vulnerability reports.
+* **Time Tracker:** A focused session timer designed to track exactly how many hours you spend hacking each specific target.
 
-### 🔍 Advanced Scanners & Engines
-HOLE includes numerous advanced scanning engines running entirely from your local machine.
-- **CVE Mapper:** Instantly map emerging CVEs directly to your defined attack surface.
-- **Email Header Analyzer:** Trace email routes, extract sender IPs, and verify SPF/DKIM/DMARC.
-- **Infrastructure Harvester:** Harvest emails, subdomains, URLs, social profiles.
-- **Favicon Hunter:** Identify technologies and discover hidden infrastructure via favicon fingerprinting.
-- **Exposure Hunter:** Scan target domains for leaked source code and database dumps.
-
-### 📚 Technique Vault
-A comprehensive, offline library of advanced exploitation techniques and methodologies.
-- Never forget a bypass again. Access categorized write-ups and bypass payloads for standard vulnerabilities entirely offline.
-
-### 🐚 Reverse Shell Hub
-Generate reverse shell payloads in 20+ formats and catch incoming connections with a built-in raw TCP listener. 
-
-### 🔑 JWT Forger
-Decode, modify, re-sign, and brute-force JSON Web Tokens entirely offline.
-- Modify claims and re-sign with a custom secret key, or execute the `alg: none` attack with one click.
-- Built-in secret brute-forcer with a customizable wordlist.
-
-### 🛠️ Auto-Detect & Encoder
-Instantly analyze obfuscated strings or manually encode/decode them using built-in hex, base64, HTML, and URL operations.
-
-### 🌐 CORS Exploit Generator
-Paste raw HTTP response headers and instantly generate a weaponized `index.html` exploit payload ready for proof-of-concept submissions.
-
-### 🎯 Secret Sniper Engine
-Paste massive, chaotic, minified JavaScript bundles and instantly extract every API key, token, endpoint, and secret hiding inside.
-- Zero-lag regex de-obfuscator purpose-built for minified JavaScript.
-- Detects AWS keys, Google API keys, Stripe tokens, JWTs, Bearer tokens, and dozens more.
-
-### 📦 Payload Library
-A massive, categorized library of ready-to-use payloads for XSS, SQLi, SSRF, LFI, and RCE.
-
-### 🔐 Crypto and Stego Engine
-A dual-mode cryptography and steganography workbench. Encrypt and decrypt data with military-grade algorithms, or hide secret messages inside images using LSB pixel manipulation.
-
-### ⏱️ Diff Scope & Time Tracker
-- **Diff Scope:** Character-level comparison tool for spotting differences between server responses or configuration changes.
-- **Time Tracker:** A focused session timer for tracking exactly how many hours you spend on each bug bounty target.
-
-### 📍 IP Tracker
-Trace, map, and analyze any IP address globally to reveal ASN, geolocation, and ISP data instantly.
+### Anonymous Utilities
+* **Temp Mail:** Generate disposable email addresses natively through multi-provider fallback APIs (`mail.tm`, `temp-mail.io`) to bypass registration blocks.
+* **Identity Generator:** Create tracking identities using plus-addressing (e.g., `email+admin@gmail.com`) to manage multiple user privilege levels across web applications.
 
 <br/>
 
