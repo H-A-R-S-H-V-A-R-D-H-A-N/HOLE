@@ -92,6 +92,17 @@ export async function loadStateFromDisk() {
     if (result.success && result.content) {
       const stateData = JSON.parse(result.content);
       
+      // Auto-migrate HOLE-PRO paths to HOLE
+      if (stateData.hole_file_metadata) {
+        const migratedMeta = {};
+        for (const [k, v] of Object.entries(stateData.hole_file_metadata)) {
+          migratedMeta[k.replace('/HOLE-PRO/', '/HOLE/')] = v;
+        }
+        stateData.hole_file_metadata = migratedMeta;
+      }
+      if (stateData.kroma_storage_dir) stateData.kroma_storage_dir = stateData.kroma_storage_dir.replace('/HOLE-PRO/', '/HOLE/');
+      if (stateData.kroma_ide_repo) stateData.kroma_ide_repo = stateData.kroma_ide_repo.replace('/HOLE-PRO/', '/HOLE/');
+
       // Hydrate local storage purely from the single file
       for (const [key, val] of Object.entries(stateData)) {
         if (typeof val === 'object') {
@@ -102,6 +113,12 @@ export async function loadStateFromDisk() {
       }
       
       console.log(`[HOLE] Successfully hydrated ${Object.keys(stateData).length} sections from ${STATE_FILE_NAME}`);
+      
+      // Immediately flush back to disk if migrated
+      if (result.content.includes('HOLE-PRO')) {
+        setTimeout(syncStateToDisk, 500);
+      }
+      
       return true;
     }
   } catch (err) {

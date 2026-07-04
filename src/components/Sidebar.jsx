@@ -42,7 +42,8 @@ import {
   Cloud,
   Mail,
   Radar,
-  MapPin
+  MapPin,
+  PhoneCall
 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import '../styles/Sidebar.css';
@@ -96,6 +97,7 @@ const navSections = [
     title: 'Tools',
     items: [
       { id: 'temp-mail', label: 'Temp Mail', icon: Mail },
+      { id: 'temp-number', label: 'Temp Number', icon: PhoneCall },
       { id: 'target-command', label: 'Target Command', icon: Target },
       { id: 'methodology', label: 'Methodology', icon: GitBranch },
       { id: 'recondb', label: 'Workflow', icon: Database },

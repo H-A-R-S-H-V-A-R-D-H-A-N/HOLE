@@ -131,4 +131,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   techniquesLoad: (options) => ipcRenderer.invoke('techniques-load', options),
   techniquesSave: (options) => ipcRenderer.invoke('techniques-save', options),
   techniquesDelete: (options) => ipcRenderer.invoke('techniques-delete', options),
+  // Temp SMS Scraper
+  scrapeTempSms: (action, payload) => ipcRenderer.invoke('scrape-temp-sms', action, payload),
 });

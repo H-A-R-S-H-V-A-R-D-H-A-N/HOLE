@@ -2032,3 +2032,58 @@ ipcMain.on('shell-write', (event, data) => {
     activeShellSocket.write(data);
   }
 });
+
+// ---- Temp SMS Scraper (Headless Browser) ---- //
+ipcMain.handle('scrape-temp-sms', async (event, action, payload) => {
+  return new Promise((resolve) => {
+    try {
+      const bw = new BrowserWindow({
+        show: false,
+        webPreferences: { nodeIntegration: false, contextIsolation: true }
+      });
+      
+      if (action === 'get_numbers') {
+        bw.loadURL('https://quackr.io/temporary-numbers/united-states');
+        bw.webContents.once('did-finish-load', async () => {
+          try {
+            const html = await bw.webContents.executeJavaScript('document.documentElement.outerHTML');
+            bw.destroy();
+            
+            const numbers = [];
+            const regex = /"number":"([0-9]+)","added"/g;
+            let match;
+            while ((match = regex.exec(html)) !== null) {
+              if (!numbers.includes(match[1])) numbers.push(match[1]);
+            }
+            if (numbers.length === 0) return resolve({ success: false, error: 'No numbers found (Cloudflare block)' });
+            resolve({ success: true, numbers: numbers.slice(0, 15) });
+          } catch(e) { bw.destroy(); resolve({ success: false, error: e.message }); }
+        });
+      } else if (action === 'get_messages' && payload) {
+        bw.loadURL(`https://quackr.io/temporary-numbers/united-states/${payload}`);
+        bw.webContents.once('did-finish-load', async () => {
+          try {
+            const html = await bw.webContents.executeJavaScript('document.documentElement.outerHTML');
+            bw.destroy();
+            
+            const messages = [];
+            const regex = /"message":"(.*?)","time_received":"(.*?)"/g;
+            let match;
+            while ((match = regex.exec(html)) !== null) {
+              messages.push({
+                body: match[1],
+                time: match[2],
+                sender: 'Quackr SMS'
+              });
+            }
+            resolve({ success: true, messages });
+          } catch(e) { bw.destroy(); resolve({ success: false, error: e.message }); }
+        });
+      } else {
+        bw.destroy();
+        resolve({ success: false, error: 'Invalid action' });
+      }
+    } catch(e) { resolve({ success: false, error: e.message }); }
+  });
+});
+
