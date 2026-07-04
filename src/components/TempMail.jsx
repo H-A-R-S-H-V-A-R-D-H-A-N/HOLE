@@ -36,7 +36,7 @@ async function generateWithProvider(provider) {
     if (!members?.length) return null;
 
     const domain = members[0].domain;
-    const address = Math.random().toString(36).substring(2, 12) + '@' + domain;
+    const address = 'hole-' + Math.random().toString(36).substring(2, 8) + '@' + domain;
     const password = Math.random().toString(36).substring(2) + 'Hx1!';
 
     const accRes = await fetch(`${provider.base}/accounts`, {
@@ -57,8 +57,15 @@ async function generateWithProvider(provider) {
   }
 
   if (provider.type === 'tempmailio') {
+    const domRes = await fetch(`${provider.base}/domains`);
+    if (!domRes.ok) return null;
+    const domData = await domRes.json();
+    const domain = domData.domains?.[0]?.name;
+    if (!domain) return null;
+
+    const name = 'hole' + Math.random().toString(36).substring(2, 8);
     const res = await fetch(`${provider.base}/email/new`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, domain })
     });
     if (!res.ok) return null;
     const data = await res.json();
