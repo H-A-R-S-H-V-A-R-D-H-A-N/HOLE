@@ -2043,7 +2043,8 @@ ipcMain.handle('scrape-temp-sms', async (event, action, payload) => {
       });
       
       if (action === 'get_numbers') {
-        bw.loadURL('https://quackr.io/temporary-numbers/united-states');
+        const country = payload || 'united-states';
+        bw.loadURL(`https://quackr.io/temporary-numbers/${country}`);
         bw.webContents.once('did-finish-load', async () => {
           try {
             const html = await bw.webContents.executeJavaScript('document.documentElement.outerHTML');
@@ -2060,7 +2061,9 @@ ipcMain.handle('scrape-temp-sms', async (event, action, payload) => {
           } catch(e) { bw.destroy(); resolve({ success: false, error: e.message }); }
         });
       } else if (action === 'get_messages' && payload) {
-        bw.loadURL(`https://quackr.io/temporary-numbers/united-states/${payload}`);
+        const country = payload.country || 'united-states';
+        const num = payload.number || payload;
+        bw.loadURL(`https://quackr.io/temporary-numbers/${country}/${num}`);
         bw.webContents.once('did-finish-load', async () => {
           try {
             const html = await bw.webContents.executeJavaScript('document.documentElement.outerHTML');

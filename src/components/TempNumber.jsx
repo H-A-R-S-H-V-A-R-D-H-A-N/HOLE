@@ -8,8 +8,18 @@ export default function TempNumber() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [activeMessage, setActiveMessage] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState('united-states');
+
+  const COUNTRIES = [
+    { id: 'united-states', name: 'United States', flag: '🇺🇸' },
+    { id: 'united-kingdom', name: 'United Kingdom', flag: '🇬🇧' },
+    { id: 'canada', name: 'Canada', flag: '🇨🇦' },
+    { id: 'france', name: 'France', flag: '🇫🇷' },
+    { id: 'netherlands', name: 'Netherlands', flag: '🇳🇱' },
+    { id: 'belgium', name: 'Belgium', flag: '🇧🇪' },
+    { id: 'sweden', name: 'Sweden', flag: '🇸🇪' }
+  ];
 
   useEffect(() => {
     // Load saved numbers on boot
@@ -24,7 +34,7 @@ export default function TempNumber() {
   const generateNumber = async () => {
     setLoading(true);
     try {
-      const res = await window.electronAPI.scrapeTempSms('get_numbers');
+      const res = await window.electronAPI.scrapeTempSms('get_numbers', selectedCountry);
       if (res.success && res.numbers.length > 0) {
         // Pick a random number that isn't already added
         const available = res.numbers.filter(n => !numbers.includes(n));
@@ -47,7 +57,8 @@ export default function TempNumber() {
   const doFetchMessages = async (num, showLoader = false) => {
     if (showLoader) setFetching(true);
     try {
-      const res = await window.electronAPI.scrapeTempSms('get_messages', num);
+      const country = numbers.find(n => n.number === num)?.country || 'united-states';
+      const res = await window.electronAPI.scrapeTempSms('get_messages', { number: num, country });
       if (res.success) {
         setMessages(res.messages);
         localStorage.setItem(`kroma_temp_number_msgs_${num}`, JSON.stringify(res.messages));
@@ -114,12 +125,23 @@ export default function TempNumber() {
             <h2>Temp SMS Engine</h2>
             <div className="tn-brand-sub">Bypass SMS Verification</div>
             <p>
-              Instantly generate disposable US phone numbers to bypass 2FA, register test accounts, and shield your privacy during security research.
+              Instantly generate disposable phone numbers to bypass 2FA, register test accounts, and shield your privacy during security research.
             </p>
-            <button className="tn-gen-btn" onClick={generateNumber} disabled={loading}>
-              {loading ? <RefreshCw size={18} className="tn-spin" /> : <Shield size={18} />}
-              {loading ? 'Bypassing Cloudflare...' : 'Generate US Number'}
-            </button>
+            <div style={{display: 'flex', gap: '8px', marginBottom: '24px'}}>
+              <select 
+                className="tn-gen-btn" 
+                style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none'}}
+                value={selectedCountry}
+                onChange={e => setSelectedCountry(e.target.value)}
+                disabled={loading}
+              >
+                {COUNTRIES.map(c => <option key={c.id} value={c.id} style={{color: '#000'}}>{c.flag} {c.name}</option>)}
+              </select>
+              <button className="tn-gen-btn" onClick={generateNumber} disabled={loading}>
+                {loading ? <RefreshCw size={18} className="tn-spin" /> : <Shield size={18} />}
+                {loading ? 'Bypassing Cloudflare...' : 'Generate Number'}
+              </button>
+            </div>
             <div className="tn-provider-badge">
               <div className="tn-provider-dot"></div>
               Powered by headless routing
