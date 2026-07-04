@@ -49,7 +49,6 @@ import WAFDetector from './components/WAFDetector';
 import JSSpider from './components/JSSpider';
 import TechniqueVault from './components/TechniqueVault';
 import TempMail from './components/TempMail';
-import TempNumber from './components/TempNumber';
 
 
 import { isStorageConfigured, pickStorageFolder, getStorageDir, deleteFileFromDrive, listFilesOnDrive, readFileDirect } from './utils/fileSystem';
@@ -696,9 +695,7 @@ export default function App() {
           <div style={{ display: activeView === 'temp-mail' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <TempMail />
           </div>
-          <div style={{ display: activeView === 'temp-number' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
-            <TempNumber />
-          </div>
+
 
           {activeView === 'support' && <SupportPage />}
         </div>
