@@ -35,6 +35,7 @@ import ReverseShell from './components/ReverseShell';
 import SecretSniper from './components/SecretSniper';
 import CORSExploit from './components/CORSExploit';
 import SupportPage from './components/SupportPage';
+import TempMail from './components/TempMail';
 
 
 import { isStorageConfigured, pickStorageFolder, getStorageDir, deleteFileFromDrive, listFilesOnDrive, readFileDirect } from './utils/fileSystem';
@@ -374,6 +375,7 @@ export default function App() {
       case 'resources': return 'Resources';
       case 'catcher': return 'Blind Catcher';
       case 'revshell': return 'Rev Shell';
+      case 'temp-mail': return 'Temp Mail';
       case 'support': return 'About';
       default: return 'HOLE';
     }
@@ -525,6 +527,9 @@ export default function App() {
           </div>
           <div style={{ display: activeView === 'revshell' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <ReverseShell />
+          </div>
+          <div style={{ display: activeView === 'temp-mail' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <TempMail />
           </div>
           {activeView === 'support' && <SupportPage />}
         </div>

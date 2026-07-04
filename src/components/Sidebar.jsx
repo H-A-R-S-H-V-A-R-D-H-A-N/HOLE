@@ -38,7 +38,8 @@ import {
   Radio,
   Heart,
   Coffee,
-  Crosshair
+  Crosshair,
+  Mail
 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import '../styles/Sidebar.css';
@@ -115,6 +116,7 @@ const navSections = [
       { id: 'secret-sniper', label: 'Secret Sniper', icon: Crosshair },
       { id: 'cors-exploit', label: 'CORS Exploit', icon: Globe },
       { id: 'revshell', label: 'Rev Shell', icon: TerminalSquare },
+      { id: 'temp-mail', label: 'Temp Mail', icon: Mail },
     ],
   },
   {
