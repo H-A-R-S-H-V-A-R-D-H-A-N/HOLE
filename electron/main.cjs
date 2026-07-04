@@ -1557,6 +1557,12 @@ function cleanupGhostProxySync() {
     delete process.env.https_proxy;
     delete process.env.all_proxy;
 
+    if (process.platform === 'linux') {
+      try {
+        execSync('gsettings set org.gnome.system.proxy mode "none"');
+      } catch (e) {}
+    }
+
     isGlobalGhostActive = false;
     console.log('[HOLE] Ghost Mode cleanup complete — all proxy traces removed.');
   } catch (e) {
@@ -1618,8 +1624,17 @@ ipcMain.handle('enable-global-ghost', async () => {
           if (err) return resolve({ success: false, error: err.message });
           enableProxy();
         });
+      } else if (process.platform === 'linux') {
+        try {
+          execSync('gsettings set org.gnome.system.proxy mode "manual"');
+          execSync('gsettings set org.gnome.system.proxy.socks host "127.0.0.1"');
+          execSync('gsettings set org.gnome.system.proxy.socks port 9050');
+          enableProxy();
+        } catch (e) {
+          // Fallback if not on GNOME
+          enableProxy();
+        }
       } else {
-        // On Linux/macOS, just set env vars (no system registry)
         enableProxy();
       }
     } catch(e) { resolve({ success: false, error: e.message }); }
