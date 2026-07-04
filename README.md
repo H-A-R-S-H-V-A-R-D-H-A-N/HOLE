@@ -95,8 +95,8 @@ HOLE combines dozens of separate hacking utilities into a single, cohesive ecosy
 * **Diff Scope:** Character-level visual comparison tool specifically designed for spotting differences between server responses or configuration changes.
 
 ### Note Taking & Workflow Management
-* **Hacker Journal:** A calendar-based daily logging system. Pick any date, type what you tested, and it saves instantly as a plain markdown file. 
-* **Live HTML Rendering (Journal):** Write a malicious landing page or phishing template in HTML, save it in the Hacker Journal, and when you open the file, HOLE will render the file as a live HTML preview directly in the editor in full detail.
+* **Hacker Journal & Universal Note Viewer:** A calendar-based daily logging system. Pick any date, type what you tested, and it saves instantly as a plain file on your disk.
+* **Live Code Rendering:** The journal doesn't just support Markdown. Write code in HTML, CSS, JS, Python, JSON, or any other extension, and when you open the file, HOLE will instantly render it with full syntax highlighting or as a live preview directly in the editor in full detail!
 * **Visual Workflow Builder:** An n8n-style drag-and-drop node editor for mapping out attack surfaces visually. Includes GraphQL schema introspection to auto-generate a full node map of all queries and mutations.
 * **Kanban Board & Methodology Tracker:** Structured checklists and drag-and-drop progress tracking to enforce strict, repeatable bug bounty methodologies.
 * **Bounty Tracker:** A financial tracking dashboard to monitor submitted bugs, pending payouts, and overall statistics.
