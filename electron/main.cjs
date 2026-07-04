@@ -2041,6 +2041,7 @@ ipcMain.handle('scrape-temp-sms', async (event, action, payload) => {
         show: false,
         webPreferences: { nodeIntegration: false, contextIsolation: true }
       });
+      bw.webContents.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
       
       if (action === 'get_numbers') {
         const country = payload || 'united-states';
