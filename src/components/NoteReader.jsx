@@ -73,138 +73,163 @@ export default function NoteReader({ note, onClose, showSearchOverlay, setShowSe
   // Determine how to render the note content
   const { renderedHtml, detectedType } = useMemo(() => {
     const renderType = note.renderType || 'tiptap';
+    let finalHtml = '';
+    let finalType = '';
 
     if (renderType === 'markdown' && note.rawContent) {
-      return { renderedHtml: markdownToHtml(note.rawContent), detectedType: 'markdown' };
-    }
-    if (renderType === 'html' && note.rawContent) {
-      // Inject dark base styles so the iframe matches our app theme
+      finalHtml = markdownToHtml(note.rawContent);
+      finalType = 'markdown';
+    } else if (renderType === 'html' && note.rawContent) {
       const darkBase = '<style>body{background:#0A0E17;color:#E8ECF4;font-family:Inter,system-ui,sans-serif;padding:24px;margin:0}a{color:#00D4FF}h1,h2,h3,h4,h5,h6{color:#fff}</style>';
       let html = note.rawContent;
-      // Insert before </head> if it exists, otherwise prepend
       if (html.includes('</head>')) {
         html = html.replace('</head>', darkBase + '</head>');
       } else {
         html = darkBase + html;
       }
-      return { renderedHtml: html, detectedType: 'html' };
-    }
-    if (renderType === 'plain' && note.rawContent) {
+      finalHtml = html;
+      finalType = 'html';
+    } else if (renderType === 'plain' && note.rawContent) {
       const escaped = note.rawContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const lines = escaped.split('\n').map(l => `<p style="font-family: var(--font-mono); margin-bottom: 2px;">${l || '<br>'}</p>`).join('');
-      return { renderedHtml: lines, detectedType: 'plain' };
-    }
-    if (renderType === 'code' && note.rawContent) {
+      finalHtml = lines;
+      finalType = 'plain';
+    } else if (renderType === 'code' && note.rawContent) {
       const ext = note.filePath?.split('.').pop()?.toLowerCase();
       if (ext === 'js' || ext === 'cjs' || ext === 'mjs') {
-        // Render Javascript visually as a webpage!
         const darkBase = '<style>body{background:#0A0E17;color:#E8ECF4;font-family:Inter,system-ui,sans-serif;padding:24px;margin:0}a{color:#00D4FF}h1,h2,h3,h4,h5,h6{color:#fff}</style>';
         const htmlShell = `<!DOCTYPE html><html><head><title>JS Runner</title>${darkBase}</head><body><script>\n${note.rawContent}\n</script></body></html>`;
-        return { renderedHtml: htmlShell, detectedType: 'html' };
-      }
-      if (ext === 'css') {
+        finalHtml = htmlShell;
+        finalType = 'html';
+      } else if (ext === 'css') {
         const darkBase = '<style>body{background:#0A0E17;color:#E8ECF4;font-family:Inter,system-ui,sans-serif;padding:40px;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}a{color:#00D4FF}h1,h2,h3,h4,h5,h6{color:#fff}</style>';
         const htmlShell = `<!DOCTYPE html><html><head><title>CSS Preview</title>${darkBase}<style>\n${note.rawContent}\n</style></head><body><div class="css-preview-box" style="padding:40px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.02);box-shadow:0 8px 32px rgba(0,0,0,0.2);max-width:600px;width:100%;text-align:center;"><h1>CSS Preview Active</h1><p style="color:#8B949E;margin-top:10px;line-height:1.6;">The styles from your CSS file are injected into this document. Any global styles (like body, h1, etc.) or specific classes applied to standard elements will be reflected here.</p><div style="margin-top:30px;display:flex;gap:15px;justify-content:center;"><button class="btn" style="padding:10px 20px;border-radius:6px;cursor:pointer;">Sample Button</button><input type="text" placeholder="Sample Input" class="input" style="padding:10px;border-radius:6px;" /></div></div></body></html>`;
-        return { renderedHtml: htmlShell, detectedType: 'html' };
-      }
-      if (ext === 'svg') {
+        finalHtml = htmlShell;
+        finalType = 'html';
+      } else if (ext === 'svg') {
         const htmlShell = `<!DOCTYPE html><html><head><title>SVG Preview</title><style>body{background:#0A0E17;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px;}</style></head><body>${note.rawContent}</body></html>`;
-        return { renderedHtml: htmlShell, detectedType: 'html' };
+        finalHtml = htmlShell;
+        finalType = 'html';
+      } else {
+        const escaped = note.rawContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const tag = note.metadata?.tags?.[0] || ext || 'text';
+        finalHtml = `<pre><code class="language-${tag}">${escaped}</code></pre>`;
+        finalType = 'code';
       }
-
-      const escaped = note.rawContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      const tag = note.metadata?.tags?.[0] || ext || 'text';
-      return { renderedHtml: `<pre><code class="language-${tag}">${escaped}</code></pre>`, detectedType: 'code' };
-    }
-    if (renderType === 'csv' && note.rawContent) {
+    } else if (renderType === 'csv' && note.rawContent) {
       const rows = note.rawContent.trim().split('\n').map(r => r.split(','));
-      if (rows.length === 0) return { renderedHtml: '<p>Empty CSV</p>', detectedType: 'csv' };
-      let table = '<table><thead><tr>';
-      rows[0].forEach(cell => { table += `<th>${cell.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;')}</th>`; });
-      table += '</tr></thead><tbody>';
-      rows.slice(1).forEach(row => {
-        table += '<tr>';
-        row.forEach(cell => { table += `<td>${cell.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;')}</td>`; });
-        table += '</tr>';
-      });
-      table += '</tbody></table>';
-      return { renderedHtml: table, detectedType: 'csv' };
+      if (rows.length === 0) {
+        finalHtml = '<p>Empty CSV</p>';
+        finalType = 'csv';
+      } else {
+        let table = '<table><thead><tr>';
+        rows[0].forEach(cell => { table += `<th>${cell.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;')}</th>`; });
+        table += '</tr></thead><tbody>';
+        rows.slice(1).forEach(row => {
+          table += '<tr>';
+          row.forEach(cell => { table += `<td>${cell.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;')}</td>`; });
+          table += '</tr>';
+        });
+        table += '</tbody></table>';
+        finalHtml = table;
+        finalType = 'csv';
+      }
+    } else {
+      const html = note.html || '<p>No content available.</p>';
+      if (htmlContainsRawMarkdown(html)) {
+        const plainText = extractTextFromHtml(html);
+        finalHtml = markdownToHtml(plainText);
+        finalType = 'markdown';
+      } else {
+        finalHtml = html;
+        finalType = 'tiptap';
+      }
     }
 
-    const html = note.html || '<p>No content available.</p>';
-    if (htmlContainsRawMarkdown(html)) {
-      const plainText = extractTextFromHtml(html);
-      return { renderedHtml: markdownToHtml(plainText), detectedType: 'markdown' };
+    // Post-process HTML to inject code block wrappers (so React renders them natively)
+    if (finalType !== 'html' && finalHtml) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(finalHtml, 'text/html');
+      const pres = doc.querySelectorAll('pre');
+      
+      pres.forEach(pre => {
+        if (pre.parentElement?.classList.contains('reader-code-wrapper')) return;
+        
+        const codeEl = pre.querySelector('code');
+        const langClass = codeEl?.className?.match(/language-(\w+)/) || codeEl?.className?.match(/hljs (\w+)/);
+        const lang = langClass ? langClass[1] : '';
+        
+        const wrapper = doc.createElement('div');
+        wrapper.className = 'reader-code-wrapper';
+        
+        const header = doc.createElement('div');
+        header.className = 'reader-code-header';
+        
+        const langLabel = doc.createElement('span');
+        langLabel.className = 'reader-code-lang';
+        langLabel.textContent = lang ? lang.charAt(0).toUpperCase() + lang.slice(1) : 'Code';
+        
+        const actions = doc.createElement('div');
+        actions.className = 'reader-code-actions';
+        
+        actions.innerHTML = `
+          <button class="reader-code-btn download-btn" data-ext="${lang || 'txt'}" title="Download">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button class="reader-code-btn copy-btn" title="Copy">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        `;
+        
+        header.appendChild(langLabel);
+        header.appendChild(actions);
+        
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+      });
+      
+      finalHtml = doc.body.innerHTML;
     }
-    return { renderedHtml: html, detectedType: 'tiptap' };
+
+    return { renderedHtml: finalHtml, detectedType: finalType };
   }, [note]);
 
-  // After render: inject copy + download buttons into all <pre> code blocks
-  // After render: inject copy + download buttons into all <pre> code blocks
+  // Event delegation for code block buttons
   useEffect(() => {
     if (viewMode !== 'rendered' || !contentRef.current || detectedType === 'html') return;
 
-    // Add Copy/Download headers to all code blocks
-    const pres = contentRef.current.querySelectorAll('pre');
-    pres.forEach((pre) => {
-      // Prevent double-wrapping if the effect re-runs
-      if (pre.parentElement?.classList.contains('reader-code-wrapper')) return;
+    const handleCodeActions = (e) => {
+      const btn = e.target.closest('.reader-code-btn');
+      if (!btn) return;
+      
+      const wrapper = btn.closest('.reader-code-wrapper');
+      if (!wrapper) return;
+      
+      const code = wrapper.querySelector('code')?.textContent || '';
 
-      const codeEl = pre.querySelector('code');
-      const langClass = codeEl?.className?.match(/language-(\w+)/);
-      const lang = langClass ? langClass[1] : '';
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'reader-code-wrapper';
-
-      const header = document.createElement('div');
-      header.className = 'reader-code-header';
-
-      const langLabel = document.createElement('span');
-      langLabel.className = 'reader-code-lang';
-      langLabel.textContent = lang ? lang.charAt(0).toUpperCase() + lang.slice(1) : 'Code';
-
-      const actions = document.createElement('div');
-      actions.className = 'reader-code-actions';
-
-      const code = pre.textContent || '';
-
-      const dlBtn = document.createElement('button');
-      dlBtn.className = 'reader-code-btn';
-      dlBtn.title = 'Download';
-      dlBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-      dlBtn.onclick = () => {
-        const ext = lang || 'txt';
+      if (btn.classList.contains('copy-btn')) {
+        navigator.clipboard.writeText(code);
+        btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => {
+          btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        }, 2000);
+      } else if (btn.classList.contains('download-btn')) {
+        const ext = btn.getAttribute('data-ext') || 'txt';
         const blob = new Blob([code], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = `code.${ext}`; a.click();
+        a.href = url; 
+        a.download = `code.${ext}`; 
+        a.click();
         URL.revokeObjectURL(url);
-      };
+      }
+    };
 
-      const cpBtn = document.createElement('button');
-      cpBtn.className = 'reader-code-btn';
-      cpBtn.title = 'Copy';
-      cpBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-      cpBtn.onclick = () => {
-        navigator.clipboard.writeText(code);
-        cpBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-        setTimeout(() => {
-          cpBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-        }, 2000);
-      };
-
-      actions.appendChild(dlBtn);
-      actions.appendChild(cpBtn);
-      header.appendChild(langLabel);
-      header.appendChild(actions);
-
-      pre.parentNode.insertBefore(wrapper, pre);
-      wrapper.appendChild(header);
-      wrapper.appendChild(pre);
-    });
-
-  }, [renderedHtml, viewMode, detectedType, isFullscreen, showSearchOverlay]);
+    const el = contentRef.current;
+    el.addEventListener('click', handleCodeActions);
+    return () => el.removeEventListener('click', handleCodeActions);
+  }, [viewMode, detectedType]);
 
   // File type badge
   const renderTypeMap = {
