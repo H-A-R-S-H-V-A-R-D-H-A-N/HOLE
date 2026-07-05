@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Mail, RefreshCw, Copy, CheckCircle2, Inbox, Trash2, ArrowLeft, ExternalLink, Sparkles, Plus, Heart } from 'lucide-react';
+import ConfirmModal from './ConfirmModal';
 import '../styles/TempMail.css';
 
 // ─── Multi-Provider Fallback System ───
@@ -141,6 +142,7 @@ export default function TempMail() {
   const [messageDetails, setMessageDetails] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState(false);
   const [activeProvider, setActiveProvider] = useState('');
+  const [deleteConfirmMsg, setDeleteConfirmMsg] = useState(null);
   const pollRef = useRef(null);
 
   const account = accounts[activeIdx] || null;
@@ -180,8 +182,11 @@ export default function TempMail() {
     if (showLoader) setLoading(true);
     try {
       const msgs = await fetchMessagesFromProvider(account);
-      setMessages(msgs);
-      localStorage.setItem(`kroma_temp_mail_msgs_${account.id}`, JSON.stringify(msgs));
+      const deletedIds = JSON.parse(localStorage.getItem(`kroma_temp_mail_deleted_${account.id}`)) || [];
+      const filteredMsgs = msgs.filter(m => !deletedIds.includes(m.id));
+      
+      setMessages(filteredMsgs);
+      localStorage.setItem(`kroma_temp_mail_msgs_${account.id}`, JSON.stringify(filteredMsgs));
     } catch (e) { console.error('Fetch error:', e); }
     if (showLoader) setLoading(false);
   };
@@ -242,6 +247,19 @@ export default function TempMail() {
     const url = 'https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE/discussions';
     if (window.electronAPI?.openExternal) window.electronAPI.openExternal(url);
     else window.open(url, '_blank');
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteConfirmMsg || !account) return;
+    const deletedIds = JSON.parse(localStorage.getItem(`kroma_temp_mail_deleted_${account.id}`)) || [];
+    deletedIds.push(deleteConfirmMsg.id);
+    localStorage.setItem(`kroma_temp_mail_deleted_${account.id}`, JSON.stringify(deletedIds));
+    
+    setMessages(prev => prev.filter(m => m.id !== deleteConfirmMsg.id));
+    if (activeMessage?.id === deleteConfirmMsg.id) {
+      setActiveMessage(null);
+    }
+    setDeleteConfirmMsg(null);
   };
 
   // ─── Welcome Screen ───
@@ -325,7 +343,7 @@ export default function TempMail() {
                   <span className="tm-msg-from">{msg.from}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span className="tm-msg-time">{new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    <button className="tm-msg-delete" onClick={(e) => { e.stopPropagation(); setMessages(prev => prev.filter(m => m.id !== msg.id)); }} title="Delete">
+                    <button className="tm-msg-delete" onClick={(e) => { e.stopPropagation(); setDeleteConfirmMsg(msg); }} title="Delete">
                       <Trash2 size={12} />
                     </button>
                   </div>
@@ -393,6 +411,17 @@ export default function TempMail() {
           <div className="tm-placeholder"><Mail size={100} /></div>
         )}
       </div>
+
+      {deleteConfirmMsg && (
+        <ConfirmModal
+          title="Delete Email"
+          message={`Are you sure you want to delete this email from "${deleteConfirmMsg.from}"?`}
+          warning="This action cannot be undone."
+          confirmText="Delete"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteConfirmMsg(null)}
+        />
+      )}
     </div>
   );
 }

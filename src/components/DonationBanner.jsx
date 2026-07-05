@@ -13,12 +13,14 @@ export default function DonationBanner() {
 
   return (
     <>
-      <div className="donation-banner" onClick={() => setShowModal(true)}>
-        <div className="donation-banner-icon">
-          <Heart size={13} color="#a78bfa" />
+      <div className="donation-banner-wrapper">
+        <div className="donation-banner" onClick={() => setShowModal(true)}>
+          <div className="donation-banner-icon">
+            <Heart size={13} color="#a78bfa" />
+          </div>
+          <span className="donation-banner-text">Support the developer behind HOLE</span>
+          <span className="donation-banner-cta">Donate</span>
         </div>
-        <span className="donation-banner-text">Support the developer behind HOLE</span>
-        <span className="donation-banner-cta">Donate</span>
       </div>
 
       {showModal && (
