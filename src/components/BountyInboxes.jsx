@@ -6,7 +6,7 @@ const PLATFORMS = [
   { id: 'hackerone', name: 'HackerOne', suffix: '@wearehackerone.com', color: '#fff' },
   { id: 'bugcrowd', name: 'Bugcrowd', suffix: '@bugcrowdninja.com', color: '#F97316' },
   { id: 'intigriti', name: 'Intigriti', suffix: '@intigriti.me', color: '#8B5CF6' },
-  { id: 'yeswehack', name: 'YesWeHack', suffix: '@yeswehack.com', color: '#10B981' }
+  { id: 'yeswehack', name: 'YesWeHack', suffix: '@yeswehack.ninja', color: '#10B981' }
 ];
 
 const EMAIL_PROVIDERS = [
