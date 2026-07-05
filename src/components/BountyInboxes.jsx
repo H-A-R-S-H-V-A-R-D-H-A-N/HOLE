@@ -81,7 +81,10 @@ export default function BountyInboxes() {
   const reload = () => webviewRef.current?.reload();
 
   const filterByRelay = (suffix) => {
-    if (!activeProvider) return;
+    if (!activeProvider) {
+      alert("Please select an Open Inbox provider (e.g., Gmail or ProtonMail) first before filtering.");
+      return;
+    }
     
     if (activeProvider.id === 'gmail') {
       webviewRef.current.loadURL(`https://mail.google.com/mail/u/0/#search/to%3A${encodeURIComponent(suffix)}`);
@@ -112,7 +115,7 @@ export default function BountyInboxes() {
         <div className="bi-section">
           <div className="bi-section-title">Relay Address Vault</div>
           {PLATFORMS.map(platform => (
-            <div key={platform.id} className="bi-relay-card">
+            <div key={platform.id} className="bi-relay-card" onClick={() => filterByRelay(platform.suffix)} style={{ cursor: 'pointer' }}>
               <div className="bi-relay-header">
                 <div className="bi-relay-logo" style={{ color: platform.color }}>
                   {platform.name.charAt(0)}
@@ -129,7 +132,7 @@ export default function BountyInboxes() {
                 />
                 <button 
                   className="bi-relay-copy" 
-                  onClick={() => copyToClipboard(platform.id, platform.suffix)}
+                  onClick={(e) => { e.stopPropagation(); copyToClipboard(platform.id, platform.suffix); }}
                   title="Copy Address"
                 >
                   {copiedId === platform.id ? <CheckCircle2 size={16} color="#22c55e" /> : <Copy size={16} />}
@@ -172,15 +175,6 @@ export default function BountyInboxes() {
               <div className="bi-url-bar">
                 <ShieldCheck size={14} color="#22c55e" />
                 <span className="bi-url-text">{currentUrl || activeProvider.url}</span>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="bi-filter-btn" onClick={() => filterByRelay('wearehackerone.com')}>
-                  <Search size={12} /> H1 Filter
-                </button>
-                <button className="bi-filter-btn" onClick={() => filterByRelay('bugcrowdninja.com')}>
-                  <Search size={12} /> BC Filter
-                </button>
               </div>
             </div>
             
