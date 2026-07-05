@@ -239,7 +239,7 @@ export default function TempMail() {
   };
 
   const openSupport = () => {
-    const url = 'https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE-PRO/discussions';
+    const url = 'https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE/discussions';
     if (window.electronAPI?.openExternal) window.electronAPI.openExternal(url);
     else window.open(url, '_blank');
   };
@@ -323,7 +323,12 @@ export default function TempMail() {
               <div key={msg.id} className={`tm-msg-card ${activeMessage?.id === msg.id ? 'active' : ''}`} onClick={() => openMessage(msg)}>
                 <div className="tm-msg-header">
                   <span className="tm-msg-from">{msg.from}</span>
-                  <span className="tm-msg-time">{new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="tm-msg-time">{new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <button className="tm-msg-delete" onClick={(e) => { e.stopPropagation(); setMessages(prev => prev.filter(m => m.id !== msg.id)); }} title="Delete">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </div>
                 <div className="tm-msg-subject">{msg.subject}</div>
               </div>

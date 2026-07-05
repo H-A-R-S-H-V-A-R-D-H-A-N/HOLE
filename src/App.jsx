@@ -49,6 +49,7 @@ import WAFDetector from './components/WAFDetector';
 import JSSpider from './components/JSSpider';
 import TechniqueVault from './components/TechniqueVault';
 import TempMail from './components/TempMail';
+import DonationBanner from './components/DonationBanner';
 
 
 import { isStorageConfigured, pickStorageFolder, getStorageDir, deleteFileFromDrive, listFilesOnDrive, readFileDirect } from './utils/fileSystem';
@@ -558,6 +559,7 @@ export default function App() {
       />
 
       <div className="main-content">
+        <DonationBanner />
         <div className="topbar">
           <div className="topbar-left">
             <h2 className="topbar-title">{getPageTitle()}</h2>

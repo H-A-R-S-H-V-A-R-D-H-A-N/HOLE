@@ -121,6 +121,12 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='none' stroke='%2300D4FF' stroke-width='1.5' opacity='0.9'/%3E%3Ccircle cx='12' cy='12' r='7' fill='none' stroke='%2300D4FF' stroke-width='0.5' opacity='0.4'/%3E%3Cline x1='12' y1='0' x2='12' y2='6' stroke='%2300D4FF' stroke-width='0.8' opacity='0.5'/%3E%3Cline x1='12' y1='18' x2='12' y2='24' stroke='%2300D4FF' stroke-width='0.8' opacity='0.5'/%3E%3Cline x1='0' y1='12' x2='6' y2='12' stroke='%2300D4FF' stroke-width='0.8' opacity='0.5'/%3E%3Cline x1='18' y1='12' x2='24' y2='12' stroke='%2300D4FF' stroke-width='0.8' opacity='0.5'/%3E%3C/svg%3E") 12 12, crosshair;
+}
+
+/* Custom cursor for interactive elements */
+button, a, [role="button"], .sidebar-item, .sidebar-footer-item, .tm-msg-card, .tm-account-pill, .tm-email-box, .tm-add-pill, input, textarea, select {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4' fill='%2300D4FF' opacity='0.25'/%3E%3Ccircle cx='12' cy='12' r='3' fill='none' stroke='%2300D4FF' stroke-width='1.5' opacity='1'/%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%238B5CF6' stroke-width='0.6' opacity='0.5' stroke-dasharray='3 3'/%3E%3Cline x1='12' y1='1' x2='12' y2='5' stroke='%238B5CF6' stroke-width='1' opacity='0.7'/%3E%3Cline x1='12' y1='19' x2='12' y2='23' stroke='%238B5CF6' stroke-width='1' opacity='0.7'/%3E%3Cline x1='1' y1='12' x2='5' y2='12' stroke='%238B5CF6' stroke-width='1' opacity='0.7'/%3E%3Cline x1='19' y1='12' x2='23' y2='12' stroke='%238B5CF6' stroke-width='1' opacity='0.7'/%3E%3C/svg%3E") 12 12, pointer;
 }
 
 #root {
