@@ -1,0 +1,384 @@
+/* ═══════════════════════════════════════════════════════════
+   BOUNTY INBOXES — Webview-based Relay Email Reader
+   ═══════════════════════════════════════════════════════════ */
+
+.bi-root {
+  display: flex;
+  height: 100%;
+  background: #050508;
+  color: #e2e8f0;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* ─── Sidebar ─── */
+.bi-sidebar {
+  width: 380px;
+  min-width: 380px;
+  border-right: 1px solid rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #070710 0%, #050508 100%);
+  overflow-y: auto;
+}
+
+.bi-sidebar::-webkit-scrollbar { width: 4px; }
+.bi-sidebar::-webkit-scrollbar-track { background: transparent; }
+.bi-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 4px; }
+
+/* ─── Header ─── */
+.bi-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.025);
+}
+
+.bi-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.bi-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.5;
+}
+
+/* ─── Security Banner ─── */
+.bi-security-banner {
+  margin: 20px 28px;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(21,128,61,0.04));
+  border: 1px solid rgba(34,197,94,0.2);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.bi-security-icon {
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bi-security-text {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+}
+
+.bi-security-text strong {
+  color: #fff;
+}
+
+/* ─── Relay Settings ─── */
+.bi-section {
+  padding: 0 28px 24px;
+}
+
+.bi-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 16px;
+}
+
+.bi-relay-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.bi-relay-card:focus-within {
+  border-color: rgba(139,92,246,0.3);
+  background: rgba(139,92,246,0.02);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.bi-relay-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.bi-relay-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.bi-relay-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.bi-relay-input-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.bi-relay-input {
+  flex: 1;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.bi-relay-input:focus {
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.1);
+}
+
+.bi-relay-copy {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bi-relay-copy:hover {
+  background: rgba(139,92,246,0.15);
+  border-color: rgba(139,92,246,0.3);
+  color: #c4b5fd;
+}
+
+/* ─── Providers ─── */
+.bi-provider-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.bi-provider-btn {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.bi-provider-btn:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+
+.bi-provider-btn.active {
+  background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.1));
+  border-color: rgba(139,92,246,0.4);
+  box-shadow: 0 4px 16px rgba(139,92,246,0.15);
+}
+
+.bi-provider-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.bi-provider-btn.active .bi-provider-icon {
+  background: rgba(139,92,246,0.3);
+  color: #c4b5fd;
+}
+
+.bi-provider-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+}
+
+.bi-provider-btn.active .bi-provider-name {
+  color: #fff;
+}
+
+/* ─── Main Webview Area ─── */
+.bi-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff; /* White background for email clients */
+  position: relative;
+}
+
+.bi-webview-header {
+  height: 50px;
+  background: #050508;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+}
+
+.bi-webview-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.bi-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bi-nav-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+
+.bi-url-bar {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+
+.bi-url-text {
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bi-filter-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(139,92,246,0.3);
+  background: rgba(139,92,246,0.1);
+  color: #c4b5fd;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bi-filter-btn:hover {
+  background: rgba(139,92,246,0.2);
+  border-color: rgba(139,92,246,0.5);
+  color: #fff;
+}
+
+.bi-webview-container {
+  flex: 1;
+  position: relative;
+  background: #f1f3f4;
+}
+
+.bi-webview-container webview {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.bi-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: #f1f3f4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.bi-loading-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #5f6368;
+}
+
+.bi-welcome-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #050508;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  padding: 40px;
+}
+
+.bi-welcome-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.bi-welcome-placeholder h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.bi-welcome-placeholder p {
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 400px;
+}

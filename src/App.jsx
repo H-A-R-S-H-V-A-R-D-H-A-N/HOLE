@@ -49,6 +49,7 @@ import WAFDetector from './components/WAFDetector';
 import JSSpider from './components/JSSpider';
 import TechniqueVault from './components/TechniqueVault';
 import TempMail from './components/TempMail';
+import BountyInboxes from './components/BountyInboxes';
 import DonationBanner from './components/DonationBanner';
 
 
@@ -500,6 +501,7 @@ export default function App() {
       case 'waf-detector': return 'WAF Detector';
       case 'js-spider': return 'JS Spider';
       case 'technique-vault': return 'Technique Vault';
+      case 'bounty-inboxes': return 'Bounty Inboxes';
       case 'temp-mail': return 'Temp Mail';
 
       case 'support': return 'About';
@@ -693,6 +695,9 @@ export default function App() {
           </div>
           <div style={{ display: activeView === 'technique-vault' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <TechniqueVault />
+          </div>
+          <div style={{ display: activeView === 'bounty-inboxes' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <BountyInboxes />
           </div>
           <div style={{ display: activeView === 'temp-mail' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <TempMail />

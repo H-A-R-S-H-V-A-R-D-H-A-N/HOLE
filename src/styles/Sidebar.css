@@ -189,7 +189,7 @@
   align-items: center;
   gap: var(--space-md);
   padding: 10px var(--space-md);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -211,8 +211,14 @@
 }
 
 @keyframes sidebarActivePulse {
-  0%, 100% { box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 10px rgba(0,0,0,0.3); }
-  50% { box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 20px color-mix(in srgb, var(--item-accent, #8B5CF6) 15%, transparent); }
+  0%, 100% { 
+    box-shadow: inset 0 0 8px color-mix(in srgb, var(--item-accent, #8B5CF6) 10%, transparent), 
+                0 0 8px color-mix(in srgb, var(--item-accent, #8B5CF6) 10%, transparent); 
+  }
+  50% { 
+    box-shadow: inset 0 0 16px color-mix(in srgb, var(--item-accent, #8B5CF6) 20%, transparent), 
+                0 0 16px color-mix(in srgb, var(--item-accent, #8B5CF6) 30%, transparent); 
+  }
 }
 
 .sidebar-item.active::before {

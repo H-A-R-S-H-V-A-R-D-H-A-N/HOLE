@@ -95,6 +95,7 @@ const navSections = [
   {
     title: 'Tools',
     items: [
+      { id: 'bounty-inboxes', label: 'Bounty Inboxes', icon: Mail },
       { id: 'temp-mail', label: 'Temp Mail', icon: Mail },
       { id: 'target-command', label: 'Target Command', icon: Target },
       { id: 'methodology', label: 'Methodology', icon: GitBranch },
