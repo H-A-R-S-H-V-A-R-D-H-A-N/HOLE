@@ -62,13 +62,15 @@ export default function BountyInboxes() {
 
   const openInbox = (suffix) => {
     let url = '';
-    const query = encodeURIComponent(suffix);
+    // Strip the "@" to search for the domain globally (finds emails even if forwarded via BCC/Header rewrites)
+    const domainOnly = suffix.startsWith('@') ? suffix.substring(1) : suffix;
+    const query = encodeURIComponent(domainOnly);
     
     if (activeProvider === 'gmail') {
       if (primaryEmail) {
-        url = `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(primaryEmail)}#search/to%3A${query}`;
+        url = `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(primaryEmail)}#search/${query}`;
       } else {
-        url = `https://mail.google.com/mail/u/0/#search/to%3A${query}`;
+        url = `https://mail.google.com/mail/u/0/#search/${query}`;
       }
     } else if (activeProvider === 'proton') {
       url = `https://mail.proton.me/u/0/all-mail#keyword=${query}`;
