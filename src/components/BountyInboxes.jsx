@@ -27,6 +27,10 @@ export default function BountyInboxes() {
     return localStorage.getItem('hole_bounty_provider') || 'gmail';
   });
 
+  const [primaryEmail, setPrimaryEmail] = useState(() => {
+    return localStorage.getItem('hole_bounty_primary_email') || '';
+  });
+
   const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
@@ -36,6 +40,10 @@ export default function BountyInboxes() {
   useEffect(() => {
     localStorage.setItem('hole_bounty_provider', activeProvider);
   }, [activeProvider]);
+
+  useEffect(() => {
+    localStorage.setItem('hole_bounty_primary_email', primaryEmail);
+  }, [primaryEmail]);
 
   const handleRelayChange = (id, value) => {
     setRelays(prev => ({ ...prev, [id]: value }));
@@ -54,10 +62,16 @@ export default function BountyInboxes() {
 
   const openInbox = (suffix) => {
     let url = '';
+    const query = encodeURIComponent(suffix);
+    
     if (activeProvider === 'gmail') {
-      url = `https://mail.google.com/mail/u/0/#search/to%3A${encodeURIComponent(suffix)}`;
+      if (primaryEmail) {
+        url = `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(primaryEmail)}#search/to%3A${query}`;
+      } else {
+        url = `https://mail.google.com/mail/u/0/#search/to%3A${query}`;
+      }
     } else if (activeProvider === 'proton') {
-      url = `https://mail.proton.me/u/0/all-mail#keyword=${encodeURIComponent(suffix)}`;
+      url = `https://mail.proton.me/u/0/all-mail#keyword=${query}`;
     }
 
     if (url) {
@@ -92,19 +106,41 @@ export default function BountyInboxes() {
         <div className="bi-grid">
           {/* Provider Selection */}
           <div className="bi-panel">
-            <div className="bi-section-title">1. Select Email Provider</div>
-            <div className="bi-provider-grid">
-              {EMAIL_PROVIDERS.map(provider => (
-                <div 
-                  key={provider.id} 
-                  className={`bi-provider-btn ${activeProvider === provider.id ? 'active' : ''}`}
-                  onClick={() => setActiveProvider(provider.id)}
-                >
-                  <Mail size={18} />
-                  <span className="bi-provider-name">{provider.name}</span>
-                </div>
-              ))}
+            <div className="bi-section-title">1. Inbox Settings</div>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: '600' }}>PROVIDER</div>
+              <div className="bi-provider-grid">
+                {EMAIL_PROVIDERS.map(provider => (
+                  <div 
+                    key={provider.id} 
+                    className={`bi-provider-btn ${activeProvider === provider.id ? 'active' : ''}`}
+                    onClick={() => setActiveProvider(provider.id)}
+                  >
+                    <Mail size={18} />
+                    <span className="bi-provider-name">{provider.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {activeProvider === 'gmail' && (
+              <div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: '600' }}>PRIMARY GMAIL ACCOUNT (Optional)</div>
+                <input
+                  type="email"
+                  className="bi-relay-input"
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                  placeholder="e.g. hunter@gmail.com"
+                  value={primaryEmail}
+                  onChange={(e) => setPrimaryEmail(e.target.value)}
+                  title="If you have multiple Google accounts logged into Chrome, enter your bug bounty email here so HOLE opens the correct inbox."
+                />
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '8px', lineHeight: '1.4' }}>
+                  Ensures we route you to the correct session if you are logged into multiple accounts.
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Platform Relays */}
