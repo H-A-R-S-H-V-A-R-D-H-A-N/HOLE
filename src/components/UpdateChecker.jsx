@@ -99,6 +99,11 @@ export default function UpdateChecker() {
         <div className="update-checker-content">
           <div className="update-checker-title">Update Available</div>
           <div className="update-checker-message">Please update this app</div>
+          <div className="update-checker-command" onClick={() => {
+            navigator.clipboard.writeText("git pull origin main");
+          }} title="Click to copy">
+            <code>git pull origin main</code>
+          </div>
         </div>
         <div className="update-checker-actions">
           <button className="update-checker-btn update" onClick={handleUpdate} title="Open GitHub to pull the update">
