@@ -106,13 +106,7 @@ export default function UpdateChecker() {
         </div>
         <div className="update-checker-content">
           <div className="update-checker-title">Update Available</div>
-          <div className="update-checker-message">{updateInfo.message}</div>
-          <div className="update-checker-meta">
-            <GitBranch size={11} />
-            <span>{updateInfo.shortSha}</span>
-            <span className="update-checker-dot">·</span>
-            <span>{timeAgo}</span>
-          </div>
+          <div className="update-checker-message">Please update this app</div>
         </div>
         <div className="update-checker-actions">
           <button className="update-checker-btn update" onClick={handleUpdate} title="Open GitHub to pull the update">
