@@ -1,0 +1,103 @@
+/* ═══════════════════════════════════════════════════════════
+   COMMUNITY COUNTER — Live hacker count badge
+   ═══════════════════════════════════════════════════════════ */
+
+.community-counter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  user-select: none;
+}
+
+.community-counter-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(6px);
+  animation: counterGlowPulse 4s ease-in-out infinite;
+}
+
+@keyframes counterGlowPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.community-counter-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 6px 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(139, 92, 246, 0.06) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.community-counter:hover .community-counter-inner {
+  border-color: rgba(0, 212, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.12) 0%, rgba(139, 92, 246, 0.1) 100%);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.15);
+}
+
+.community-counter-ring {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(139, 92, 246, 0.15) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  color: #00D4FF;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Live pulse dot */
+.community-counter-ring::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  border: 1.5px solid rgba(10, 14, 23, 0.9);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  animation: liveDot 2.5s ease-in-out infinite;
+}
+
+@keyframes liveDot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(16, 185, 129, 0.6); }
+  50% { opacity: 0.6; box-shadow: 0 0 12px rgba(16, 185, 129, 0.9); }
+}
+
+.community-counter-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.community-counter-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.community-counter-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(0, 212, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-top: 2px;
+}

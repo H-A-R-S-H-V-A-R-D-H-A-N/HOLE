@@ -3,10 +3,13 @@
    ═══════════════════════════════════════════════════════════ */
 
 .donation-banner-wrapper {
-  padding: 12px 24px 0;
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
-  z-index: 10;
+  z-index: 20;
   background: transparent;
   pointer-events: none;
 }
@@ -30,12 +33,6 @@
   padding: 0 24px;
   flex-shrink: 0;
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: donationBannerFloat 4s ease-in-out infinite;
-}
-
-@keyframes donationBannerFloat {
-  0%, 100% { transform: translateY(0); box-shadow: 0 4px 24px rgba(139,92,246,0.15); }
-  50% { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(139,92,246,0.25); }
 }
 
 .donation-banner:hover {

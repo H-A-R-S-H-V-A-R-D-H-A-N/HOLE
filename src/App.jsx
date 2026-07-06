@@ -51,6 +51,7 @@ import TechniqueVault from './components/TechniqueVault';
 import TempMail from './components/TempMail';
 import BountyInboxes from './components/BountyInboxes';
 import DonationBanner from './components/DonationBanner';
+import CommunityCounter from './components/CommunityCounter';
 
 
 import { isStorageConfigured, pickStorageFolder, getStorageDir, deleteFileFromDrive, listFilesOnDrive, readFileDirect } from './utils/fileSystem';
@@ -579,7 +580,7 @@ export default function App() {
                 />
               </div>
             )}
-            <div className="topbar-actions"></div>
+            <div className="topbar-actions"><CommunityCounter /></div>
           </div>
         </div>
 
