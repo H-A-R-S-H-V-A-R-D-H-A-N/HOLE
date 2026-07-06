@@ -263,5 +263,5 @@ HOLE is built for authorized security testing, bug bounty programs (HackerOne, B
 <br/>
 
 <div align="center">
-  <sub>Built by hunters, for hunters.</sub>
+  <sub>Built by hunter, for hunters.</sub>
 </div>
