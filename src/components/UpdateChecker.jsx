@@ -40,12 +40,7 @@ export default function UpdateChecker() {
         return;
       }
 
-      // If no local SHA available, compare with last dismissed SHA
-      const dismissedSha = localStorage.getItem(DISMISSED_KEY);
-      if (dismissedSha === remoteSha) {
-        setDismissed(true);
-        return;
-      }
+
 
       // There's an update!
       setUpdateInfo({
@@ -76,9 +71,6 @@ export default function UpdateChecker() {
   }, [checkForUpdates]);
 
   const handleDismiss = () => {
-    if (updateInfo?.sha) {
-      localStorage.setItem(DISMISSED_KEY, updateInfo.sha);
-    }
     setDismissed(true);
   };
 
