@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, ArrowUpCircle, X, GitBranch } from 'lucide-react';
+import { RefreshCw, ArrowUpCircle, X, GitBranch, Copy } from 'lucide-react';
 import '../styles/UpdateChecker.css';
 
 const REPO_OWNER = 'H-A-R-S-H-V-A-R-D-H-A-N';
@@ -103,13 +103,10 @@ export default function UpdateChecker() {
             navigator.clipboard.writeText("git pull origin main");
           }} title="Click to copy">
             <code>git pull origin main</code>
+            <Copy size={10} style={{ marginLeft: '6px', opacity: 0.6 }} />
           </div>
         </div>
         <div className="update-checker-actions">
-          <button className="update-checker-btn update" onClick={handleUpdate} title="Open GitHub to pull the update">
-            <RefreshCw size={13} />
-            Update
-          </button>
           <button className="update-checker-btn dismiss" onClick={handleDismiss} title="Dismiss this update">
             <X size={14} />
           </button>
