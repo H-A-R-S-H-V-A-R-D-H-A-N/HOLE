@@ -78,10 +78,31 @@ async function generateWithProvider(provider) {
 
 async function fetchMessagesFromProvider(acc) {
   if (acc.providerType === 'mailtm') {
-    const res = await fetch(`${acc.providerBase}/messages`, {
+    let res = await fetch(`${acc.providerBase}/messages`, {
       headers: { 'Authorization': `Bearer ${acc.token}` }
     });
-    if (!res.ok) return [];
+
+    if (res.status === 401 && acc.password) {
+      // Token expired, re-authenticate
+      const tokRes = await fetch(`${acc.providerBase}/token`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: acc.address, password: acc.password })
+      });
+      if (tokRes.ok) {
+        const tokData = await tokRes.json();
+        acc.token = tokData.token;
+        try {
+          const accs = JSON.parse(localStorage.getItem('kroma_temp_mail_accounts')) || [];
+          const updatedAccs = accs.map(a => a.id === acc.id ? { ...a, token: tokData.token } : a);
+          localStorage.setItem('kroma_temp_mail_accounts', JSON.stringify(updatedAccs));
+        } catch {}
+        res = await fetch(`${acc.providerBase}/messages`, {
+          headers: { 'Authorization': `Bearer ${acc.token}` }
+        });
+      }
+    }
+
+    if (!res.ok) throw new Error('Failed to fetch messages');
     const data = await res.json();
     return (data['hydra:member'] || []).map(m => ({
       id: m.id, from: m.from?.address || m.from?.name || 'Unknown',
@@ -92,7 +113,7 @@ async function fetchMessagesFromProvider(acc) {
 
   if (acc.providerType === 'tempmailio') {
     const res = await fetch(`${acc.providerBase}/email/${acc.address}/messages`);
-    if (!res.ok) return [];
+    if (!res.ok) throw new Error('Failed to fetch messages');
     const data = await res.json();
     return (data || []).map(m => ({
       id: m.id, from: m.from || 'Unknown',
@@ -106,9 +127,22 @@ async function fetchMessagesFromProvider(acc) {
 
 async function readMessageFromProvider(acc, msgId) {
   if (acc.providerType === 'mailtm') {
-    const res = await fetch(`${acc.providerBase}/messages/${msgId}`, {
+    let res = await fetch(`${acc.providerBase}/messages/${msgId}`, {
       headers: { 'Authorization': `Bearer ${acc.token}` }
     });
+    
+    if (res.status === 401 && acc.password) {
+      // Assume doFetchMessages already updated the token, or it will on next poll
+      // But we can try once more with the current token just in case
+      const accs = JSON.parse(localStorage.getItem('kroma_temp_mail_accounts')) || [];
+      const updatedAcc = accs.find(a => a.id === acc.id);
+      if (updatedAcc?.token) {
+        res = await fetch(`${acc.providerBase}/messages/${msgId}`, {
+          headers: { 'Authorization': `Bearer ${updatedAcc.token}` }
+        });
+      }
+    }
+    
     if (!res.ok) return null;
     const data = await res.json();
     return { html: data.html?.[0] || '', text: data.text || '', attachments: data.attachments || [] };
