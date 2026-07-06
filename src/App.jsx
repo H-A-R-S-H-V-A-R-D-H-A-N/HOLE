@@ -253,7 +253,11 @@ export default function App() {
     const updatedSections = [...customSections, newSection];
     const updatedSettings = { ...settings, customSections: updatedSections };
     setSettings(updatedSettings);
-    localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_settings', updatedSettings);
+    } else {
+      localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
+    }
     setNewSectionName('');
   };
 
@@ -261,7 +265,11 @@ export default function App() {
     const updatedSections = customSections.filter(s => s.id !== id);
     const updatedSettings = { ...settings, customSections: updatedSections };
     setSettings(updatedSettings);
-    localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_settings', updatedSettings);
+    } else {
+      localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
+    }
   };
 
   // PERSISTENCE ENGINE: Scan /Notes directory on startup and load all supported file types
@@ -310,7 +318,8 @@ export default function App() {
         // Retrieve persisted metadata for non-tiptap files (like .md)
         let storedMetadata = { severity: 'info', tags: [tag] };
         try {
-          const metaMap = JSON.parse(localStorage.getItem('hole_file_metadata') || '{}');
+          const savedMeta = window.electronAPI ? window.electronAPI.storeGetSync('hole_file_metadata') : localStorage.getItem('hole_file_metadata');
+          const metaMap = (typeof savedMeta === 'string' ? JSON.parse(savedMeta) : savedMeta) || {};
           if (metaMap[file.path]) {
             storedMetadata = { ...storedMetadata, ...metaMap[file.path] };
           }
@@ -412,9 +421,14 @@ export default function App() {
         
         // Always persist metadata to a localStorage sidecar map so metadata for .md and .txt files survives reloads
         try {
-          const metaMap = JSON.parse(localStorage.getItem('hole_file_metadata') || '{}');
+          const savedMeta = window.electronAPI ? window.electronAPI.storeGetSync('hole_file_metadata') : localStorage.getItem('hole_file_metadata');
+          const metaMap = (typeof savedMeta === 'string' ? JSON.parse(savedMeta) : savedMeta) || {};
           metaMap[finalNote.filePath] = finalNote.metadata;
-          localStorage.setItem('hole_file_metadata', JSON.stringify(metaMap));
+          if (window.electronAPI) {
+            window.electronAPI.storeSetSync('hole_file_metadata', metaMap);
+          } else {
+            localStorage.setItem('hole_file_metadata', JSON.stringify(metaMap));
+          }
         } catch(e) {}
       }
     }
