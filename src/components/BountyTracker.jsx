@@ -9,8 +9,8 @@ import '../styles/Settings.css';
 export default function BountyTracker() {
   const [bounties, setBounties] = useState(() => {
     try {
-      const saved = localStorage.getItem('kroma_bounties');
-      return saved ? JSON.parse(saved) : [];
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_bounties') : localStorage.getItem('kroma_bounties');
+      return (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
     } catch {
       return [];
     }
@@ -27,7 +27,11 @@ export default function BountyTracker() {
   const totalPaid = bounties.filter(b => b.status === 'paid').length;
 
   useEffect(() => {
-    localStorage.setItem('kroma_bounties', JSON.stringify(bounties));
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_bounties', bounties);
+    } else {
+      localStorage.setItem('kroma_bounties', JSON.stringify(bounties));
+    }
   }, [bounties]);
 
   const handleOpenModal = (bounty = null) => {

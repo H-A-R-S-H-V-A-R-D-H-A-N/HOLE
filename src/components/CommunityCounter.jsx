@@ -13,7 +13,12 @@ export default function CommunityCounter() {
   useEffect(() => {
     const registerAndFetch = async () => {
       try {
-        const alreadyCounted = localStorage.getItem(LOCAL_FLAG);
+        let alreadyCounted = false;
+        if (window.electronAPI) {
+          alreadyCounted = await window.electronAPI.storeGet(LOCAL_FLAG);
+        } else {
+          alreadyCounted = localStorage.getItem(LOCAL_FLAG);
+        }
 
         if (!alreadyCounted) {
           // First time user — increment the counter
@@ -21,7 +26,12 @@ export default function CommunityCounter() {
           if (!res.ok) throw new Error('Hit failed');
           const data = await res.json();
           setTotalUsers(data.value);
-          localStorage.setItem(LOCAL_FLAG, 'true');
+          
+          if (window.electronAPI) {
+            await window.electronAPI.storeSet(LOCAL_FLAG, true);
+          } else {
+            localStorage.setItem(LOCAL_FLAG, 'true');
+          }
         } else {
           // Returning user — just read the current count
           const res = await fetch(`https://abacus.jasoncameron.dev/get/${ABACUS_NAMESPACE}/${ABACUS_KEY}`);

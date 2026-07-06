@@ -68,8 +68,8 @@ export default function App() {
   const [editorFilePath, setEditorFilePath] = useState(null);
   const [settings, setSettings] = useState(() => {
     try {
-      const saved = localStorage.getItem('kroma_settings');
-      return saved ? JSON.parse(saved) : {};
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_settings') : localStorage.getItem('kroma_settings');
+      return (typeof saved === 'string' ? JSON.parse(saved) : saved) || {};
     } catch {
       return {};
     }
@@ -87,21 +87,30 @@ export default function App() {
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const appContainerRef = useRef(null);
 
-  const [activeContext, setActiveContext] = useState(() => localStorage.getItem('kroma_active_context') || '');
+  const [activeContext, setActiveContext] = useState(() => {
+    const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_active_context') : localStorage.getItem('kroma_active_context');
+    return saved || '';
+  });
   const [clipboardHistory, setClipboardHistory] = useState(() => {
     try {
-      const raw = JSON.parse(localStorage.getItem('kroma_clipboard')) || {};
-      // ONE-TIME MIGRATION: Purge garbage entries created by the old keystroke-per-character bug
-      if (!localStorage.getItem('kroma_clipboard_v2_migrated')) {
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_clipboard') : localStorage.getItem('kroma_clipboard');
+      const raw = (typeof saved === 'string' ? JSON.parse(saved) : saved) || {};
+      
+      const migrated = window.electronAPI ? window.electronAPI.storeGetSync('kroma_clipboard_v2_migrated') : localStorage.getItem('kroma_clipboard_v2_migrated');
+      if (!migrated) {
         const cleaned = {};
         for (const [key, val] of Object.entries(raw)) {
-          // Keep only entries with names >= 2 chars that don't look like typing fragments
           if (key.length >= 2 && Array.isArray(val)) {
             cleaned[key] = val;
           }
         }
-        localStorage.setItem('kroma_clipboard', JSON.stringify(cleaned));
-        localStorage.setItem('kroma_clipboard_v2_migrated', '1');
+        if (window.electronAPI) {
+          window.electronAPI.storeSetSync('kroma_clipboard', cleaned);
+          window.electronAPI.storeSetSync('kroma_clipboard_v2_migrated', '1');
+        } else {
+          localStorage.setItem('kroma_clipboard', JSON.stringify(cleaned));
+          localStorage.setItem('kroma_clipboard_v2_migrated', '1');
+        }
         return cleaned;
       }
       return raw;
@@ -123,7 +132,11 @@ export default function App() {
           if (currentList[0] === text) return prev;
           const newList = [text, ...currentList].slice(0, 50);
           const next = { ...prev, [ctx]: newList };
-          localStorage.setItem('kroma_clipboard', JSON.stringify(next));
+          if (window.electronAPI) {
+            window.electronAPI.storeSetSync('kroma_clipboard', next);
+          } else {
+            localStorage.setItem('kroma_clipboard', JSON.stringify(next));
+          }
           return next;
         });
       });
@@ -133,7 +146,11 @@ export default function App() {
   // Only called explicitly by Dashboard's Add button, never on keystrokes
   const setActiveContextDirect = (name) => {
     setActiveContext(name);
-    localStorage.setItem('kroma_active_context', name);
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_active_context', name);
+    } else {
+      localStorage.setItem('kroma_active_context', name);
+    }
   };
 
 

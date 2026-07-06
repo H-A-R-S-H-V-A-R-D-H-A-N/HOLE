@@ -139,4 +139,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Get git commit SHA for update checking
   getGitSha: () => ipcRenderer.invoke('get-git-sha'),
+
+  // JSON Store Handlers
+  storeGet: (key) => ipcRenderer.invoke('store-get', key),
+  storeSet: (key, value) => ipcRenderer.invoke('store-set', key, value),
+  storeGetSync: (key) => ipcRenderer.sendSync('store-get-sync', key),
+  storeSetSync: (key, value) => ipcRenderer.sendSync('store-set-sync', key, value),
 });

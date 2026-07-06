@@ -92,9 +92,14 @@ async function fetchMessagesFromProvider(acc) {
         const tokData = await tokRes.json();
         acc.token = tokData.token;
         try {
-          const accs = JSON.parse(localStorage.getItem('kroma_temp_mail_accounts')) || [];
+          const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_temp_mail_accounts') : localStorage.getItem('kroma_temp_mail_accounts');
+          const accs = (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
           const updatedAccs = accs.map(a => a.id === acc.id ? { ...a, token: tokData.token } : a);
-          localStorage.setItem('kroma_temp_mail_accounts', JSON.stringify(updatedAccs));
+          if (window.electronAPI) {
+            window.electronAPI.storeSetSync('kroma_temp_mail_accounts', updatedAccs);
+          } else {
+            localStorage.setItem('kroma_temp_mail_accounts', JSON.stringify(updatedAccs));
+          }
         } catch {}
         res = await fetch(`${acc.providerBase}/messages`, {
           headers: { 'Authorization': `Bearer ${acc.token}` }
@@ -134,7 +139,8 @@ async function readMessageFromProvider(acc, msgId) {
     if (res.status === 401 && acc.password) {
       // Assume doFetchMessages already updated the token, or it will on next poll
       // But we can try once more with the current token just in case
-      const accs = JSON.parse(localStorage.getItem('kroma_temp_mail_accounts')) || [];
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_temp_mail_accounts') : localStorage.getItem('kroma_temp_mail_accounts');
+      const accs = (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
       const updatedAcc = accs.find(a => a.id === acc.id);
       if (updatedAcc?.token) {
         res = await fetch(`${acc.providerBase}/messages/${msgId}`, {
@@ -157,15 +163,27 @@ async function readMessageFromProvider(acc, msgId) {
 
 export default function TempMail() {
   const [accounts, setAccounts] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('kroma_temp_mail_accounts')) || []; } catch { return []; }
+    try {
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_temp_mail_accounts') : localStorage.getItem('kroma_temp_mail_accounts');
+      return (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
+    } catch { return []; }
   });
   const [activeIdx, setActiveIdx] = useState(() => {
-    try { return parseInt(localStorage.getItem('kroma_temp_mail_active') || '0'); } catch { return 0; }
+    try {
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_temp_mail_active') : localStorage.getItem('kroma_temp_mail_active');
+      return parseInt(saved || '0');
+    } catch { return 0; }
   });
   const [messages, setMessages] = useState(() => {
-    const acc = (JSON.parse(localStorage.getItem('kroma_temp_mail_accounts')) || [])[parseInt(localStorage.getItem('kroma_temp_mail_active') || '0')];
+    const savedAccs = window.electronAPI ? window.electronAPI.storeGetSync('kroma_temp_mail_accounts') : localStorage.getItem('kroma_temp_mail_accounts');
+    const parsedAccs = (typeof savedAccs === 'string' ? JSON.parse(savedAccs) : savedAccs) || [];
+    const savedIdx = window.electronAPI ? window.electronAPI.storeGetSync('kroma_temp_mail_active') : localStorage.getItem('kroma_temp_mail_active');
+    const acc = parsedAccs[parseInt(savedIdx || '0')];
     if (acc) {
-      try { return JSON.parse(localStorage.getItem(`kroma_temp_mail_msgs_${acc.id}`)) || []; } catch { return []; }
+      try {
+        const savedMsgs = window.electronAPI ? window.electronAPI.storeGetSync(`kroma_temp_mail_msgs_${acc.id}`) : localStorage.getItem(`kroma_temp_mail_msgs_${acc.id}`);
+        return (typeof savedMsgs === 'string' ? JSON.parse(savedMsgs) : savedMsgs) || [];
+      } catch { return []; }
     }
     return [];
   });
@@ -182,8 +200,13 @@ export default function TempMail() {
   const account = accounts[activeIdx] || null;
 
   const save = useCallback((accs, idx) => {
-    localStorage.setItem('kroma_temp_mail_accounts', JSON.stringify(accs));
-    localStorage.setItem('kroma_temp_mail_active', String(idx ?? 0));
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_temp_mail_accounts', accs);
+      window.electronAPI.storeSetSync('kroma_temp_mail_active', String(idx ?? 0));
+    } else {
+      localStorage.setItem('kroma_temp_mail_accounts', JSON.stringify(accs));
+      localStorage.setItem('kroma_temp_mail_active', String(idx ?? 0));
+    }
   }, []);
 
   useEffect(() => {
@@ -216,11 +239,16 @@ export default function TempMail() {
     if (showLoader) setLoading(true);
     try {
       const msgs = await fetchMessagesFromProvider(account);
-      const deletedIds = JSON.parse(localStorage.getItem(`kroma_temp_mail_deleted_${account.id}`)) || [];
+      const savedDeleted = window.electronAPI ? window.electronAPI.storeGetSync(`kroma_temp_mail_deleted_${account.id}`) : localStorage.getItem(`kroma_temp_mail_deleted_${account.id}`);
+      const deletedIds = (typeof savedDeleted === 'string' ? JSON.parse(savedDeleted) : savedDeleted) || [];
       const filteredMsgs = msgs.filter(m => !deletedIds.includes(m.id));
       
       setMessages(filteredMsgs);
-      localStorage.setItem(`kroma_temp_mail_msgs_${account.id}`, JSON.stringify(filteredMsgs));
+      if (window.electronAPI) {
+        window.electronAPI.storeSetSync(`kroma_temp_mail_msgs_${account.id}`, filteredMsgs);
+      } else {
+        localStorage.setItem(`kroma_temp_mail_msgs_${account.id}`, JSON.stringify(filteredMsgs));
+      }
     } catch (e) { console.error('Fetch error:', e); }
     if (showLoader) setLoading(false);
   };
@@ -254,12 +282,19 @@ export default function TempMail() {
     const acc = accounts[idx];
     setActiveIdx(idx);
     try {
-      const cached = JSON.parse(localStorage.getItem(`kroma_temp_mail_msgs_${acc?.id}`)) || [];
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync(`kroma_temp_mail_msgs_${acc?.id}`) : localStorage.getItem(`kroma_temp_mail_msgs_${acc?.id}`);
+      const cached = (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
       setMessages(cached);
     } catch { setMessages([]); }
     setLoading(true);
     setActiveMessage(null);
-    localStorage.setItem('kroma_temp_mail_active', String(idx));
+    setMessageDetails(null);
+    setActiveProvider(acc?.providerName || '');
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_temp_mail_active', String(idx));
+    } else {
+      localStorage.setItem('kroma_temp_mail_active', String(idx));
+    }
   };
 
   const burnAccount = async () => {
@@ -267,7 +302,11 @@ export default function TempMail() {
     if (account.providerType === 'mailtm') {
       try { await fetch(`${account.providerBase}/accounts/${account.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${account.token}` } }); } catch {}
     }
-    localStorage.removeItem(`kroma_temp_mail_msgs_${account.id}`);
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync(`kroma_temp_mail_msgs_${account.id}`, null); // Clear from store
+    } else {
+      localStorage.removeItem(`kroma_temp_mail_msgs_${account.id}`);
+    }
     const newAccounts = accounts.filter((_, i) => i !== activeIdx);
     const newIdx = Math.max(0, activeIdx - 1);
     setAccounts(newAccounts);
@@ -285,9 +324,14 @@ export default function TempMail() {
 
   const handleConfirmDelete = () => {
     if (!deleteConfirmMsg || !account) return;
-    const deletedIds = JSON.parse(localStorage.getItem(`kroma_temp_mail_deleted_${account.id}`)) || [];
-    deletedIds.push(deleteConfirmMsg.id);
-    localStorage.setItem(`kroma_temp_mail_deleted_${account.id}`, JSON.stringify(deletedIds));
+    const savedDeleted = window.electronAPI ? window.electronAPI.storeGetSync(`kroma_temp_mail_deleted_${account.id}`) : localStorage.getItem(`kroma_temp_mail_deleted_${account.id}`);
+    const deletedIds = (typeof savedDeleted === 'string' ? JSON.parse(savedDeleted) : savedDeleted) || [];
+    const newDeleted = [...deletedIds, deleteConfirmMsg.id];
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync(`kroma_temp_mail_deleted_${account.id}`, newDeleted);
+    } else {
+      localStorage.setItem(`kroma_temp_mail_deleted_${account.id}`, JSON.stringify(newDeleted));
+    }
     
     setMessages(prev => prev.filter(m => m.id !== deleteConfirmMsg.id));
     if (activeMessage?.id === deleteConfirmMsg.id) {

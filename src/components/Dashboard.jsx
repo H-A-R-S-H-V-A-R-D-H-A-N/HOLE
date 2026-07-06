@@ -7,8 +7,8 @@ import '../styles/Dashboard.css';
 export default function Dashboard({ notes, onViewChange, onNewNote, activeContext, setActiveContextDirect, clipboardHistory, setClipboardHistory, addToast }) {
   const [bounties, setBounties] = useState(() => {
     try {
-      const saved = localStorage.getItem('kroma_bounties');
-      return saved ? JSON.parse(saved) : [];
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_bounties') : localStorage.getItem('kroma_bounties');
+      return (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
     } catch { return []; }
   });
 
@@ -30,7 +30,11 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
     setClipboardHistory(prev => {
       if (prev[name]) return prev; // already exists
       const next = { ...prev, [name]: [] };
-      localStorage.setItem('kroma_clipboard', JSON.stringify(next));
+      if (window.electronAPI) {
+        window.electronAPI.storeSetSync('kroma_clipboard', next);
+      } else {
+        localStorage.setItem('kroma_clipboard', JSON.stringify(next));
+      }
       return next;
     });
     // Also set it as the active capture context
@@ -43,7 +47,11 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
     setClipboardHistory(prev => {
       const next = { ...prev };
       delete next[ctxName];
-      localStorage.setItem('kroma_clipboard', JSON.stringify(next));
+      if (window.electronAPI) {
+        window.electronAPI.storeSetSync('kroma_clipboard', next);
+      } else {
+        localStorage.setItem('kroma_clipboard', JSON.stringify(next));
+      }
       return next;
     });
     if (viewingContext === ctxName) {

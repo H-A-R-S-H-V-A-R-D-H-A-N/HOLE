@@ -162,6 +162,64 @@ ipcMain.handle('get-app-path', () => {
   return process.cwd();
 });
 
+// JSON Store Handlers (Bulletproof storage independent of Chromium LevelDB)
+ipcMain.handle('store-get', async (event, key) => {
+  try {
+    const storePath = path.join(app.getPath('userData'), 'hole_store.json');
+    if (!fs.existsSync(storePath)) return null;
+    const data = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+    return data[key] ?? null;
+  } catch (err) {
+    console.error('[HOLE STORE] Error reading key:', key, err);
+    return null;
+  }
+});
+
+ipcMain.handle('store-set', async (event, key, value) => {
+  try {
+    const storePath = path.join(app.getPath('userData'), 'hole_store.json');
+    let data = {};
+    if (fs.existsSync(storePath)) {
+      try { data = JSON.parse(fs.readFileSync(storePath, 'utf-8')); } catch {}
+    }
+    data[key] = value;
+    fs.writeFileSync(storePath, JSON.stringify(data, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('[HOLE STORE] Error writing key:', key, err);
+    return false;
+  }
+});
+
+ipcMain.on('store-get-sync', (event, key) => {
+  try {
+    const storePath = path.join(app.getPath('userData'), 'hole_store.json');
+    if (!fs.existsSync(storePath)) {
+      event.returnValue = null;
+      return;
+    }
+    const data = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+    event.returnValue = data[key] ?? null;
+  } catch (err) {
+    event.returnValue = null;
+  }
+});
+
+ipcMain.on('store-set-sync', (event, key, value) => {
+  try {
+    const storePath = path.join(app.getPath('userData'), 'hole_store.json');
+    let data = {};
+    if (fs.existsSync(storePath)) {
+      try { data = JSON.parse(fs.readFileSync(storePath, 'utf-8')); } catch {}
+    }
+    data[key] = value;
+    fs.writeFileSync(storePath, JSON.stringify(data, null, 2), 'utf-8');
+    event.returnValue = true;
+  } catch (err) {
+    event.returnValue = false;
+  }
+});
+
 // Save file directly to a path (no dialog, used after storage dir is set)
 ipcMain.handle('save-file-direct', async (event, { filePath, content }) => {
   try {
