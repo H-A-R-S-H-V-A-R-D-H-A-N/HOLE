@@ -113,6 +113,11 @@ HOLE combines dozens of separate hacking utilities into a single, cohesive ecosy
 ### Community & Updates
 * **Live Community Counter:** See how many hackers worldwide are using HOLE in real-time via an anonymous, zero-telemetry counter displayed in the top-right corner.
 * **Auto-Update Notifications:** HOLE silently checks for new updates via the public GitHub API. When a new commit is pushed, a toast notification appears with the update details and a one-click link to pull the latest version.
+* **Bounty Email Hub:** A multi-account aware email command center. Instantly open filtered inbox searches for specific bug bounty platforms (HackerOne, Bugcrowd, Intigriti, etc.) in your default browser with smart Gmail `authuser` routing for multi-account sessions.
+
+### Community & Updates
+* **Live Community Counter:** See how many hackers worldwide are using HOLE in real-time via an anonymous, zero-telemetry counter displayed in the top-right corner.
+* **Auto-Update Notifications:** HOLE silently checks for new updates via the public GitHub API. When a new commit is pushed, a toast notification appears with the update details and a one-click link to pull the latest version.
 
 <br/>
 
