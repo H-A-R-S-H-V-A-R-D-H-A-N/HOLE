@@ -70,6 +70,26 @@ let activeWatcher = null;
 
 // ---- IPC Handlers ---- //
 
+// Open URLs in the system default browser
+ipcMain.handle('open-external', async (event, url) => {
+  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+    shell.openExternal(url);
+  }
+});
+
+// Get the current git commit SHA for update checking
+ipcMain.handle('get-git-sha', async () => {
+  return new Promise((resolve) => {
+    const appDir = app.isPackaged
+      ? path.join(process.resourcesPath, '..')
+      : path.join(__dirname, '..');
+    exec('git rev-parse HEAD', { cwd: appDir }, (err, stdout) => {
+      if (err) resolve(null);
+      else resolve(stdout.trim());
+    });
+  });
+});
+
 // Pick a folder (used on first launch to choose storage location)
 ipcMain.handle('pick-folder', async () => {
   try {

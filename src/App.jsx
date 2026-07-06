@@ -52,6 +52,7 @@ import TempMail from './components/TempMail';
 import BountyInboxes from './components/BountyInboxes';
 import DonationBanner from './components/DonationBanner';
 import CommunityCounter from './components/CommunityCounter';
+import UpdateChecker from './components/UpdateChecker';
 
 
 import { isStorageConfigured, pickStorageFolder, getStorageDir, deleteFileFromDrive, listFilesOnDrive, readFileDirect } from './utils/fileSystem';
@@ -563,6 +564,7 @@ export default function App() {
 
       <div className="main-content">
         <DonationBanner />
+        <UpdateChecker />
         <div className="topbar">
           <div className="topbar-left">
             <h2 className="topbar-title">{getPageTitle()}</h2>

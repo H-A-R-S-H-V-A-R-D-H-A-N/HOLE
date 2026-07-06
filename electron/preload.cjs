@@ -133,4 +133,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   techniquesDelete: (options) => ipcRenderer.invoke('techniques-delete', options),
   // Temp SMS Scraper
   scrapeTempSms: (action, payload) => ipcRenderer.invoke('scrape-temp-sms', action, payload),
+
+  // Open URLs in system default browser
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+
+  // Get git commit SHA for update checking
+  getGitSha: () => ipcRenderer.invoke('get-git-sha'),
 });
