@@ -170,30 +170,31 @@ export default function TerminalView() {
     position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
     zIndex: 9999,
-    background: 'rgba(5, 10, 20, 0.85)',
-    backdropFilter: 'blur(30px)',
+    background: 'rgba(255, 255, 255, 0.25)',
+    backdropFilter: 'blur(50px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
     display: 'flex', 
     flexDirection: 'column', 
-    gap: '20px', 
-    padding: '24px', 
+    gap: '20px',
+    padding: '24px',
     overflow: 'hidden'
-  } : { 
+  } : {
     display: 'flex', flexDirection: 'column', height: 'calc(100vh - 40px)', gap: '16px', overflow: 'hidden',
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(40px) saturate(150%)',
-    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-    padding: '20px',
+    background: 'rgba(255, 255, 255, 0.25)',
+    backdropFilter: 'blur(50px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    padding: '24px',
     borderRadius: '24px',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
+    border: '2px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 12px 40px 0 rgba(0, 0, 0, 0.4)'
   };
 
   return (
     <div className="tool-page macos-window-enter" style={containerStyle}>
       {/* Header & Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10, background: 'linear-gradient(135deg, #E11D48, #9F1239)', boxShadow: '0 10px 40px rgba(159, 18, 57, 0.4)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10, background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(0, 0, 0, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TerminalIcon size={20} color="#fff" />
           </div>
           <div>
@@ -223,7 +224,7 @@ export default function TerminalView() {
               <PowerOff size={16} /> Disconnect
             </button>
           ) : (
-            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'rgba(0, 0, 0, 0.3)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', zIndex: 10 }}>
+            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', zIndex: 10 }}>
               <Power size={16} /> Initialize
             </button>
           )}
