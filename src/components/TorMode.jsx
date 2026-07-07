@@ -503,46 +503,68 @@ export default function TorMode() {
       </div>
 
       
-      {/* Global Ghost Mode Toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', marginTop: '-8px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Globe size={24} color="#10B981" />
+      {/* Global Ghost Mode Toggle (Windows) or FoxyProxy Guide (Mac/Linux) */}
+      {navigator.userAgent.includes('Win') ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', marginTop: '-8px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Globe size={24} color="#10B981" />
+            </div>
+            <div>
+              <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 800, color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                System-Wide Ghost Mode
+                {globalGhost && <span style={{ fontSize: '10px', padding: '2px 6px', background: '#10B981', color: '#000', borderRadius: '4px', fontWeight: 900 }}>ACTIVE</span>}
+              </h4>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '600px' }}>
+                Force your entire system (browsers, terminal, apps) to route through the active Tor connection. Use with extreme caution.
+              </p>
+              <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', borderLeft: '3px solid #EF4444', borderRadius: '4px', fontSize: '11px', color: '#FCA5A5' }}>
+                <strong>CRASH WARNING:</strong> If HOLE closes unexpectedly while Ghost Mode is ACTIVE, your internet routing may break. To fix: Windows Settings → Proxy → Turn OFF "Use a proxy server".
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 800, color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              System-Wide Ghost Mode
-              {globalGhost && <span style={{ fontSize: '10px', padding: '2px 6px', background: '#10B981', color: '#000', borderRadius: '4px', fontWeight: 900 }}>ACTIVE</span>}
-            </h4>
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '600px' }}>
-              Force your entire system (browsers, terminal, apps) to route through the active Tor connection. Use with extreme caution.
-            </p>
-            <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', borderLeft: '3px solid #EF4444', borderRadius: '4px', fontSize: '11px', color: '#FCA5A5' }}>
-              <strong>CRASH WARNING:</strong> If HOLE closes unexpectedly while Ghost Mode is ACTIVE, your internet routing may break.
-              {navigator.userAgent.includes('Win') ? ' To fix: Windows Settings → Proxy → Turn OFF "Use a proxy server".' : ' To fix: unset http_proxy https_proxy ALL_PROXY in your shell.'}
+          <button 
+            onClick={toggleGlobalGhost}
+            disabled={torStatus !== 'connected'}
+            style={{ 
+              padding: '12px 24px', 
+              borderRadius: '12px', 
+              fontSize: '14px', 
+              fontWeight: 800, 
+              cursor: torStatus === 'connected' ? 'pointer' : 'not-allowed',
+              background: globalGhost ? '#EF4444' : '#10B981',
+              color: '#fff',
+              border: 'none',
+              boxShadow: globalGhost ? '0 0 20px rgba(239, 68, 68, 0.4)' : (torStatus === 'connected' ? '0 0 20px rgba(16, 185, 129, 0.4)' : 'none'),
+              opacity: torStatus === 'connected' ? 1 : 0.5,
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {globalGhost ? 'Deactivate System Proxy' : 'Hijack System Proxy'}
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', marginTop: '-8px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Globe size={24} color="#10B981" />
+            </div>
+            <div>
+              <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 800, color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                External Browser Ghosting (Linux & Mac)
+              </h4>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '650px' }}>
+                UNIX systems (Mac/Linux) do not support forced global proxies safely without root privileges. To browse anonymously using your normal browser window (outside of the Open Anonymous Browser button above), use the standard hacker approach:
+              </p>
+              <ol style={{ margin: '8px 0 0', paddingLeft: '20px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                <li>Install the <strong>FoxyProxy</strong> extension in Firefox or Chrome.</li>
+                <li>Add a new <strong>SOCKS5</strong> proxy pointing to <strong style={{ color: '#10B981', userSelect: 'all' }}>127.0.0.1</strong> on port <strong style={{ color: '#10B981', userSelect: 'all' }}>9050</strong>.</li>
+                <li>When Tor is <strong>Connected</strong> here, just enable that proxy in the FoxyProxy dropdown!</li>
+              </ol>
             </div>
           </div>
         </div>
-        <button 
-          onClick={toggleGlobalGhost}
-          disabled={torStatus !== 'connected'}
-          style={{ 
-            padding: '12px 24px', 
-            borderRadius: '12px', 
-            fontSize: '14px', 
-            fontWeight: 800, 
-            cursor: torStatus === 'connected' ? 'pointer' : 'not-allowed',
-            background: globalGhost ? '#EF4444' : '#10B981',
-            color: '#fff',
-            border: 'none',
-            boxShadow: globalGhost ? '0 0 20px rgba(239, 68, 68, 0.4)' : (torStatus === 'connected' ? '0 0 20px rgba(16, 185, 129, 0.4)' : 'none'),
-            opacity: torStatus === 'connected' ? 1 : 0.5,
-            transition: 'all 0.3s ease'
-          }}
-        >
-          {globalGhost ? 'Deactivate System Proxy' : 'Hijack System Proxy'}
-        </button>
-      </div>
+      )}
 
         </div>
       ) : (
