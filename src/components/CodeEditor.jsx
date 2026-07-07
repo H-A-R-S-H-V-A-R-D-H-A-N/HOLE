@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
-import { Code2, Copy, Save, FolderOpen, Trash2, CheckCircle2, FileCode, Search, FileText, Plus, X, FolderPlus, Folder, ChevronRight, ChevronDown, Database } from 'lucide-react';
+import { Code2, Copy, Save, FolderOpen, Trash2, CheckCircle2, FileCode, Search, FileText, Plus, X, FolderPlus, Folder, ChevronRight, ChevronDown, Database, Play, Terminal as TerminalIcon } from 'lucide-react';
+import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import '@xterm/xterm/css/xterm.css';
 import { getStorageDir, readFileDirect } from '../utils/fileSystem';
 import ConfirmModal from './ConfirmModal';
 import PromptModal from './PromptModal';
@@ -55,7 +58,12 @@ export default function CodeEditor() {
   const [confirmState, setConfirmState] = useState(null);
   const [promptState, setPromptState] = useState(null);
   const [saveStatus, setSaveStatus] = useState('');
+  const [bottomPanel, setBottomPanel] = useState(null); // null | 'render' | 'terminal'
+  
   const editorRef = useRef(null);
+  const terminalRef = useRef(null);
+  const xtermRef = useRef(null);
+  const fitAddonRef = useRef(null);
 
   const loadRepos = useCallback(async () => {
     const dir = getStorageDir();
@@ -111,6 +119,89 @@ export default function CodeEditor() {
   useEffect(() => {
     if (explorerOpen) loadTree();
   }, [explorerOpen, loadTree]);
+
+  // Terminal Logic for CodeEditor
+  useEffect(() => {
+    if (bottomPanel !== 'terminal') return;
+
+    const term = new Terminal({
+      cursorBlink: true,
+      allowTransparency: true,
+      theme: {
+        background: 'transparent',
+        foreground: '#E2E8F0',
+        cursor: '#8B5CF6',
+        selectionBackground: 'rgba(139, 92, 246, 0.3)'
+      },
+      fontFamily: 'var(--font-mono)',
+      fontSize: 13,
+      scrollback: 5000
+    });
+    
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
+    
+    setTimeout(() => {
+      if (!terminalRef.current) return;
+      term.open(terminalRef.current);
+      fitAddon.fit();
+      
+      term.writeln(String.fromCharCode(27) + '[1;35m[*] Connecting to HOLE Backend PTY...' + String.fromCharCode(27) + '[0m');
+      
+      xtermRef.current = term;
+      fitAddonRef.current = fitAddon;
+
+      term.onData(data => {
+        if (window.electronAPI) window.electronAPI.ptyWrite(data);
+      });
+
+      if (window.electronAPI) {
+        window.electronAPI.getAvailableShells().then(res => {
+          const shellPath = res.length > 0 ? res[0].path : '/bin/bash';
+          window.electronAPI.ptyStart({ shellPath, cols: term.cols, rows: term.rows, useTor: false })
+            .then(startRes => {
+              if (!startRes.success) {
+                 term.writeln('\r\n' + String.fromCharCode(27) + '[1;31m[Error] Failed to spawn shell: ' + startRes.error + String.fromCharCode(27) + '[0m');
+              }
+            });
+        });
+      }
+    }, 50);
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (fitAddonRef.current && xtermRef.current && terminalRef.current) {
+        fitAddonRef.current.fit();
+        if (window.electronAPI) window.electronAPI.ptyResize({ cols: xtermRef.current.cols, rows: xtermRef.current.rows });
+      }
+    });
+    
+    if (terminalRef.current) resizeObserver.observe(terminalRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      term.dispose();
+      if (window.electronAPI) window.electronAPI.ptyKill();
+    };
+  }, [bottomPanel]);
+
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    
+    const onData = (data) => {
+      if (xtermRef.current) xtermRef.current.write(data);
+    };
+    const onExit = () => {
+      if (xtermRef.current) xtermRef.current.writeln('\r\n' + String.fromCharCode(27) + '[1;31m[Process Exited]' + String.fromCharCode(27) + '[0m');
+    };
+
+    window.electronAPI.onPtyData(onData);
+    window.electronAPI.onPtyExit(onExit);
+
+    return () => {
+      window.electronAPI.offPtyData();
+      window.electronAPI.offPtyExit();
+    };
+  }, []);
 
   // Editor states
   const handleEditorChange = (value) => setCode(value || '');
@@ -471,6 +562,13 @@ export default function CodeEditor() {
           <div className="pro-toolbar-sep" />
           
           <div className="pro-action-group">
+            <button className="pro-action-btn" style={{ color: bottomPanel === 'render' ? '#10B981' : '' }} onClick={() => setBottomPanel(bottomPanel === 'render' ? null : 'render')} title="Render Web Preview">
+              <Play size={16} />
+            </button>
+            <button className="pro-action-btn" style={{ color: bottomPanel === 'terminal' ? '#8B5CF6' : '' }} onClick={() => setBottomPanel(bottomPanel === 'terminal' ? null : 'terminal')} title="Embedded Terminal">
+              <TerminalIcon size={16} />
+            </button>
+            <div style={{ width: '1px', background: 'var(--border-subtle)', margin: '4px 0' }} />
             <button className="pro-action-btn" onClick={handleSave} title="Save (Ctrl+S)">
               {saveStatus ? <CheckCircle2 size={16} color="#10B981" /> : <Save size={16} />}
             </button>
@@ -585,31 +683,57 @@ export default function CodeEditor() {
         )}
 
         {/* Main Editor */}
-        <div className="pro-editor-main">
-          <Editor
-            height="100%"
-            language={language}
-            value={code}
-            onChange={handleEditorChange}
-            onMount={handleEditorDidMount}
-            theme="vs-dark"
-            options={{
-              minimap: { enabled: true },
-              fontSize: 14,
-              fontFamily: '"Fira Code", Consolas, "Courier New", monospace',
-              fontLigatures: true,
-              wordWrap: 'on',
-              lineNumbers: 'on',
-              scrollBeyondLastLine: false,
-              smoothScrolling: true,
-              cursorBlinking: 'expand',
-              cursorSmoothCaretAnimation: 'on',
-              formatOnPaste: true,
-              padding: { top: 16, bottom: 16 },
-              backgroundColor: '#000000',
-              suggestOnTriggerCharacters: true,
-            }}
-          />
+        <div className="pro-editor-main" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <Editor
+              height="100%"
+              language={language}
+              value={code}
+              onChange={handleEditorChange}
+              onMount={handleEditorDidMount}
+              theme="vs-dark"
+              options={{
+                minimap: { enabled: true },
+                fontSize: 14,
+                fontFamily: '"Fira Code", Consolas, "Courier New", monospace',
+                fontLigatures: true,
+                wordWrap: 'on',
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                smoothScrolling: true,
+                cursorBlinking: 'expand',
+                cursorSmoothCaretAnimation: 'on',
+                formatOnPaste: true,
+                padding: { top: 16, bottom: 16 },
+                backgroundColor: '#000000',
+                suggestOnTriggerCharacters: true,
+              }}
+            />
+          </div>
+          
+          {bottomPanel === 'render' && (
+            <div style={{ height: '300px', borderTop: '1px solid #222', background: '#fff', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 0, right: 0, padding: '4px', background: 'rgba(0,0,0,0.5)', borderBottomLeftRadius: '8px', zIndex: 10 }}>
+                <X size={14} style={{ cursor: 'pointer', color: '#fff' }} onClick={() => setBottomPanel(null)} />
+              </div>
+              <iframe 
+                srcDoc={code} 
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title="Render Preview"
+                sandbox="allow-scripts allow-modals allow-popups"
+              />
+            </div>
+          )}
+          
+          {bottomPanel === 'terminal' && (
+            <div style={{ height: '300px', borderTop: '1px solid var(--border-subtle)', background: 'linear-gradient(180deg, #0f172a 0%, #000 100%)', padding: '8px', display: 'flex', flexDirection: 'column' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', padding: '0 8px' }}>
+                 <span style={{ color: '#8B5CF6', fontSize: '12px', fontWeight: 600 }}>Integrated Terminal</span>
+                 <X size={14} style={{ cursor: 'pointer', color: '#888' }} onClick={() => setBottomPanel(null)} />
+               </div>
+               <div ref={terminalRef} style={{ flex: 1, overflow: 'hidden' }} />
+            </div>
+          )}
         </div>
       </div>
       

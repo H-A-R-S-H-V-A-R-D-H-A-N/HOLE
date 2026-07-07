@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Terminal as TerminalIcon, Settings, Trash2, Power, PowerOff, Shield } from 'lucide-react';
+import { Terminal as TerminalIcon, Settings, Trash2, Power, PowerOff, Shield, Maximize, Minimize } from 'lucide-react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
@@ -10,6 +10,7 @@ export default function TerminalView() {
   const [activeShell, setActiveShell] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [useTor, setUseTor] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const terminalRef = useRef(null);
   const xtermRef = useRef(null);
@@ -138,8 +139,23 @@ export default function TerminalView() {
       xtermRef.current.clear();
     }
   };
+  const containerStyle = isFullscreen ? {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    zIndex: 9999,
+    background: 'rgba(5, 10, 20, 0.85)',
+    backdropFilter: 'blur(30px)',
+    display: 'flex', 
+    flexDirection: 'column', 
+    gap: '20px', 
+    padding: '24px', 
+    overflow: 'hidden'
+  } : { 
+    display: 'flex', flexDirection: 'column', height: 'calc(100vh - 40px)', gap: '16px', overflow: 'hidden' 
+  };
+
   return (
-    <div className="tool-page page-enter" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 40px)', gap: '16px', overflow: 'hidden' }}>
+    <div className="tool-page page-enter" style={containerStyle}>
       {/* Header & Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8))', backdropFilter: 'blur(16px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.2)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -179,6 +195,10 @@ export default function TerminalView() {
             </button>
           )}
 
+          <button onClick={() => setIsFullscreen(!isFullscreen)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', background: 'rgba(0, 0, 0, 0.3)', color: 'var(--text-secondary)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
+            {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+          </button>
+
           <button onClick={clearTerminal} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', background: 'rgba(0, 0, 0, 0.3)', color: 'var(--text-secondary)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
             <Trash2 size={16} />
           </button>
@@ -186,7 +206,7 @@ export default function TerminalView() {
       </div>
 
       {/* Terminal Container */}
-      <div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%)', backdropFilter: 'blur(20px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)', padding: '12px', overflow: 'hidden' }}>
+      <div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%)', backdropFilter: 'blur(30px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 0 20px rgba(0,0,0,0.5)', padding: '16px', overflow: 'hidden' }}>
         <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>

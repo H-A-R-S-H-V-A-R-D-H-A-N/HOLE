@@ -69,9 +69,13 @@ export default function App() {
   const [settings, setSettings] = useState(() => {
     try {
       const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_settings') : localStorage.getItem('kroma_settings');
-      return (typeof saved === 'string' ? JSON.parse(saved) : saved) || {};
+      const parsed = (typeof saved === 'string' ? JSON.parse(saved) : saved) || {};
+      if (!parsed.quickTools) {
+        parsed.quickTools = ['terminal', 'tor-mode', 'cve-mapper', 'revshell', 'timer', 'temp-mail', 'code-editor'];
+      }
+      return parsed;
     } catch {
-      return {};
+      return { quickTools: ['terminal', 'tor-mode', 'cve-mapper', 'revshell', 'timer', 'temp-mail', 'code-editor'] };
     }
   });
   const [toasts, setToasts] = useState([]);
