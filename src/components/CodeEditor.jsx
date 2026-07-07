@@ -129,9 +129,25 @@ export default function CodeEditor() {
       allowTransparency: true,
       theme: {
         background: 'transparent',
-        foreground: '#E6E6E6', // Kali terminal light gray
-        cursor: '#49AEE6', // Kali blue
-        selectionBackground: 'rgba(73, 174, 230, 0.3)'
+        foreground: '#e6e6e6',
+        cursor: '#49aee6',
+        selectionBackground: 'rgba(73, 174, 230, 0.3)',
+        black: '#1f2229',
+        red: '#d41919',
+        green: '#5ebf5e',
+        yellow: '#feea00',
+        blue: '#49aee6',
+        magenta: '#ed4aab',
+        cyan: '#38caba',
+        white: '#e6e6e6',
+        brightBlack: '#838991',
+        brightRed: '#ef2929',
+        brightGreen: '#8ae234',
+        brightYellow: '#fce94f',
+        brightBlue: '#729fcf',
+        brightMagenta: '#c19c00',
+        brightCyan: '#8cc4ff',
+        brightWhite: '#ffffff'
       },
       fontFamily: 'var(--font-mono)',
       fontSize: 13,
