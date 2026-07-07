@@ -205,13 +205,23 @@ npm run electron:dev
   <br/><br/>
   <img src="screenshots/tor-engine.png" width="90%" />
   <br/><br/>
+  <img src="screenshots/tor-engine-settings.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/terminal.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/terminal-fullscreen.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/terminal-nano.png" width="90%" />
+  <br/><br/>
   <img src="screenshots/code-studio.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/code-studio-preview.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/temp-mail.png" width="90%" />
   <br/><br/>
   <img src="screenshots/workflow.png" width="90%" />
   <br/><br/>
   <img src="screenshots/hacker-journal.png" width="90%" />
-  <br/><br/>
-  <img src="screenshots/terminal.png" width="90%" />
   <br/><br/>
   <img src="screenshots/pro_features/tool_js_spider.png" width="90%" />
   <br/><br/>
