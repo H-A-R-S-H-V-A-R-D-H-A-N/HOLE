@@ -1880,7 +1880,7 @@ app.on('window-all-closed', () => {
 // ---- Integrated Terminal (node-pty) ---- //
 const pty = require('node-pty');
 
-let ptyProcess = null;
+const ptys = {};
 
 function getAvailableShells() {
   if (process.platform === 'win32') {
@@ -1914,47 +1914,49 @@ ipcMain.handle('get-available-shells', () => {
   return getAvailableShells();
 });
 
-ipcMain.handle('pty-start', (event, { shellPath, cols, rows, useTor, cwd }) => {
-  if (ptyProcess) {
-    ptyProcess.kill();
-    ptyProcess = null;
+ipcMain.handle('pty-start', (event, { id = 'default', shellPath, cols, rows, useTor, cwd }) => {
+  if (ptys[id]) {
+    ptys[id].kill();
+    delete ptys[id];
   }
   
   try {
     const env = Object.assign({}, process.env);
     
     // For WSL, we might just pass the wsl.exe path directly.
-    ptyProcess = pty.spawn(shellPath, [], {
+    const ptyProcess = pty.spawn(shellPath, [], {
       name: 'xterm-color',
       cols: cols || 80,
       rows: rows || 24,
       cwd: cwd || process.env.HOME || process.env.USERPROFILE,
       env: env
     });
+    ptys[id] = ptyProcess;
 
     if (useTor) {
       setTimeout(() => {
-        if (!ptyProcess) return;
+        if (!ptys[id]) return;
         const isLinux = shellPath.toLowerCase().includes('wsl') || shellPath.toLowerCase().includes('bash');
         if (isLinux) {
           // For WSL/Bash, we dynamically extract the Windows Host IP (from resolv.conf) to guarantee the proxy is reachable in WSL2, and fallback to 127.0.0.1
-          ptyProcess.write('export HOST_IP=$(grep nameserver /etc/resolv.conf | awk \'{print $2}\'); if [ -z "$HOST_IP" ]; then HOST_IP="127.0.0.1"; fi; export all_proxy="socks5h://$HOST_IP:9050" ALL_PROXY="socks5h://$HOST_IP:9050" http_proxy="socks5h://$HOST_IP:9050" https_proxy="socks5h://$HOST_IP:9050"; clear\r');
+          ptys[id].write('export HOST_IP=$(grep nameserver /etc/resolv.conf | awk \'{print $2}\'); if [ -z "$HOST_IP" ]; then HOST_IP="127.0.0.1"; fi; export all_proxy="socks5h://$HOST_IP:9050" ALL_PROXY="socks5h://$HOST_IP:9050" http_proxy="socks5h://$HOST_IP:9050" https_proxy="socks5h://$HOST_IP:9050"; clear\r');
         } else {
-          ptyProcess.write('$env:ALL_PROXY="socks5h://127.0.0.1:9050"; $env:HTTP_PROXY="socks5h://127.0.0.1:9050"; $env:HTTPS_PROXY="socks5h://127.0.0.1:9050"; clear\r');
+          ptys[id].write('$env:ALL_PROXY="socks5h://127.0.0.1:9050"; $env:HTTP_PROXY="socks5h://127.0.0.1:9050"; $env:HTTPS_PROXY="socks5h://127.0.0.1:9050"; clear\r');
         }
       }, 1500); // Give shell time to initialize
     }
     
-    ptyProcess.onData((data) => {
+    ptys[id].onData((data) => {
       if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('pty-data', data);
+        mainWindow.webContents.send(`pty-data-${id}`, data);
       }
     });
     
-    ptyProcess.onExit(({ exitCode, signal }) => {
+    ptys[id].onExit(({ exitCode, signal }) => {
       if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('pty-exit', { exitCode, signal });
+        mainWindow.webContents.send(`pty-exit-${id}`, { exitCode, signal });
       }
+      delete ptys[id];
     });
     
     return { success: true };
@@ -1963,20 +1965,20 @@ ipcMain.handle('pty-start', (event, { shellPath, cols, rows, useTor, cwd }) => {
   }
 });
 
-ipcMain.on('pty-write', (event, data) => {
-  if (ptyProcess) ptyProcess.write(data);
+ipcMain.on('pty-write', (event, { id = 'default', data }) => {
+  if (ptys[id]) ptys[id].write(data);
 });
 
-ipcMain.on('pty-resize', (event, { cols, rows }) => {
-  if (ptyProcess) {
-    try { ptyProcess.resize(cols, rows); } catch (e) {}
+ipcMain.on('pty-resize', (event, { id = 'default', cols, rows }) => {
+  if (ptys[id]) {
+    try { ptys[id].resize(cols, rows); } catch(e) {}
   }
 });
 
-ipcMain.handle('pty-kill', () => {
-  if (ptyProcess) {
-    ptyProcess.kill();
-    ptyProcess = null;
+ipcMain.handle('pty-kill', (event, id = 'default') => {
+  if (ptys[id]) {
+    ptys[id].kill();
+    delete ptys[id];
   }
   return { success: true };
 });

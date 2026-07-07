@@ -168,13 +168,13 @@ export default function CodeEditor() {
       fitAddonRef.current = fitAddon;
 
       term.onData(data => {
-        if (window.electronAPI) window.electronAPI.ptyWrite(data);
+        if (window.electronAPI) window.electronAPI.ptyWrite('code-terminal', data);
       });
 
       if (window.electronAPI) {
         window.electronAPI.getAvailableShells().then(res => {
           const shellPath = res.length > 0 ? res[0].path : '/bin/bash';
-          window.electronAPI.ptyStart({ shellPath, cols: term.cols, rows: term.rows, useTor: false, cwd: currentRepo || undefined })
+          window.electronAPI.ptyStart({ id: 'code-terminal', shellPath, cols: term.cols, rows: term.rows, useTor: false, cwd: currentRepo || undefined })
             .then(startRes => {
               if (!startRes.success) {
                  term.writeln('\r\n' + String.fromCharCode(27) + '[1;31m[Error] Failed to spawn shell: ' + startRes.error + String.fromCharCode(27) + '[0m');
@@ -189,7 +189,9 @@ export default function CodeEditor() {
     const resizeObserver = new ResizeObserver(() => {
       if (fitAddonRef.current && xtermRef.current && terminalRef.current) {
         fitAddonRef.current.fit();
-        if (window.electronAPI) window.electronAPI.ptyResize({ cols: xtermRef.current.cols, rows: xtermRef.current.rows });
+        if (window.electronAPI) {
+          window.electronAPI.ptyResize('code-terminal', { cols: xtermRef.current.cols, rows: xtermRef.current.rows });
+        }
       }
     });
     
@@ -205,6 +207,8 @@ export default function CodeEditor() {
   useEffect(() => {
     if (!window.electronAPI) return;
     
+    const ptyId = 'code-terminal';
+
     const onData = (data) => {
       if (xtermRef.current) xtermRef.current.write(data);
     };
@@ -212,12 +216,12 @@ export default function CodeEditor() {
       if (xtermRef.current) xtermRef.current.writeln('\r\n' + String.fromCharCode(27) + '[1;31m[Process Exited]' + String.fromCharCode(27) + '[0m');
     };
 
-    window.electronAPI.onPtyData(onData);
-    window.electronAPI.onPtyExit(onExit);
+    window.electronAPI.onPtyData(ptyId, onData);
+    window.electronAPI.onPtyExit(ptyId, onExit);
 
     return () => {
-      window.electronAPI.offPtyData();
-      window.electronAPI.offPtyExit();
+      window.electronAPI.offPtyData(ptyId);
+      window.electronAPI.offPtyExit(ptyId);
     };
   }, []);
 

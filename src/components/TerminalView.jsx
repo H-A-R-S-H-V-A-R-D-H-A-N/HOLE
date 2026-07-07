@@ -79,7 +79,7 @@ export default function TerminalView() {
     // Handle input (typing into terminal sends to backend)
     term.onData(data => {
       if (window.electronAPI) {
-        window.electronAPI.ptyWrite(data);
+        window.electronAPI.ptyWrite('main-terminal', data);
       }
     });
 
@@ -88,7 +88,7 @@ export default function TerminalView() {
       if (fitAddonRef.current && xtermRef.current && terminalRef.current && terminalRef.current.offsetParent !== null) {
         fitAddonRef.current.fit();
         if (window.electronAPI) {
-          window.electronAPI.ptyResize({ cols: xtermRef.current.cols, rows: xtermRef.current.rows });
+          window.electronAPI.ptyResize('main-terminal', { cols: xtermRef.current.cols, rows: xtermRef.current.rows });
         }
       }
     });
@@ -101,7 +101,7 @@ export default function TerminalView() {
       resizeObserver.disconnect();
       term.dispose();
       if (window.electronAPI) {
-        window.electronAPI.ptyKill();
+        window.electronAPI.ptyKill('main-terminal');
       }
     };
   }, []);
@@ -109,13 +109,15 @@ export default function TerminalView() {
   useEffect(() => {
     if (!window.electronAPI) return;
     
-    window.electronAPI.onPtyData((data) => {
+    const ptyId = 'main-terminal';
+
+    window.electronAPI.onPtyData(ptyId, (data) => {
       if (xtermRef.current) {
         xtermRef.current.write(data);
       }
     });
 
-    window.electronAPI.onPtyExit((data) => {
+    window.electronAPI.onPtyExit(ptyId, (data) => {
       setIsRunning(false);
       if (xtermRef.current) {
         xtermRef.current.writeln('\r\n' + String.fromCharCode(27) + '[1;31m[Process Exited]' + String.fromCharCode(27) + '[0m');
@@ -123,8 +125,8 @@ export default function TerminalView() {
     });
 
     return () => {
-      window.electronAPI.offPtyData();
-      window.electronAPI.offPtyExit();
+      window.electronAPI.offPtyData(ptyId);
+      window.electronAPI.offPtyExit(ptyId);
     };
   }, []);
 
@@ -135,6 +137,7 @@ export default function TerminalView() {
     xtermRef.current.writeln(String.fromCharCode(27) + '[1;34m[*] Spawning shell...' + String.fromCharCode(27) + '[0m');
     
     const res = await window.electronAPI.ptyStart({
+      id: 'main-terminal',
       shellPath: activeShell,
       cols: xtermRef.current.cols,
       rows: xtermRef.current.rows,
@@ -153,7 +156,7 @@ export default function TerminalView() {
 
   const killTerminal = async () => {
     if (!window.electronAPI) return;
-    await window.electronAPI.ptyKill();
+    await window.electronAPI.ptyKill('main-terminal');
     setIsRunning(false);
     xtermRef.current.writeln('\r\n' + String.fromCharCode(27) + '[1;33m[Process Terminated by User]' + String.fromCharCode(27) + '[0m');
   };

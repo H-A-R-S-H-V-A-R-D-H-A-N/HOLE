@@ -77,17 +77,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   torFetchUrl: (url) => ipcRenderer.invoke('tor-fetch-url', url),
   getAvailableShells: () => ipcRenderer.invoke('get-available-shells'),
   ptyStart: (config) => ipcRenderer.invoke('pty-start', config),
-  ptyWrite: (data) => ipcRenderer.send('pty-write', data),
-  ptyResize: (dims) => ipcRenderer.send('pty-resize', dims),
-  ptyKill: () => ipcRenderer.invoke('pty-kill'),
-  onPtyData: (callback) => {
-    ipcRenderer.on('pty-data', (e, data) => callback(data));
+  ptyWrite: (id, data) => ipcRenderer.send('pty-write', { id, data }),
+  ptyResize: (id, dims) => ipcRenderer.send('pty-resize', { id, ...dims }),
+  ptyKill: (id) => ipcRenderer.invoke('pty-kill', id),
+  onPtyData: (id, callback) => {
+    ipcRenderer.on(`pty-data-${id}`, (e, data) => callback(data));
   },
-  offPtyData: () => ipcRenderer.removeAllListeners('pty-data'),
-  onPtyExit: (callback) => {
-    ipcRenderer.on('pty-exit', (e, data) => callback(data));
+  offPtyData: (id) => ipcRenderer.removeAllListeners(`pty-data-${id}`),
+  onPtyExit: (id, callback) => {
+    ipcRenderer.on(`pty-exit-${id}`, (e, data) => callback(data));
   },
-  offPtyExit: () => ipcRenderer.removeAllListeners('pty-exit'),
+  offPtyExit: (id) => ipcRenderer.removeAllListeners(`pty-exit-${id}`),
   onTorEvent: (callback) => {
     ipcRenderer.on('tor-event', (event, data) => callback(data));
   },
