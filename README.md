@@ -217,6 +217,8 @@ npm run electron:dev
   <br/><br/>
   <img src="screenshots/code-studio-preview.png" width="90%" />
   <br/><br/>
+  <img src="screenshots/code-studio-terminal.png" width="90%" />
+  <br/><br/>
   <img src="screenshots/temp-mail.png" width="90%" />
   <br/><br/>
   <img src="screenshots/workflow.png" width="90%" />
