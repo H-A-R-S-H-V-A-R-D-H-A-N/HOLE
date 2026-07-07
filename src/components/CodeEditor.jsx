@@ -178,6 +178,8 @@ export default function CodeEditor() {
             .then(startRes => {
               if (!startRes.success) {
                  term.writeln('\r\n' + String.fromCharCode(27) + '[1;31m[Error] Failed to spawn shell: ' + startRes.error + String.fromCharCode(27) + '[0m');
+              } else {
+                 term.clear();
               }
             });
         });
