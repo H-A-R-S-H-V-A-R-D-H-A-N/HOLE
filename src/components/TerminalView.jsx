@@ -182,9 +182,9 @@ export default function TerminalView() {
   };
 
   return (
-    <div className="tool-page page-enter" style={containerStyle}>
+    <div className="tool-page macos-window-enter" style={containerStyle}>
       {/* Header & Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8))', backdropFilter: 'blur(16px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.2)', flexShrink: 0 }}>
+      <div className="macos-glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '12px', flexShrink: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)' }}>
             <TerminalIcon size={20} color="#fff" />
@@ -233,7 +233,7 @@ export default function TerminalView() {
       </div>
 
       {/* Terminal Container */}
-      <div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%)', backdropFilter: 'blur(30px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 0 20px rgba(0,0,0,0.5)', padding: '16px', overflow: 'hidden' }}>
+      <div className="macos-glass-panel" style={{ flex: 1, padding: '16px', overflow: 'hidden', borderRadius: '12px', zIndex: 5, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%) !important' }}>
         <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>
