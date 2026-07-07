@@ -185,11 +185,16 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
       <button className="sidebar-new-btn" onClick={() => onNewNote('blank')}><Plus size={18} /> New Note</button>
 
       <nav className="sidebar-nav">
-        {quickTools && quickTools.length > 0 && (
+        {quickTools && (
           <div className="sidebar-section">
             <div className="sidebar-section-title" onClick={() => toggleSection('Quick Tools')} style={{ cursor: 'pointer' }}>
               Quick Tools
             </div>
+            {expandedSections['Quick Tools'] && quickTools.length === 0 && (
+              <div style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', margin: '0 8px 12px 8px' }}>
+                Hover over any tool and click the pin icon to add it here!
+              </div>
+            )}
             {expandedSections['Quick Tools'] && quickTools.map((toolId) => {
               let item = null;
               for (const sec of navSections) {
