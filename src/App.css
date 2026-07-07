@@ -540,32 +540,20 @@ body.terminal-fullscreen .main-content {
 
 /* ---- macOS Style Glass Animations ---- */
 .macos-window-enter {
-  animation: macosWindowIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation: simpleFadeIn 0.2s ease-out forwards;
 }
 
-@keyframes macosWindowIn {
-  from {
-    opacity: 0;
-    transform: scale(0.99) translateY(4px);
-    filter: blur(4px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0);
-  }
+@keyframes simpleFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .macos-glass-panel {
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.25) 0%, rgba(15, 23, 42, 0.4) 100%) !important;
-  backdrop-filter: blur(30px) saturate(130%) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(130%) !important;
+  background: #0B0F19 !important;
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-  transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
 }
 
 .macos-glass-panel:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  /* No hover movement to reduce stress */
 }

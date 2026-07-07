@@ -233,7 +233,7 @@ export default function TerminalView() {
       </div>
 
       {/* Terminal Container */}
-      <div className="macos-glass-panel" style={{ flex: 1, padding: '16px', overflow: 'hidden', borderRadius: '12px', zIndex: 5, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%) !important' }}>
+      <div className="macos-glass-panel" style={{ flex: 1, padding: '16px', overflow: 'hidden', borderRadius: '12px', zIndex: 5, background: '#000000 !important' }}>
         <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>
