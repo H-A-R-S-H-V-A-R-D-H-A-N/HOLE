@@ -158,7 +158,7 @@ export default function CodeEditor() {
       if (window.electronAPI) {
         window.electronAPI.getAvailableShells().then(res => {
           const shellPath = res.length > 0 ? res[0].path : '/bin/bash';
-          window.electronAPI.ptyStart({ shellPath, cols: term.cols, rows: term.rows, useTor: false })
+          window.electronAPI.ptyStart({ shellPath, cols: term.cols, rows: term.rows, useTor: false, cwd: currentRepo || undefined })
             .then(startRes => {
               if (!startRes.success) {
                  term.writeln('\r\n' + String.fromCharCode(27) + '[1;31m[Error] Failed to spawn shell: ' + startRes.error + String.fromCharCode(27) + '[0m');

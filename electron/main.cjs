@@ -1914,7 +1914,7 @@ ipcMain.handle('get-available-shells', () => {
   return getAvailableShells();
 });
 
-ipcMain.handle('pty-start', (event, { shellPath, cols, rows, useTor }) => {
+ipcMain.handle('pty-start', (event, { shellPath, cols, rows, useTor, cwd }) => {
   if (ptyProcess) {
     ptyProcess.kill();
     ptyProcess = null;
@@ -1928,7 +1928,7 @@ ipcMain.handle('pty-start', (event, { shellPath, cols, rows, useTor }) => {
       name: 'xterm-color',
       cols: cols || 80,
       rows: rows || 24,
-      cwd: process.env.HOME || process.env.USERPROFILE,
+      cwd: cwd || process.env.HOME || process.env.USERPROFILE,
       env: env
     });
 
