@@ -532,3 +532,8 @@
 }
 
 /* Snake lights removed. */
+
+/* Terminal Fullscreen Overlay Fix */
+body.terminal-fullscreen .main-content {
+  z-index: 99999 !important;
+}

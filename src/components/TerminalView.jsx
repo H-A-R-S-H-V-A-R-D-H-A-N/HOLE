@@ -17,6 +17,14 @@ export default function TerminalView() {
   const fitAddonRef = useRef(null);
 
   useEffect(() => {
+    if (isFullscreen) {
+      document.body.classList.add('terminal-fullscreen');
+    } else {
+      document.body.classList.remove('terminal-fullscreen');
+    }
+  }, [isFullscreen]);
+
+  useEffect(() => {
     // Fetch available shells
     if (window.electronAPI) {
       window.electronAPI.getAvailableShells().then(res => {
@@ -31,9 +39,9 @@ export default function TerminalView() {
       allowTransparency: true,
       theme: {
         background: 'transparent',
-        foreground: '#E2E8F0', // Soft luxury white/gray
-        cursor: '#8B5CF6', // Calm violet
-        selectionBackground: 'rgba(139, 92, 246, 0.3)'
+        foreground: '#E6E6E6', // Kali terminal light gray
+        cursor: '#49AEE6', // Kali blue
+        selectionBackground: 'rgba(73, 174, 230, 0.3)'
       },
       fontFamily: 'var(--font-mono)',
       fontSize: 14,

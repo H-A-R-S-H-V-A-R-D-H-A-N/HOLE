@@ -129,9 +129,9 @@ export default function CodeEditor() {
       allowTransparency: true,
       theme: {
         background: 'transparent',
-        foreground: '#E2E8F0',
-        cursor: '#8B5CF6',
-        selectionBackground: 'rgba(139, 92, 246, 0.3)'
+        foreground: '#E6E6E6', // Kali terminal light gray
+        cursor: '#49AEE6', // Kali blue
+        selectionBackground: 'rgba(73, 174, 230, 0.3)'
       },
       fontFamily: 'var(--font-mono)',
       fontSize: 13,

@@ -70,7 +70,7 @@ export default function App() {
     try {
       const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_settings') : localStorage.getItem('kroma_settings');
       const parsed = (typeof saved === 'string' ? JSON.parse(saved) : saved) || {};
-      if (!parsed.quickTools) {
+      if (!parsed.quickTools || parsed.quickTools.length === 0) {
         parsed.quickTools = ['terminal', 'tor-mode', 'cve-mapper', 'revshell', 'timer', 'temp-mail', 'code-editor'];
       }
       return parsed;
