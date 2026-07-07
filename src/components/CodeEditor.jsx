@@ -136,7 +136,7 @@ export default function CodeEditor() {
         red: '#d41919',
         green: '#5ebf5e',
         yellow: '#feea00',
-        blue: '#49aee6',
+        blue: '#A78BFA',
         magenta: '#ed4aab',
         cyan: '#38caba',
         white: '#e6e6e6',
@@ -144,7 +144,7 @@ export default function CodeEditor() {
         brightRed: '#ef2929',
         brightGreen: '#8ae234',
         brightYellow: '#fce94f',
-        brightBlue: '#729fcf',
+        brightBlue: '#8B5CF6',
         brightMagenta: '#c19c00',
         brightCyan: '#8cc4ff',
         brightWhite: '#ffffff'
