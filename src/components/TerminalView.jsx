@@ -178,13 +178,20 @@ export default function TerminalView() {
     padding: '24px', 
     overflow: 'hidden'
   } : { 
-    display: 'flex', flexDirection: 'column', height: 'calc(100vh - 40px)', gap: '16px', overflow: 'hidden' 
+    display: 'flex', flexDirection: 'column', height: 'calc(100vh - 40px)', gap: '16px', overflow: 'hidden',
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(40px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+    padding: '20px',
+    borderRadius: '24px',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
   };
 
   return (
-    <div className="tool-page macos-window-enter luxury-bg-animation" style={containerStyle}>
+    <div className="tool-page macos-window-enter" style={containerStyle}>
       {/* Header & Controls */}
-      <div className="macos-glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10, background: 'linear-gradient(135deg, #BE123C, #881337) !important', boxShadow: '0 10px 40px rgba(159, 18, 57, 0.4) !important', border: '1px solid rgba(255, 255, 255, 0.1) !important' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10, background: 'linear-gradient(135deg, #E11D48, #9F1239)', boxShadow: '0 10px 40px rgba(159, 18, 57, 0.4)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(0, 0, 0, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TerminalIcon size={20} color="#fff" />
