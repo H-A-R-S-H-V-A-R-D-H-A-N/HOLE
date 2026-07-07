@@ -184,7 +184,7 @@ export default function TerminalView() {
   return (
     <div className="tool-page macos-window-enter" style={containerStyle}>
       {/* Header & Controls */}
-      <div className="macos-glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '12px', flexShrink: 0, zIndex: 10 }}>
+      <div className="macos-glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)' }}>
             <TerminalIcon size={20} color="#fff" />
@@ -233,7 +233,7 @@ export default function TerminalView() {
       </div>
 
       {/* Terminal Container */}
-      <div className="macos-glass-panel" style={{ flex: 1, padding: '16px', overflow: 'hidden', borderRadius: '12px', zIndex: 5, background: '#000000 !important' }}>
+      <div className="macos-glass-panel" style={{ flex: 1, padding: '16px', overflow: 'hidden', borderRadius: '20px', zIndex: 5, background: '#000000 !important' }}>
         <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>

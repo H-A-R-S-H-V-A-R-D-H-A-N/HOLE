@@ -540,12 +540,18 @@ body.terminal-fullscreen .main-content {
 
 /* ---- macOS Style Glass Animations ---- */
 .macos-window-enter {
-  animation: simpleFadeIn 0.2s ease-out forwards;
+  animation: calmFadeIn 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-@keyframes simpleFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes calmFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
 }
 
 .macos-glass-panel {
