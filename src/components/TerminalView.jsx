@@ -184,13 +184,13 @@ export default function TerminalView() {
   return (
     <div className="tool-page macos-window-enter luxury-bg-animation" style={containerStyle}>
       {/* Header & Controls */}
-      <div className="macos-glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10 }}>
+      <div className="macos-glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10, background: 'linear-gradient(135deg, #BE123C, #881337) !important', boxShadow: '0 10px 40px rgba(159, 18, 57, 0.4) !important', border: '1px solid rgba(255, 255, 255, 0.1) !important' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #E11D48, #9F1239)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(225, 29, 72, 0.4)' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(0, 0, 0, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TerminalIcon size={20} color="#fff" />
           </div>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '0.5px' }}>TERMINAL</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#ffffff', letterSpacing: '0.5px' }}>TERMINAL</h2>
           </div>
         </div>
 
@@ -216,7 +216,7 @@ export default function TerminalView() {
               <PowerOff size={16} /> Disconnect
             </button>
           ) : (
-            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #E11D48, #9F1239)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 0 15px rgba(225, 29, 72, 0.4)', transition: 'all 0.2s', position: 'relative', zIndex: 10 }}>
+            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'rgba(0, 0, 0, 0.3)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', zIndex: 10 }}>
               <Power size={16} /> Initialize
             </button>
           )}
@@ -232,7 +232,7 @@ export default function TerminalView() {
       </div>
 
       {/* Terminal Container */}
-      <div className="macos-glass-panel" style={{ flex: 1, padding: '16px', overflow: 'hidden', borderRadius: '20px', zIndex: 5, background: '#000000 !important' }}>
+      <div style={{ flex: 1, padding: '16px', overflow: 'hidden', borderRadius: '20px', zIndex: 5, background: '#000000', border: '1px solid rgba(255, 255, 255, 0.05)', boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)' }}>
         <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>
