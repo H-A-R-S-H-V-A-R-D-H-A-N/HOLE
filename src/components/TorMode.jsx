@@ -551,16 +551,25 @@ export default function TorMode() {
             </div>
             <div>
               <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 800, color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                External Browser Ghosting (Linux & Mac)
+                Proxy Routing (Linux & Mac)
               </h4>
               <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '650px' }}>
-                UNIX systems (Mac/Linux) do not support forced global proxies safely without root privileges. To browse anonymously using your normal browser window (outside of the Open Anonymous Browser button above), use the standard hacker approach:
+                UNIX systems do not support forced global proxies safely. You have two options for secure browsing:
               </p>
-              <ol style={{ margin: '8px 0 0', paddingLeft: '20px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                <li>Install the <strong>FoxyProxy</strong> extension in Firefox or Chrome.</li>
-                <li>Add a new <strong>SOCKS5</strong> proxy pointing to <strong style={{ color: '#10B981', userSelect: 'all' }}>127.0.0.1</strong> on port <strong style={{ color: '#10B981', userSelect: 'all' }}>9050</strong>.</li>
-                <li>When Tor is <strong>Connected</strong> here, just enable that proxy in the FoxyProxy dropdown!</li>
-              </ol>
+              <div style={{ marginTop: '12px', background: 'rgba(96, 165, 250, 0.1)', borderLeft: '3px solid #60A5FA', padding: '10px 14px', borderRadius: '4px' }}>
+                <strong style={{ color: '#60A5FA', fontSize: '13px' }}>Option 1: Open Anonymous Browser (Recommended)</strong>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Clicking the <strong style={{ color: '#fff' }}>Open Anonymous Browser</strong> button above will spawn an isolated, incognito browser session with strict proxy arguments and DNS leak prevention automatically injected.
+                </p>
+              </div>
+              <div style={{ marginTop: '12px', background: 'rgba(167, 139, 250, 0.1)', borderLeft: '3px solid #A78BFA', padding: '10px 14px', borderRadius: '4px' }}>
+                <strong style={{ color: '#A78BFA', fontSize: '13px' }}>Option 2: FoxyProxy Setup (For your normal browser)</strong>
+                <ol style={{ margin: '6px 0 0', paddingLeft: '20px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  <li>Install the <strong>FoxyProxy</strong> extension in Firefox or Chrome.</li>
+                  <li>Add a new <strong>SOCKS5</strong> proxy pointing to <strong style={{ color: '#A78BFA', userSelect: 'all' }}>127.0.0.1</strong> on port <strong style={{ color: '#A78BFA', userSelect: 'all' }}>9050</strong>.</li>
+                  <li>Enable it whenever the HOLE Tor Engine is Connected!</li>
+                </ol>
+              </div>
             </div>
           </div>
         </div>
