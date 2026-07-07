@@ -352,3 +352,17 @@
 .delete-modal {
   max-width: 440px;
 }
+
+/* Quick Tools Pin Button */
+.pin-btn {
+  opacity: 0;
+  transition: all 0.2s;
+  color: var(--text-muted);
+}
+.sidebar-item:hover .pin-btn {
+  opacity: 1;
+}
+.pin-btn:hover {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+}

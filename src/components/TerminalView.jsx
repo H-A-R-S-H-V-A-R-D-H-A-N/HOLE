@@ -27,11 +27,12 @@ export default function TerminalView() {
     // Initialize Xterm.js
     const term = new Terminal({
       cursorBlink: true,
+      allowTransparency: true,
       theme: {
-        background: '#000000',
-        foreground: '#10B981', // Hacker green
-        cursor: '#10B981',
-        selectionBackground: 'rgba(16, 185, 129, 0.4)'
+        background: 'transparent',
+        foreground: '#E2E8F0', // Soft luxury white/gray
+        cursor: '#8B5CF6', // Calm violet
+        selectionBackground: 'rgba(139, 92, 246, 0.3)'
       },
       fontFamily: 'var(--font-mono)',
       fontSize: 14,
@@ -138,25 +139,24 @@ export default function TerminalView() {
     }
   };
 
-  return (
     <div className="tool-page page-enter" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 40px)', gap: '16px', overflow: 'hidden' }}>
       {/* Header & Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--border-default)', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8))', backdropFilter: 'blur(16px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.2)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #14B8A6, #0D9488)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)' }}>
             <TerminalIcon size={20} color="#fff" />
           </div>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Terminal</h2>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>Integrated command-line environment</p>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '0.5px' }}>Command Center</h2>
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>Luxury integrated shell environment</p>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#000', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-default)' }}>
-            <input type="checkbox" id="useTor" checked={useTor} onChange={(e) => setUseTor(e.target.checked)} disabled={isRunning} style={{ cursor: isRunning ? 'not-allowed' : 'pointer' }} />
-            <label htmlFor="useTor" style={{ fontSize: '13px', fontWeight: 700, color: useTor ? '#10B981' : 'var(--text-muted)', cursor: isRunning ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Shield size={14} /> Inject Tor Proxy
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0, 0, 0, 0.3)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+            <input type="checkbox" id="useTor" checked={useTor} onChange={(e) => setUseTor(e.target.checked)} disabled={isRunning} style={{ cursor: isRunning ? 'not-allowed' : 'pointer', accentColor: '#8B5CF6' }} />
+            <label htmlFor="useTor" style={{ fontSize: '13px', fontWeight: 700, color: useTor ? '#A78BFA' : 'var(--text-muted)', cursor: isRunning ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Shield size={14} /> Tor Node
             </label>
           </div>
 
@@ -164,29 +164,29 @@ export default function TerminalView() {
             value={activeShell} 
             onChange={(e) => setActiveShell(e.target.value)}
             disabled={isRunning}
-            style={{ padding: '8px 12px', background: '#000', border: '1px solid var(--border-default)', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: 600, outline: 'none' }}
+            style={{ padding: '8px 12px', background: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '8px', color: '#E2E8F0', fontSize: '13px', fontWeight: 600, outline: 'none' }}
           >
             {shells.map((s, i) => <option key={i} value={s.path}>{s.name}</option>)}
           </select>
 
           {isRunning ? (
-            <button onClick={killTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#EF444420', color: '#EF4444', border: '1px solid #EF444440', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
-              <PowerOff size={16} /> Kill Process
+            <button onClick={killTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'rgba(239, 68, 68, 0.15)', color: '#FCA5A5', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
+              <PowerOff size={16} /> Disconnect
             </button>
           ) : (
-            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #10B981, #059669)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
-              <Power size={16} /> Connect
+            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)', transition: 'all 0.2s' }}>
+              <Power size={16} /> Initialize
             </button>
           )}
 
-          <button onClick={clearTerminal} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', background: 'var(--bg-deep)', color: 'var(--text-secondary)', border: '1px solid var(--border-default)', borderRadius: '8px', cursor: 'pointer' }}>
+          <button onClick={clearTerminal} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', background: 'rgba(0, 0, 0, 0.3)', color: 'var(--text-secondary)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
             <Trash2 size={16} />
           </button>
         </div>
       </div>
 
       {/* Terminal Container */}
-      <div style={{ flex: 1, background: '#000', borderRadius: '12px', border: '1px solid var(--border-default)', padding: '8px', overflow: 'hidden' }}>
+      <div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%)', backdropFilter: 'blur(20px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)', padding: '12px', overflow: 'hidden' }}>
         <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>

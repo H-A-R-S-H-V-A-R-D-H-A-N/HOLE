@@ -272,6 +272,23 @@ export default function App() {
     }
   };
 
+  const handleToggleQuickTool = (toolId) => {
+    const currentQuickTools = settings.quickTools || [];
+    let updatedQuickTools;
+    if (currentQuickTools.includes(toolId)) {
+      updatedQuickTools = currentQuickTools.filter(id => id !== toolId);
+    } else {
+      updatedQuickTools = [...currentQuickTools, toolId];
+    }
+    const updatedSettings = { ...settings, quickTools: updatedQuickTools };
+    setSettings(updatedSettings);
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_settings', updatedSettings);
+    } else {
+      localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
+    }
+  };
+
   // PERSISTENCE ENGINE: Scan /Notes directory on startup and load all supported file types
   const loadNotesFromDrive = async (dir) => {
     if (!dir) return;
@@ -591,6 +608,8 @@ export default function App() {
         customSections={settings.customSections || []}
         privacyMode={privacyMode}
         setPrivacyMode={setPrivacyMode}
+        quickTools={settings.quickTools || []}
+        onToggleQuickTool={handleToggleQuickTool}
       />
 
       <div className="main-content">

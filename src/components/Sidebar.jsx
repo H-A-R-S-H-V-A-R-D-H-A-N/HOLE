@@ -43,7 +43,9 @@ import {
   Mail,
   Radar,
   MapPin,
-  PhoneCall
+  PhoneCall,
+  Pin,
+  PinOff
 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import '../styles/Sidebar.css';
@@ -153,9 +155,9 @@ const navSections = [
 
 const holeLetters = ['H', 'O', 'L', 'E'];
 
-export default function Sidebar({ activeView, onViewChange, notes, onNewNote, onSelectNote, onDeleteNote, customSections = [], privacyMode, setPrivacyMode }) {
+export default function Sidebar({ activeView, onViewChange, notes, onNewNote, onSelectNote, onDeleteNote, customSections = [], privacyMode, setPrivacyMode, quickTools = [], onToggleQuickTool }) {
   const [expandedSections, setExpandedSections] = useState({
-    Main: true, Tools: true, Scanners: true, Notes: true, Platforms: true, 'Custom Sections': true,
+    'Quick Tools': true, Main: true, Tools: true, Scanners: true, Notes: true, Platforms: true, 'Custom Sections': true,
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -183,6 +185,39 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
       <button className="sidebar-new-btn" onClick={() => onNewNote('blank')}><Plus size={18} /> New Note</button>
 
       <nav className="sidebar-nav">
+        {quickTools && quickTools.length > 0 && (
+          <div className="sidebar-section">
+            <div className="sidebar-section-title" onClick={() => toggleSection('Quick Tools')} style={{ cursor: 'pointer' }}>
+              Quick Tools
+            </div>
+            {expandedSections['Quick Tools'] && quickTools.map((toolId) => {
+              let item = null;
+              for (const sec of navSections) {
+                item = sec.items.find(i => i.id === toolId);
+                if (item) break;
+              }
+              if (!item) return null;
+              
+              const Icon = item.icon;
+              const color = getItemColor(item.id);
+              return (
+                <div
+                  key={`quick-${item.id}`}
+                  className={`sidebar-item ${activeView === item.id ? 'active' : ''}`}
+                  onClick={() => handleItemClick(item.id)}
+                  style={{ '--item-accent': color }}
+                >
+                  <Icon size={18} className="sidebar-item-icon" />
+                  <span>{item.label}</span>
+                  <button className="note-delete-btn" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title="Unpin Quick Tool">
+                    <PinOff size={14} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {navSections.map((section) => (
           <div className="sidebar-section" key={section.title}>
             <div className="sidebar-section-title" onClick={() => toggleSection(section.title)} style={{ cursor: 'pointer' }}>
@@ -191,6 +226,8 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
             {expandedSections[section.title] && section.items.map((item) => {
               const Icon = item.icon;
               const color = getItemColor(item.id);
+              const isPinned = quickTools && quickTools.includes(item.id);
+              const canPin = section.title === 'Tools' || section.title === 'Scanners' || section.title === 'Main';
               return (
                 <div
                   key={item.id}
@@ -200,6 +237,11 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
                 >
                   <Icon size={18} className="sidebar-item-icon" />
                   <span>{item.label}</span>
+                  {canPin && (
+                    <button className="note-delete-btn pin-btn" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', opacity: isPinned ? 1 : '' }} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title={isPinned ? "Unpin Tool" : "Pin to Quick Tools"}>
+                      {isPinned ? <PinOff size={14} color="#10B981" /> : <Pin size={14} />}
+                    </button>
+                  )}
                 </div>
               );
             })}
