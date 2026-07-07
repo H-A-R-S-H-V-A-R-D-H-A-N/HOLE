@@ -563,3 +563,28 @@ body.terminal-fullscreen .main-content {
 .macos-glass-panel:hover {
   /* No hover movement to reduce stress */
 }
+
+/* ---- Luxury Background Animation for Empty Space ---- */
+.luxury-bg-animation {
+  position: relative;
+  overflow: hidden;
+}
+
+.luxury-bg-animation::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.08) 0%, rgba(5, 10, 20, 0) 50%);
+  animation: luxuryBreathe 8s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes luxuryBreathe {
+  0% { transform: scale(0.8) translate(0%, 0%); opacity: 0.5; }
+  50% { transform: scale(1.1) translate(2%, 2%); opacity: 1; }
+  100% { transform: scale(0.9) translate(-2%, -2%); opacity: 0.7; }
+}

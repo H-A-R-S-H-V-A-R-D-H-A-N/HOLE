@@ -182,16 +182,15 @@ export default function TerminalView() {
   };
 
   return (
-    <div className="tool-page macos-window-enter" style={containerStyle}>
+    <div className="tool-page macos-window-enter luxury-bg-animation" style={containerStyle}>
       {/* Header & Controls */}
       <div className="macos-glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '20px', flexShrink: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #E11D48, #9F1239)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(225, 29, 72, 0.4)' }}>
             <TerminalIcon size={20} color="#fff" />
           </div>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '0.5px' }}>Command Center</h2>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>Luxury integrated shell environment</p>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '0.5px' }}>TERMINAL</h2>
           </div>
         </div>
 
@@ -217,7 +216,7 @@ export default function TerminalView() {
               <PowerOff size={16} /> Disconnect
             </button>
           ) : (
-            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)', transition: 'all 0.2s' }}>
+            <button onClick={startTerminal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #E11D48, #9F1239)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 0 15px rgba(225, 29, 72, 0.4)', transition: 'all 0.2s', position: 'relative', zIndex: 10 }}>
               <Power size={16} /> Initialize
             </button>
           )}
