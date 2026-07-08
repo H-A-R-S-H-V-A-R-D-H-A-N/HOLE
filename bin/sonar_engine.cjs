@@ -1,6 +1,5 @@
 const express = require('express');
-const localtunnel = require('localtunnel');
-const crypto = require('crypto');
+const os = require('os');
 
 const app = express();
 app.use(express.raw({ type: '*/*', limit: '50mb' }));
@@ -35,24 +34,32 @@ app.use((req, res) => {
     res.status(200).send('OK');
 });
 
-const start = async () => {
-    const server = app.listen(0, async () => {
-        const port = server.address().port;
-        const randomId = crypto.randomBytes(3).toString('hex');
-        const subdomain = `hole-${randomId}`;
-        
-        try {
-            const tunnel = await localtunnel({ port, subdomain });
-            const assignedUrl = tunnel.url.replace('https://', '').replace('http://', '');
-            
-            console.log(JSON.stringify({ type: 'init', url: assignedUrl }));
+const getLocalIp = () => {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return '127.0.0.1';
+};
 
-            tunnel.on('close', () => process.exit(0));
-            tunnel.on('error', (err) => {
-                console.error(err.message);
-                process.exit(1);
+const start = () => {
+    const port = 8000;
+    app.listen(port, '0.0.0.0', () => {
+        const ip = getLocalIp();
+        console.log(JSON.stringify({ type: 'init', url: `${ip}:${port}` }));
+    }).on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            // Fallback to random port if 8000 is taken
+            const server = app.listen(0, '0.0.0.0', () => {
+                const randomPort = server.address().port;
+                const ip = getLocalIp();
+                console.log(JSON.stringify({ type: 'init', url: `${ip}:${randomPort}` }));
             });
-        } catch (err) {
+        } else {
             console.error(err.message);
             process.exit(1);
         }
