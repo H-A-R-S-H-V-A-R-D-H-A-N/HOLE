@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Activity, Copy, CheckCircle2, Server, Globe, Zap, Mail, ChevronRight, Hash, Eye, Trash2 } from 'lucide-react';
+import { Activity, Copy, CheckCircle2, Server, Globe, Zap, Mail, ChevronRight, Hash, Eye, Trash2, Volume2, VolumeX } from 'lucide-react';
 import '../styles/SonarCatcher.css';
 
 export default function SonarCatcher() {
@@ -17,9 +17,13 @@ export default function SonarCatcher() {
   const [protocolFilter, setProtocolFilter] = useState('ALL');
   const [showExploitModal, setShowExploitModal] = useState(false);
   const [alertConfig, setAlertConfig] = useState(null); // { message, onConfirm }
+  const [audioEnabled, setAudioEnabled] = useState(true);
   
   // Audio object for sonar ping
   const audioRef = useRef(new Audio('/sonar_ping.wav'));
+  const audioEnabledRef = useRef(audioEnabled);
+  
+  useEffect(() => { audioEnabledRef.current = audioEnabled; }, [audioEnabled]);
 
   // Use refs to keep event handlers updated without re-rendering listeners
   const interactionsRef = useRef(interactions);
@@ -50,11 +54,13 @@ export default function SonarCatcher() {
         setInteractions([newInt, ...interactionsRef.current]);
         
         // Play sonar ping sound
-        try {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play();
-        } catch (e) {
-          console.error('Audio play failed:', e);
+        if (audioEnabledRef.current) {
+          try {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play();
+          } catch (e) {
+            console.error('Audio play failed:', e);
+          }
         }
       });
     }
@@ -220,7 +226,16 @@ export default function SonarCatcher() {
           </button>
         </div>
 
-        <div className="sonar-controls">
+        <div className="sonar-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button 
+            className="sonar-icon-btn" 
+            onClick={() => setAudioEnabled(!audioEnabled)}
+            title={audioEnabled ? 'Mute Alerts' : 'Unmute Alerts'}
+            style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            {audioEnabled ? <Volume2 size={16} /> : <VolumeX size={16} color="#f87171" />}
+          </button>
+          
           {running ? (
             <button className="sonar-btn stop" onClick={stopSonar}>Stop Sonar Engine</button>
           ) : (
