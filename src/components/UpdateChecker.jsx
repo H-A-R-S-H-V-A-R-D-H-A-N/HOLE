@@ -13,6 +13,8 @@ export default function UpdateChecker() {
   const [checking, setChecking] = useState(false);
 
   const checkForUpdates = useCallback(async () => {
+    // Disabled to prevent false positives when making local edits
+    return;
     try {
       setChecking(true);
 

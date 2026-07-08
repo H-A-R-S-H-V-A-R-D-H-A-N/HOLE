@@ -2205,16 +2205,11 @@ ipcMain.on('shell-write', (event, data) => {
   }
 });
 
-ipcMain.handle('get-git-sha', () => {
-  return new Promise((resolve) => {
-    const { exec } = require('child_process');
-    exec('git rev-parse HEAD', { cwd: path.join(__dirname, '..') }, (error, stdout) => {
-      if (error) resolve(null);
-      else resolve(stdout.trim());
-    });
-  });
+ipcMain.on('shell-write', (event, data) => {
+  if (activeShellSocket && !activeShellSocket.destroyed) {
+    activeShellSocket.write(data);
+  }
 });
-
 
 
 
