@@ -590,16 +590,14 @@ ipcMain.handle('sonar-start', async (event) => {
 
   return new Promise((resolve) => {
     try {
-      const isWin = process.platform === 'win32';
-      const binaryName = isWin ? 'echo_engine.exe' : 'echo_engine';
-      const binPath = path.join(__dirname, '..', 'bin', binaryName);
+      const binPath = path.join(__dirname, '..', 'bin', 'sonar_engine.cjs');
 
       if (!fs.existsSync(binPath)) {
-        resolve({ success: false, error: 'Sonar binary not found in bin directory.' });
+        resolve({ success: false, error: 'Sonar engine script not found in bin directory.' });
         return;
       }
 
-      sonarProcess = spawn(binPath, ['-json']);
+      sonarProcess = spawn('node', [binPath]);
 
       let urlExtracted = false;
 
@@ -618,9 +616,14 @@ ipcMain.handle('sonar-start', async (event) => {
         lines.forEach(line => {
           if (!line.trim()) return;
           const cleanLine = stripAnsi(line.trim());
-          
           try {
             const parsed = JSON.parse(cleanLine);
+            if (parsed.type === 'init' && !urlExtracted) {
+              urlExtracted = true;
+              sonarUrl = parsed.url;
+              resolve({ success: true, url: sonarUrl });
+              return;
+            }
             if (parsed.protocol) {
               if (mainWindow && mainWindow.webContents) {
                 mainWindow.webContents.send('sonar-interaction', {
@@ -636,15 +639,6 @@ ipcMain.handle('sonar-start', async (event) => {
               return;
             }
           } catch (e) {}
-
-          if (!urlExtracted && cleanLine.includes('[INF]')) {
-            const match = cleanLine.match(/([a-z0-9]+\.(oast|interact\.sh)[a-z0-9.-]*)/i);
-            if (match) {
-              urlExtracted = true;
-              sonarUrl = match[1];
-              resolve({ success: true, url: sonarUrl });
-            }
-          }
         });
       };
 
@@ -2210,6 +2204,17 @@ ipcMain.on('shell-write', (event, data) => {
     activeShellSocket.write(data);
   }
 });
+
+ipcMain.handle('get-git-sha', () => {
+  return new Promise((resolve) => {
+    const { exec } = require('child_process');
+    exec('git rev-parse HEAD', { cwd: path.join(__dirname, '..') }, (error, stdout) => {
+      if (error) resolve(null);
+      else resolve(stdout.trim());
+    });
+  });
+});
+
 
 
 

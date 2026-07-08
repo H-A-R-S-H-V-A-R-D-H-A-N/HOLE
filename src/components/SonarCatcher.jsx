@@ -139,8 +139,8 @@ export default function SonarCatcher() {
         <div className="sonar-stream-panel">
           <div className="sonar-payload-card">
             <div className="sonar-payload-label">Your Unique Payload URL</div>
-            <div className="sonar-payload-box" onClick={copyUrl} style={{ cursor: 'pointer', position: 'relative' }}>
-              <span className={url ? 'active' : 'inactive'} style={{ paddingRight: '40px' }}>
+            <div className="sonar-payload-box" onClick={copyUrl} style={{ cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span className={url ? 'active' : 'inactive'} style={{ paddingRight: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {url || 'Waiting for engine to start...'}
               </span>
               <button 
