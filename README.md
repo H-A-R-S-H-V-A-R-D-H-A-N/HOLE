@@ -201,6 +201,14 @@ npm run electron:dev
 ## Showcase Gallery
 
 <div align="center">
+  <img src="screenshots/sonar_main.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/sonar_generator.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/sonar_request.png" width="90%" />
+  <br/><br/>
+  <img src="screenshots/sonar_response.png" width="90%" />
+  <br/><br/>
   <img src="screenshots/dashboard.png" width="90%" />
   <br/><br/>
   <img src="screenshots/tor-engine.png" width="90%" />
