@@ -638,17 +638,22 @@ ipcMain.handle('sonar-start', async (event) => {
         console.error('[Sonar Error]:', data.toString());
       });
 
-      sonarProcess.on('close', () => {
+      sonarProcess.on('exit', () => {
         sonarProcess = null;
-        if (!urlExtracted) {
-          resolve({ success: false, error: 'Sonar process exited unexpectedly.' });
-        }
+        sonarUrl = '';
       });
 
     } catch (err) {
       resolve({ success: false, error: err.message });
     }
   });
+});
+
+ipcMain.handle('sonar-status', () => {
+  if (sonarProcess && sonarUrl) {
+    return { running: true, url: sonarUrl };
+  }
+  return { running: false };
 });
 
 ipcMain.handle('sonar-stop', async () => {
