@@ -155,7 +155,6 @@ export default function SonarCatcher() {
 
       <div className="sonar-layout">
         {mainTab === 'pings' ? (
-        {/* LEFT PANEL - Stream (Full Width Now) */}
         <div className="sonar-stream-panel" style={{ width: '100%', minWidth: '100%', borderRight: 'none' }}>
           <div className="sonar-payload-card">
             <div className="sonar-payload-label">Your Unique Payload URL</div>
@@ -223,7 +222,6 @@ export default function SonarCatcher() {
           </div>
         </div>
         ) : (
-        {/* RIGHT PANEL - Details (Full Width Now) */}
         <div className="sonar-detail-panel">
           {activeInteraction ? (
             <div className="sonar-detail-content">
