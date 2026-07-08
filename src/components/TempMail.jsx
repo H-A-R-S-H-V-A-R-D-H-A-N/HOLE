@@ -15,6 +15,11 @@ const PROVIDERS = [
     base: 'https://api.internal.temp-mail.io/api/v3',
     type: 'tempmailio',
   },
+  {
+    name: 'guerrillamail.com',
+    base: 'https://api.guerrillamail.com/ajax.php',
+    type: 'guerrillamail',
+  },
 ];
 
 async function tryProviders(fn) {
@@ -73,6 +78,13 @@ async function generateWithProvider(provider) {
     return { address: data.email, token: data.token, id: data.token, providerType: 'tempmailio', providerBase: provider.base };
   }
 
+  if (provider.type === 'guerrillamail') {
+    const res = await fetch(`${provider.base}?f=get_email_address`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { address: data.email_addr, token: data.sid_token, id: data.sid_token, providerType: 'guerrillamail', providerBase: provider.base };
+  }
+
   return null;
 }
 
@@ -127,6 +139,19 @@ async function fetchMessagesFromProvider(acc) {
       attachments: m.attachments || [], _provider: 'tempmailio'
     }));
   }
+
+  if (acc.providerType === 'guerrillamail') {
+    const res = await fetch(`${acc.providerBase}?f=check_email&seq=0&sid_token=${acc.token}`);
+    if (!res.ok) throw new Error('Failed to fetch messages');
+    const data = await res.json();
+    return (data.list || []).map(m => ({
+      id: m.mail_id, from: m.mail_from || 'Unknown',
+      subject: m.mail_subject || 'No Subject', date: m.mail_date,
+      bodyText: m.mail_excerpt, bodyHtml: m.mail_body || m.mail_excerpt,
+      attachments: [], _provider: 'guerrillamail'
+    }));
+  }
+
   return [];
 }
 
@@ -158,6 +183,14 @@ async function readMessageFromProvider(acc, msgId) {
     // temp-mail.io returns full body in the messages list
     return null; // handled inline
   }
+
+  if (acc.providerType === 'guerrillamail') {
+    const res = await fetch(`${acc.providerBase}?f=fetch_email&email_id=${msgId}&sid_token=${acc.token}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { html: data.mail_body, text: data.mail_excerpt, attachments: [] };
+  }
+
   return null;
 }
 
@@ -350,7 +383,7 @@ export default function TempMail() {
           <div className="tm-brand-sub">Powered by HOLE</div>
           <p>Generate disposable email addresses for testing registration flows, password resets, and blind interactions — all without leaving your workstation.</p>
           <button className="tm-gen-btn" onClick={generateEmail} disabled={generating}>
-            {generating ? <RefreshCw size={18} className="tm-spin" /> : <Sparkles size={18} />}
+            {generating ? <RefreshCw size={18} className="tm-spin" /> : null}
             {generating ? 'Creating...' : 'Generate Address'}
           </button>
           <div className="tm-provider-badge">
