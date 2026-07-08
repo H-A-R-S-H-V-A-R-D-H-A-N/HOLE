@@ -407,3 +407,201 @@
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* ─── Filtering & Search ─── */
+.sonar-filters {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 16px;
+}
+.sonar-search-input {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.sonar-search-input:focus { border-color: rgba(167,139,250,0.5); }
+.sonar-protocol-select {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ─── Actions & Export ─── */
+.sonar-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sonar-icon-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  transition: all 0.2s;
+}
+.sonar-icon-btn:hover { color: #fff; }
+.sonar-icon-btn.danger:hover { color: #f87171; }
+.sonar-delete-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.15);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: all 0.2s;
+}
+.sonar-list-item:hover .sonar-delete-btn { opacity: 1; }
+.sonar-delete-btn:hover { color: #f87171; background: rgba(239,68,68,0.1); }
+.sonar-export-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.sonar-export-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* ─── Exploit Generator Modal ─── */
+.sonar-exploit-btn {
+  background: linear-gradient(135deg, rgba(56,189,248,0.9), rgba(14,165,233,0.9));
+  color: #fff;
+  border: none;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(56,189,248,0.2);
+  transition: all 0.2s;
+}
+.sonar-exploit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(56,189,248,0.3); }
+.sonar-exploit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sonar-modal-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: sonarFadeIn 0.2s ease;
+}
+.sonar-modal {
+  background: #0d0d12;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  width: 600px;
+  max-width: 90%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.sonar-modal-header {
+  padding: 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sonar-modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; }
+.sonar-modal-close { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 24px; cursor: pointer; padding: 0; line-height: 1; }
+.sonar-modal-close:hover { color: #fff; }
+.sonar-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sonar-payload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sonar-payload-name {
+  width: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+}
+.sonar-payload-code {
+  flex: 1;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #38bdf8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sonar-payload-row button {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sonar-payload-row button:hover { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.3); }
+
+/* ─── Custom Alerts ─── */
+.sonar-alert-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: sonarFadeIn 0.2s ease;
+}
+.sonar-alert-box {
+  background: linear-gradient(180deg, #111 0%, #0a0a0f 100%);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 16px;
+  width: 400px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 32px 128px rgba(239,68,68,0.15);
+}
+.sonar-alert-box h3 { margin: 0 0 12px; font-size: 20px; font-weight: 800; color: #fff; }
+.sonar-alert-box p { margin: 0 0 32px; color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.5; }
+.sonar-alert-actions { display: flex; gap: 16px; }
+.sonar-alert-btn { flex: 1; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
+.sonar-alert-btn.cancel { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+.sonar-alert-btn.cancel:hover { background: rgba(255,255,255,0.1); }
+.sonar-alert-btn.confirm { background: #ef4444; color: #fff; box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
+.sonar-alert-btn.confirm:hover { background: #dc2626; transform: translateY(-2px); }
