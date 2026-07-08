@@ -11,6 +11,7 @@ export default function SonarCatcher() {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedRaw, setCopiedRaw] = useState(false);
   const [error, setError] = useState(null);
+  const [detailTab, setDetailTab] = useState('request');
 
   // Use refs to keep event handlers updated without re-rendering listeners
   const interactionsRef = useRef(interactions);
@@ -186,7 +187,10 @@ export default function SonarCatcher() {
                 <div 
                   key={int.id} 
                   className={`sonar-list-item ${activeInteraction?.id === int.id ? 'active' : ''}`}
-                  onClick={() => setActiveInteraction(int)}
+                  onClick={() => {
+                    setActiveInteraction(int);
+                    setDetailTab('request');
+                  }}
                 >
                   <div className="sonar-item-proto">{getProtocolIcon(int.protocol)} {int.protocol.toUpperCase()}</div>
                   <div className="sonar-item-meta">
@@ -227,17 +231,30 @@ export default function SonarCatcher() {
               </div>
 
               <div className="sonar-raw-section">
-                <div className="sonar-raw-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Eye size={14} /> Raw Request Data
+                <div className="sonar-raw-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0', display: 'flex', justifyContent: 'space-between' }}>
+                  <div className="sonar-tabs" style={{ display: 'flex', gap: '20px' }}>
+                    <div 
+                      className={`sonar-tab ${detailTab === 'request' ? 'active' : ''}`}
+                      onClick={() => setDetailTab('request')}
+                    >
+                      <Eye size={14} /> Request
+                    </div>
+                    {activeInteraction.raw_response && (
+                      <div 
+                        className={`sonar-tab ${detailTab === 'response' ? 'active' : ''}`}
+                        onClick={() => setDetailTab('response')}
+                      >
+                        <Server size={14} /> Response
+                      </div>
+                    )}
                   </div>
-                  <button className="sonar-copy-btn" onClick={copyRawRequest} title="Copy Raw Request">
+                  <button className="sonar-copy-btn" onClick={copyRawRequest} title="Copy Raw Data" style={{ marginBottom: '8px' }}>
                     {copiedRaw ? <CheckCircle2 size={14} color="#10B981" /> : <Copy size={14} />} 
-                    {copiedRaw ? 'Copied!' : 'Copy Request'}
+                    {copiedRaw ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
                 <pre className="sonar-raw-code">
-                  <code>{activeInteraction.raw_request || 'No raw data available.'}</code>
+                  <code>{detailTab === 'request' ? (activeInteraction.raw_request || 'No raw request data available.') : (activeInteraction.raw_response || 'No raw response data available.')}</code>
                 </pre>
               </div>
             </div>

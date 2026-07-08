@@ -626,6 +626,7 @@ ipcMain.handle('sonar-start', async (event) => {
                   protocol: parsed.protocol,
                   query_type: parsed['q-type'],
                   raw_request: parsed['raw-request'],
+                  raw_response: parsed['raw-response'],
                   remote_address: parsed['remote-address'],
                   timestamp: parsed.timestamp
                 });

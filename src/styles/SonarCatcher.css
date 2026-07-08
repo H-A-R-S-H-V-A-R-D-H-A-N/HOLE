@@ -263,7 +263,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
   animation: sonarFadeIn 0.3s ease;
 }
 
@@ -300,11 +300,9 @@
 .meta-value { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: rgba(255,255,255,0.8); word-break: break-all; }
 
 .sonar-raw-section {
-  flex: 1;
   display: flex;
   flex-direction: column;
   padding: 24px 42px;
-  overflow: hidden;
 }
 
 .sonar-raw-header {
@@ -315,6 +313,25 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+
+.sonar-tab {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.4);
+  font-weight: 700;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.sonar-tab:hover {
+  color: rgba(255,255,255,0.8);
+}
+.sonar-tab.active {
+  color: #a78bfa;
+  border-bottom: 2px solid #a78bfa;
 }
 
 .sonar-copy-btn {
@@ -338,13 +355,12 @@
 }
 
 .sonar-raw-code {
-  flex: 1;
   margin: 0;
   background: rgba(0,0,0,0.3);
   border: 1px solid rgba(255,255,255,0.04);
   border-radius: 12px;
   padding: 24px;
-  overflow: auto;
+  overflow-x: auto;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   color: #a78bfa;
