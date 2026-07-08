@@ -592,7 +592,7 @@ ipcMain.handle('sonar-start', async (event) => {
     try {
       const isWin = process.platform === 'win32';
       const binaryName = isWin ? 'echo_engine.exe' : 'echo_engine';
-      const binPath = path.join(__dirname, '..', 'bin', binaryName);
+      const binPath = path.join(__dirname, '..', 'bin', 'echo_engine', binaryName);
 
       if (!fs.existsSync(binPath)) {
         resolve({ success: false, error: 'Sonar binary not found in bin directory.' });
