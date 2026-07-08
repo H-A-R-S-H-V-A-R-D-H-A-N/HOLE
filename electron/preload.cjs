@@ -121,6 +121,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPublicIP: () => ipcRenderer.invoke('get-public-ip'),
   reconScan: (options) => ipcRenderer.invoke('recon-scan', options),
   targetCommandParse: (options) => ipcRenderer.invoke('target-command-parse', options),
+
+  // Sonar (OOB Collaborator)
+  sonarStart: () => ipcRenderer.invoke('sonar-start'),
+  sonarStop: () => ipcRenderer.invoke('sonar-stop'),
+  onSonarInteraction: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('sonar-interaction', handler);
+    return () => ipcRenderer.removeListener('sonar-interaction', handler);
+  },
+
   findBuckets: (options) => ipcRenderer.invoke('find-buckets', options),
   faviconHunt: (options) => ipcRenderer.invoke('favicon-hunt', options),
   exposureHunt: (options) => ipcRenderer.invoke('exposure-hunt', options),

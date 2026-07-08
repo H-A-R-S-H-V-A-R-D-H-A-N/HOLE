@@ -49,6 +49,7 @@ import WAFDetector from './components/WAFDetector';
 import JSSpider from './components/JSSpider';
 import TechniqueVault from './components/TechniqueVault';
 import TempMail from './components/TempMail';
+import SonarCatcher from './components/SonarCatcher';
 import BountyInboxes from './components/BountyInboxes';
 import DonationBanner from './components/DonationBanner';
 import CommunityCounter from './components/CommunityCounter';
@@ -754,6 +755,9 @@ export default function App() {
           </div>
           <div style={{ display: activeView === 'temp-mail' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
             <TempMail />
+          </div>
+          <div style={{ display: activeView === 'sonar' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <SonarCatcher />
           </div>
 
 

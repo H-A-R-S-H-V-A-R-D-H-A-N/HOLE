@@ -45,7 +45,8 @@ import {
   MapPin,
   PhoneCall,
   Pin,
-  PinOff
+  PinOff,
+  Activity
 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import '../styles/Sidebar.css';
@@ -97,6 +98,7 @@ const navSections = [
   {
     title: 'Tools',
     items: [
+      { id: 'sonar', label: 'Sonar Catcher', icon: Activity },
       { id: 'terminal', label: 'Terminal', icon: TerminalSquare },
       { id: 'tor-mode', label: 'Tor Engine', icon: Shield },
       { id: 'cve-mapper', label: 'CVE Mapper', icon: AlertTriangle },

@@ -580,6 +580,86 @@ ipcMain.handle('recon-scan', async (event, { domain }) => {
   });
 });
 
+// ---- Sonar (Echo Engine) ---- //
+let sonarProcess = null;
+
+ipcMain.handle('sonar-start', async (event) => {
+  if (sonarProcess) {
+    return { success: false, error: 'Sonar is already running' };
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const isWin = process.platform === 'win32';
+      const binaryName = isWin ? 'echo_engine.exe' : 'echo_engine';
+      const binPath = path.join(__dirname, '..', 'bin', binaryName);
+
+      if (!fs.existsSync(binPath)) {
+        resolve({ success: false, error: 'Sonar binary not found in bin directory.' });
+        return;
+      }
+
+      sonarProcess = spawn(binPath);
+
+      let urlExtracted = false;
+
+      sonarProcess.on('error', (err) => {
+        sonarProcess = null;
+        if (!urlExtracted) {
+          urlExtracted = true;
+          resolve({ success: false, error: err.message });
+        }
+      });
+
+      sonarProcess.stdout.on('data', (data) => {
+        const lines = data.toString().split('\n');
+        lines.forEach(line => {
+          if (!line.trim()) return;
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === 'init' && !urlExtracted) {
+              urlExtracted = true;
+              resolve({ success: true, url: parsed.url });
+            } else if (parsed.type === 'interaction') {
+              if (mainWindow && mainWindow.webContents) {
+                mainWindow.webContents.send('sonar-interaction', parsed);
+              }
+            } else if (parsed.type === 'error' && !urlExtracted) {
+              urlExtracted = true;
+              resolve({ success: false, error: parsed.error });
+            }
+          } catch (e) {
+            // Ignore non-JSON lines
+          }
+        });
+      });
+
+      sonarProcess.stderr.on('data', (data) => {
+        console.error('[Sonar Error]:', data.toString());
+      });
+
+      sonarProcess.on('close', () => {
+        sonarProcess = null;
+        if (!urlExtracted) {
+          resolve({ success: false, error: 'Sonar process exited unexpectedly.' });
+        }
+      });
+
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+ipcMain.handle('sonar-stop', async () => {
+  if (sonarProcess) {
+    sonarProcess.kill('SIGINT');
+    sonarProcess = null;
+    return true;
+  }
+  return false;
+});
+
 // ---- Target Command (Hybrid API & DOM Extractor) ---- //
 ipcMain.handle('target-command-parse', async (event, { url, apiKeys = {} }) => {
   return new Promise(async (resolve) => {
