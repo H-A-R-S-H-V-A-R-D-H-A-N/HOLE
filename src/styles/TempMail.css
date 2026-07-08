@@ -346,29 +346,32 @@
 .tm-msg-card {
   padding: 16px 18px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.01);
-  border: 1px solid transparent;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 6px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin-bottom: 8px;
   position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .tm-msg-card:hover {
-  background: rgba(255,255,255,0.025);
-  border-color: rgba(255,255,255,0.05);
-  transform: translateX(3px);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(167,139,250,0.3);
+  transform: translateX(6px) translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2), 0 0 15px rgba(167,139,250,0.15);
 }
 .tm-msg-card.active {
-  background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(167,139,250,0.02));
-  border-color: rgba(167,139,250,0.15);
-  box-shadow: 0 4px 24px rgba(167,139,250,0.04);
+  background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(167,139,250,0.05));
+  border-color: rgba(167,139,250,0.4);
+  box-shadow: 0 8px 32px rgba(167,139,250,0.1);
+  transform: translateX(6px);
 }
 
 .tm-msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.tm-msg-from { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
-.tm-msg-time { font-size: 10px; color: rgba(255,255,255,0.2); font-weight: 600; }
-.tm-msg-subject { font-size: 12px; color: rgba(255,255,255,0.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tm-msg-from { font-size: 13.5px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; letter-spacing: 0.2px; }
+.tm-msg-time { font-size: 10px; color: rgba(255,255,255,0.45); font-weight: 700; background: rgba(0,0,0,0.2); padding: 3px 8px; border-radius: 6px; }
+.tm-msg-subject { font-size: 12.5px; color: rgba(255,255,255,0.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ─── Delete button on messages ─── */
 .tm-msg-delete {
