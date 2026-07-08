@@ -139,9 +139,31 @@ export default function SonarCatcher() {
         <div className="sonar-stream-panel">
           <div className="sonar-payload-card">
             <div className="sonar-payload-label">Your Unique Payload URL</div>
-            <div className="sonar-payload-box" onClick={copyUrl}>
-              <span className={url ? 'active' : 'inactive'}>{url || 'Waiting for engine to start...'}</span>
-              {copiedUrl ? <CheckCircle2 size={16} color="#10B981" /> : <Copy size={16} />}
+            <div className="sonar-payload-box" onClick={copyUrl} style={{ cursor: 'pointer', position: 'relative' }}>
+              <span className={url ? 'active' : 'inactive'} style={{ paddingRight: '40px' }}>
+                {url || 'Waiting for engine to start...'}
+              </span>
+              <button 
+                onClick={(e) => { e.stopPropagation(); copyUrl(); }}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  background: copiedUrl ? 'rgba(16, 185, 129, 0.2)' : 'rgba(167, 139, 250, 0.2)',
+                  border: copiedUrl ? '1px solid #10B981' : '1px solid #a78bfa',
+                  color: copiedUrl ? '#10B981' : '#c4b5fd',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                {copiedUrl ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+                {copiedUrl ? 'Copied' : 'Copy URL'}
+              </button>
             </div>
           </div>
 

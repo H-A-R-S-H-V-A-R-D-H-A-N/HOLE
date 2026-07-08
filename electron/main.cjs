@@ -592,14 +592,14 @@ ipcMain.handle('sonar-start', async (event) => {
     try {
       const isWin = process.platform === 'win32';
       const binaryName = isWin ? 'echo_engine.exe' : 'echo_engine';
-      const binPath = path.join(__dirname, '..', 'bin', 'echo_engine', binaryName);
+      const binPath = path.join(__dirname, '..', 'bin', binaryName);
 
       if (!fs.existsSync(binPath)) {
         resolve({ success: false, error: 'Sonar binary not found in bin directory.' });
         return;
       }
 
-      sonarProcess = spawn(binPath);
+      sonarProcess = spawn(binPath, ['-json']);
 
       let urlExtracted = false;
 
@@ -611,32 +611,45 @@ ipcMain.handle('sonar-start', async (event) => {
         }
       });
 
-      sonarProcess.stdout.on('data', (data) => {
+      const stripAnsi = (str) => str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+
+      const handleOutput = (data) => {
         const lines = data.toString().split('\n');
         lines.forEach(line => {
           if (!line.trim()) return;
+          const cleanLine = stripAnsi(line.trim());
+          
           try {
-            const parsed = JSON.parse(line);
-            if (parsed.type === 'init' && !urlExtracted) {
-              urlExtracted = true;
-              resolve({ success: true, url: parsed.url });
-            } else if (parsed.type === 'interaction') {
+            const parsed = JSON.parse(cleanLine);
+            if (parsed.protocol) {
               if (mainWindow && mainWindow.webContents) {
-                mainWindow.webContents.send('sonar-interaction', parsed);
+                mainWindow.webContents.send('sonar-interaction', {
+                  type: 'interaction',
+                  id: Date.now() + Math.random(),
+                  protocol: parsed.protocol,
+                  query_type: parsed['q-type'],
+                  raw_request: parsed['raw-request'],
+                  remote_address: parsed['remote-address'],
+                  timestamp: parsed.timestamp
+                });
               }
-            } else if (parsed.type === 'error' && !urlExtracted) {
-              urlExtracted = true;
-              resolve({ success: false, error: parsed.error });
+              return;
             }
-          } catch (e) {
-            // Ignore non-JSON lines
+          } catch (e) {}
+
+          if (!urlExtracted && cleanLine.includes('[INF]')) {
+            const match = cleanLine.match(/([a-z0-9]+\.(oast|interact\.sh)[a-z0-9.-]*)/i);
+            if (match) {
+              urlExtracted = true;
+              sonarUrl = match[1];
+              resolve({ success: true, url: sonarUrl });
+            }
           }
         });
-      });
+      };
 
-      sonarProcess.stderr.on('data', (data) => {
-        console.error('[Sonar Error]:', data.toString());
-      });
+      sonarProcess.stdout.on('data', handleOutput);
+      sonarProcess.stderr.on('data', handleOutput);
 
       sonarProcess.on('exit', () => {
         sonarProcess = null;
