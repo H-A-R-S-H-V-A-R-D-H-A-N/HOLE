@@ -35,9 +35,7 @@ func main() {
 	// Disable default log output so we only spit out JSON to stdout
 	log.SetOutput(os.Stderr)
 
-	c, err := client.New(&client.Options{
-		ServerURL: "https://interact.sh",
-	})
+	c, err := client.New(client.DefaultOptions)
 	if err != nil {
 		printErrorAndExit(fmt.Sprintf("Could not create client: %v", err))
 	}
