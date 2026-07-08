@@ -115,7 +115,6 @@ export default function SonarCatcher() {
           </div>
           <div>
             <h1>Sonar <span>OOB Catcher</span></h1>
-            <p>Catch blind interactions (DNS, HTTP, SMTP) automatically using the secure Interactsh network.</p>
           </div>
         </div>
         
