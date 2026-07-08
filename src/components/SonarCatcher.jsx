@@ -12,6 +12,7 @@ export default function SonarCatcher() {
   const [copiedRaw, setCopiedRaw] = useState(false);
   const [error, setError] = useState(null);
   const [detailTab, setDetailTab] = useState('request');
+  const [mainTab, setMainTab] = useState('pings');
 
   // Use refs to keep event handlers updated without re-rendering listeners
   const interactionsRef = useRef(interactions);
@@ -117,6 +118,23 @@ export default function SonarCatcher() {
             <p>Catch blind interactions (DNS, HTTP, SMTP) automatically using the secure Interactsh network.</p>
           </div>
         </div>
+        
+        <div className="sonar-main-tabs">
+          <button 
+            className={`sonar-main-tab ${mainTab === 'pings' ? 'active' : ''}`}
+            onClick={() => setMainTab('pings')}
+          >
+            <Activity size={14} /> Captured Pings {interactions.length > 0 && `(${interactions.length})`}
+          </button>
+          <button 
+            className={`sonar-main-tab ${mainTab === 'details' ? 'active' : ''}`}
+            onClick={() => setMainTab('details')}
+            disabled={!activeInteraction}
+          >
+            <Eye size={14} /> Interaction Details
+          </button>
+        </div>
+
         <div className="sonar-controls">
           {running ? (
             <button className="sonar-btn stop" onClick={stopSonar}>Stop Sonar Engine</button>
@@ -136,8 +154,9 @@ export default function SonarCatcher() {
       )}
 
       <div className="sonar-layout">
-        {/* LEFT PANEL - Stream */}
-        <div className="sonar-stream-panel">
+        {mainTab === 'pings' ? (
+        {/* LEFT PANEL - Stream (Full Width Now) */}
+        <div className="sonar-stream-panel" style={{ width: '100%', minWidth: '100%', borderRight: 'none' }}>
           <div className="sonar-payload-card">
             <div className="sonar-payload-label">Your Unique Payload URL</div>
             <div className="sonar-payload-box" onClick={copyUrl} style={{ cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -190,6 +209,7 @@ export default function SonarCatcher() {
                   onClick={() => {
                     setActiveInteraction(int);
                     setDetailTab('request');
+                    setMainTab('details');
                   }}
                 >
                   <div className="sonar-item-proto">{getProtocolIcon(int.protocol)} {int.protocol.toUpperCase()}</div>
@@ -202,8 +222,8 @@ export default function SonarCatcher() {
             )}
           </div>
         </div>
-
-        {/* RIGHT PANEL - Details */}
+        ) : (
+        {/* RIGHT PANEL - Details (Full Width Now) */}
         <div className="sonar-detail-panel">
           {activeInteraction ? (
             <div className="sonar-detail-content">
@@ -266,6 +286,7 @@ export default function SonarCatcher() {
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );
