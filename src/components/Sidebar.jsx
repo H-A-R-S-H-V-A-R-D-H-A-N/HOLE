@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import {
   LayoutDashboard,
   FileEdit,
@@ -49,6 +46,8 @@ import {
   PhoneCall,
   Pin,
   PinOff,
+  ChevronUp,
+  ChevronDown,
   Activity
 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
@@ -88,21 +87,6 @@ function getItemColor(id) {
   return ITEM_COLORS[Math.abs(hash) % ITEM_COLORS.length];
 }
 
-const SortableItem = ({ id, section, children }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, data: { section } });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1 : 0,
-    position: 'relative'
-  };
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {children}
-    </div>
-  );
-};
 
 const navSections = [
   {
@@ -193,10 +177,6 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
     setDeleteConfirm(null);
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
 
   const getOrderedItems = (sectionTitle, defaultItems) => {
     const order = sidebarOrders[sectionTitle];
@@ -217,28 +197,30 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
     return ordered;
   };
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
 
-    const section = active.data.current?.section;
-    if (!section) return;
-    
+  const handleMove = (e, section, itemIndex, direction) => {
+    e.stopPropagation();
     if (section === 'Quick Tools') {
-       const oldIndex = quickTools.indexOf(active.id);
-       const newIndex = quickTools.indexOf(over.id);
-       const newOrder = arrayMove(quickTools, oldIndex, newIndex);
-       if (onUpdateQuickToolsOrder) onUpdateQuickToolsOrder(newOrder);
+      if (itemIndex + direction < 0 || itemIndex + direction >= quickTools.length) return;
+      const newOrder = [...quickTools];
+      const temp = newOrder[itemIndex];
+      newOrder[itemIndex] = newOrder[itemIndex + direction];
+      newOrder[itemIndex + direction] = temp;
+      if (onUpdateQuickToolsOrder) onUpdateQuickToolsOrder(newOrder);
     } else {
-       const secData = navSections.find(s => s.title === section);
-       if (!secData) return;
-       const currentItems = getOrderedItems(section, secData.items);
-       const oldIndex = currentItems.findIndex(i => i.id === active.id);
-       const newIndex = currentItems.findIndex(i => i.id === over.id);
-       const newOrder = arrayMove(currentItems, oldIndex, newIndex).map(i => i.id);
-       if (onUpdateSidebarOrder) onUpdateSidebarOrder(section, newOrder);
+      const secData = navSections.find(s => s.title === section);
+      if (!secData) return;
+      const currentItems = getOrderedItems(section, secData.items);
+      if (itemIndex + direction < 0 || itemIndex + direction >= currentItems.length) return;
+      const newOrder = [...currentItems];
+      const temp = newOrder[itemIndex];
+      newOrder[itemIndex] = newOrder[itemIndex + direction];
+      newOrder[itemIndex + direction] = temp;
+      const idArray = newOrder.map(i => i.id);
+      if (onUpdateSidebarOrder) onUpdateSidebarOrder(section, idArray);
     }
   };
+
 
   return (
     <aside className="sidebar">
@@ -253,8 +235,7 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
       <button className="sidebar-new-btn" onClick={() => onNewNote('blank')}><Plus size={18} /> New Note</button>
 
       <nav className="sidebar-nav">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        {quickTools && (
+                {quickTools && (
           <div className="sidebar-section">
             <div className="sidebar-section-title" onClick={() => toggleSection('Quick Tools')} style={{ cursor: 'pointer' }}>
               Quick Tools
@@ -264,36 +245,39 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
                 Hover over any tool and click the pin icon to add it here!
               </div>
             )}
-            {expandedSections['Quick Tools'] && (
-              <SortableContext items={quickTools} strategy={verticalListSortingStrategy}>
-                {quickTools.map((toolId) => {
-                  let item = null;
-                  for (const sec of navSections) {
-                    item = sec.items.find(i => i.id === toolId);
-                    if (item) break;
-                  }
-                  if (!item) return null;
-                  
-                  const Icon = item.icon;
-                  const color = getItemColor(item.id);
-                  return (
-                    <SortableItem key={toolId} id={toolId} section="Quick Tools">
-                      <div
-                        className={`sidebar-item ${activeView === item.id ? 'active' : ''}`}
-                        onClick={() => handleItemClick(item.id)}
-                        style={{ '--item-accent': color }}
-                      >
-                        <Icon size={18} className="sidebar-item-icon" />
-                        <span>{item.label}</span>
-                        <button className="note-delete-btn" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', zIndex: 10 }} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title="Unpin Quick Tool">
-                          <PinOff size={14} />
-                        </button>
-                      </div>
-                    </SortableItem>
-                  );
-                })}
-              </SortableContext>
-            )}
+            {expandedSections['Quick Tools'] && quickTools.map((toolId, index) => {
+              let item = null;
+              for (const sec of navSections) {
+                item = sec.items.find(i => i.id === toolId);
+                if (item) break;
+              }
+              if (!item) return null;
+              
+              const Icon = item.icon;
+              const color = getItemColor(item.id);
+              return (
+                <div
+                  key={`quick-${item.id}`}
+                  className={`sidebar-item ${activeView === item.id ? 'active' : ''} has-arrows`}
+                  onClick={() => handleItemClick(item.id)}
+                  style={{ '--item-accent': color }}
+                >
+                  <Icon size={18} className="sidebar-item-icon" />
+                  <span>{item.label}</span>
+                  <div className="sidebar-item-actions">
+                    <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, 'Quick Tools', index, -1)} title="Move Up">
+                      <ChevronUp size={14} />
+                    </button>
+                    <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, 'Quick Tools', index, 1)} title="Move Down">
+                      <ChevronDown size={14} />
+                    </button>
+                    <button className="note-delete-btn" style={{ display: 'flex', alignItems: 'center' }} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title="Unpin Quick Tool">
+                      <PinOff size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -304,33 +288,36 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
             </div>
             {expandedSections[section.title] && (() => {
               const ordered = getOrderedItems(section.title, section.items);
-              return (
-                <SortableContext items={ordered.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                  {ordered.map((item) => {
-                    const Icon = item.icon;
-                    const color = getItemColor(item.id);
-                    const isPinned = quickTools && quickTools.includes(item.id);
-                    const canPin = section.title === 'Tools' || section.title === 'Scanners' || section.title === 'Main';
-                    return (
-                      <SortableItem key={item.id} id={item.id} section={section.title}>
-                        <div
-                          className={`sidebar-item ${activeView === item.id ? 'active' : ''}`}
-                          onClick={() => handleItemClick(item.id)}
-                          style={{ '--item-accent': color }}
-                        >
-                          <Icon size={18} className="sidebar-item-icon" />
-                          <span>{item.label}</span>
-                          {canPin && (
-                            <button className="note-delete-btn pin-btn" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', opacity: isPinned ? 1 : '', zIndex: 10 }} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title={isPinned ? "Unpin Tool" : "Pin to Quick Tools"}>
-                              {isPinned ? <PinOff size={14} color="#10B981" /> : <Pin size={14} />}
-                            </button>
-                          )}
-                        </div>
-                      </SortableItem>
-                    );
-                  })}
-                </SortableContext>
-              );
+              return ordered.map((item, index) => {
+                const Icon = item.icon;
+                const color = getItemColor(item.id);
+                const isPinned = quickTools && quickTools.includes(item.id);
+                const canPin = section.title === 'Tools' || section.title === 'Scanners' || section.title === 'Main';
+                return (
+                  <div
+                    key={item.id}
+                    className={`sidebar-item ${activeView === item.id ? 'active' : ''} has-arrows`}
+                    onClick={() => handleItemClick(item.id)}
+                    style={{ '--item-accent': color }}
+                  >
+                    <Icon size={18} className="sidebar-item-icon" />
+                    <span>{item.label}</span>
+                    <div className="sidebar-item-actions">
+                      <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, section.title, index, -1)} title="Move Up">
+                        <ChevronUp size={14} />
+                      </button>
+                      <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, section.title, index, 1)} title="Move Down">
+                        <ChevronDown size={14} />
+                      </button>
+                      {canPin && (
+                        <button className="note-delete-btn pin-btn" style={{ display: 'flex', alignItems: 'center', opacity: isPinned ? 1 : '' }} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title={isPinned ? "Unpin Tool" : "Pin to Quick Tools"}>
+                          {isPinned ? <PinOff size={14} color="#10B981" /> : <Pin size={14} />}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              });
             })()}
           </div>
         ))}
@@ -359,8 +346,7 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
             ))}
           </div>
         )}
-        </DndContext>
-      </nav>
+              </nav>
 
       <div className="sidebar-footer">
         <div className="sidebar-footer-item" onClick={() => setPrivacyMode(!privacyMode)}>

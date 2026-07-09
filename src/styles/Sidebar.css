@@ -366,3 +366,48 @@
   color: #10B981;
   background: rgba(16, 185, 129, 0.1);
 }
+
+/* Sidebar Reordering Arrows */
+.sidebar-item-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar-item.has-arrows:hover .sidebar-item-actions {
+  opacity: 1;
+}
+
+/* Ensure pinned items keep their pin visible even if not hovered, or just let actions container handle it */
+/* If a tool is pinned, we want the pin icon visible. But if we group them, the whole group is hidden.
+   Let's keep the group hidden on unpinned, but if pinned, we might want it visible.
+   Actually, the user asked for a clean UI. Having them all hidden until hover is perfect. */
+
+.move-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.move-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Fix pin-btn inside actions container */
+.sidebar-item-actions .pin-btn {
+  opacity: 1;
+  width: 24px;
+  height: 24px;
+}
