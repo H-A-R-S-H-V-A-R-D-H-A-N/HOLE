@@ -285,7 +285,26 @@ export default function App() {
     setSettings(updatedSettings);
     if (window.electronAPI) {
       window.electronAPI.storeSetSync('kroma_settings', updatedSettings);
-    } else {
+      localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
+    }
+  };
+
+  const handleUpdateQuickToolsOrder = (newQuickTools) => {
+    const updatedSettings = { ...settings, quickTools: newQuickTools };
+    setSettings(updatedSettings);
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_settings', updatedSettings);
+      localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
+    }
+  };
+
+  const handleUpdateSidebarOrder = (sectionTitle, newOrder) => {
+    const currentOrders = settings.sidebarOrders || {};
+    const updatedOrders = { ...currentOrders, [sectionTitle]: newOrder };
+    const updatedSettings = { ...settings, sidebarOrders: updatedOrders };
+    setSettings(updatedSettings);
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_settings', updatedSettings);
       localStorage.setItem('kroma_settings', JSON.stringify(updatedSettings));
     }
   };
@@ -611,6 +630,9 @@ export default function App() {
         setPrivacyMode={setPrivacyMode}
         quickTools={settings.quickTools || []}
         onToggleQuickTool={handleToggleQuickTool}
+        onUpdateQuickToolsOrder={handleUpdateQuickToolsOrder}
+        sidebarOrders={settings.sidebarOrders || {}}
+        onUpdateSidebarOrder={handleUpdateSidebarOrder}
       />
 
       <div className="main-content">
