@@ -372,7 +372,7 @@
   display: flex;
   align-items: center;
   margin-left: auto;
-  opacity: 0.3;
+  opacity: 1;
   transition: opacity var(--transition-fast);
 }
 
