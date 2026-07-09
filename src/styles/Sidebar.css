@@ -398,6 +398,7 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   padding: 0;
+  opacity: 1 !important;
 }
 
 .move-btn:hover {
