@@ -32,7 +32,7 @@ const defaultSettings = {
   showLineNumbers: false,
   showWordCount: true,
   defaultFormat: 'json',
-  theme: 'midnight',
+  theme: 'ultra-black',
   editorFont: 'Inter',
   monoFont: 'JetBrains Mono',
   askSaveLocation: true,
@@ -67,6 +67,9 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
     setSettings(updated);
     if (onSettingsChange) onSettingsChange(updated);
     localStorage.setItem('kroma_settings', JSON.stringify(updated));
+    if (window.electronAPI) {
+      window.electronAPI.storeSetSync('kroma_settings', updated);
+    }
   };
 
   const updateApiKey = (platform, key) => {
@@ -105,6 +108,16 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
       const key = localStorage.key(i);
       if (key && (key.startsWith('kroma_') || key.startsWith('hole_'))) {
         backup.localData[key] = localStorage.getItem(key);
+      }
+    }
+    
+    // Also export the backend electron store to ensure we don't miss anything
+    if (window.electronAPI) {
+      const storeData = await window.electronAPI.storeGetAll();
+      for (const [key, val] of Object.entries(storeData)) {
+        if (!backup.localData[key]) {
+          backup.localData[key] = typeof val === 'object' ? JSON.stringify(val) : String(val);
+        }
       }
     }
     
@@ -174,10 +187,21 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
         const isNewFormat = backup.localData !== undefined;
         const localData = isNewFormat ? backup.localData : backup;
         
+        let electronStoreUpdates = {};
+
         for (const [key, val] of Object.entries(localData)) {
           if (key.startsWith('kroma_') || key.startsWith('hole_')) {
             localStorage.setItem(key, val);
+            try {
+              electronStoreUpdates[key] = JSON.parse(val);
+            } catch {
+              electronStoreUpdates[key] = val;
+            }
           }
+        }
+
+        if (window.electronAPI) {
+          await window.electronAPI.storeSetAll(electronStoreUpdates);
         }
         
         const storageDir = getStorageDir();
@@ -348,76 +372,7 @@ export default function SettingsPage({ settings: propSettings, onSettingsChange 
           </div>
         </div>
 
-        {/* App Effects */}
-        <div className="settings-section">
-          <div className="settings-section-header">
-            <Monitor size={20} className="settings-section-icon" />
-            <h2 className="settings-section-title">App Effects (Snake Light)</h2>
-          </div>
 
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>Customize the animated glowing borders for different areas of your workstation.</p>
-          
-          {['sidebar', 'cards'].map((area) => {
-            const labels = {
-              sidebar: 'Sidebar Snake Light',
-              cards: 'All Panels & Cards Snake Light'
-            };
-            const prefix = `${area}Snake`;
-            const enabled = settings[`${prefix}Enabled`] ?? true;
-            
-            return (
-              <div key={area} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-default)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: enabled ? '16px' : '0' }}>
-                  <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{labels[area]}</h3>
-                  <label className="toggle">
-                    <input type="checkbox" checked={enabled} onChange={(e) => updateSetting(`${prefix}Enabled`, e.target.checked)} />
-                    <span className="toggle-slider" />
-                  </label>
-                </div>
-
-                {enabled && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Glow Color</span>
-                      <input
-                        type="color"
-                        value={settings[`${prefix}Color`] || '#8B5CF6'}
-                        onChange={(e) => updateSetting(`${prefix}Color`, e.target.value)}
-                        style={{ width: '32px', height: '32px', padding: 0, border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
-                      />
-                    </div>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Speed (1-10s)</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <input
-                          type="range" min="1" max="10" step="0.5"
-                          value={settings[`${prefix}Speed`] || 3}
-                          onChange={(e) => updateSetting(`${prefix}Speed`, parseFloat(e.target.value))}
-                          style={{ width: '100px' }}
-                        />
-                        <span style={{ fontSize: '12px', width: '24px', textAlign: 'right' }}>{settings[`${prefix}Speed`] || 3}s</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Width (1-10px)</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <input
-                          type="range" min="1" max="10" step="1"
-                          value={settings[`${prefix}Width`] || 2}
-                          onChange={(e) => updateSetting(`${prefix}Width`, parseInt(e.target.value))}
-                          style={{ width: '100px' }}
-                        />
-                        <span style={{ fontSize: '12px', width: '24px', textAlign: 'right' }}>{settings[`${prefix}Width`] || 2}px</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
 
 
 

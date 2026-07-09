@@ -220,6 +220,31 @@ ipcMain.on('store-set-sync', (event, key, value) => {
   }
 });
 
+ipcMain.handle('store-get-all', async (event) => {
+  try {
+    const storePath = path.join(app.getPath('userData'), 'hole_store.json');
+    if (!fs.existsSync(storePath)) return {};
+    return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+  } catch (err) {
+    return {};
+  }
+});
+
+ipcMain.handle('store-set-all', async (event, dataToMerge) => {
+  try {
+    const storePath = path.join(app.getPath('userData'), 'hole_store.json');
+    let data = {};
+    if (fs.existsSync(storePath)) {
+      try { data = JSON.parse(fs.readFileSync(storePath, 'utf-8')); } catch {}
+    }
+    const merged = { ...data, ...dataToMerge };
+    fs.writeFileSync(storePath, JSON.stringify(merged, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    return false;
+  }
+});
+
 // Save file directly to a path (no dialog, used after storage dir is set)
 ipcMain.handle('save-file-direct', async (event, { filePath, content }) => {
   try {
