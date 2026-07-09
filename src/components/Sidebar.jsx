@@ -291,9 +291,6 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
                         </button>
                       </>
                     )}
-                    <button className="note-delete-btn" style={{ display: 'flex', alignItems: 'center' }} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title="Unpin Quick Tool">
-                      <PinOff size={14} />
-                    </button>
                   </div>
                 </div>
               );
