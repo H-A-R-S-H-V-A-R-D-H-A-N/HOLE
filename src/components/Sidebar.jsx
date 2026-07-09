@@ -47,6 +47,7 @@ import {
   Pin,
   PinOff,
   ChevronUp,
+  ArrowUpDown,
   ChevronDown,
   Activity
 } from 'lucide-react';
@@ -161,6 +162,7 @@ const navSections = [
 const holeLetters = ['H', 'O', 'L', 'E'];
 
 export default function Sidebar({ activeView, onViewChange, notes, onNewNote, onSelectNote, onDeleteNote, customSections = [], privacyMode, setPrivacyMode, quickTools = [], onToggleQuickTool, sidebarOrders = {}, onUpdateQuickToolsOrder, onUpdateSidebarOrder }) {
+  const [reorderMode, setReorderMode] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     'Quick Tools': true, Main: true, Tools: true, Scanners: true, Notes: true, Platforms: true, 'Custom Sections': true,
   });
@@ -232,7 +234,21 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
         </div>
       </div>
 
-      <button className="sidebar-new-btn" onClick={() => onNewNote('blank')}><Plus size={18} /> New Note</button>
+      <div style={{ display: 'flex', padding: '0 var(--space-md)', gap: 'var(--space-sm)', margin: 'var(--space-md) 0', alignItems: 'stretch' }}>
+        <button className="sidebar-new-btn" style={{ margin: 0, flex: 1 }} onClick={() => onNewNote('blank')}><Plus size={18} /> New Note</button>
+        <button 
+          style={{ 
+            width: '42px', borderRadius: 'var(--radius-md)', border: 'none', 
+            background: reorderMode ? 'rgba(124, 58, 237, 0.2)' : 'rgba(255,255,255,0.03)', 
+            color: reorderMode ? '#A78BFA' : 'var(--text-muted)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
+          }}
+          onClick={() => setReorderMode(!reorderMode)}
+          title="Toggle Reorder Mode"
+        >
+          <ArrowUpDown size={16} />
+        </button>
+      </div>
 
       <nav className="sidebar-nav">
                 {quickTools && (
@@ -265,12 +281,16 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
                   <Icon size={18} className="sidebar-item-icon" />
                   <span>{item.label}</span>
                   <div className="sidebar-item-actions">
-                    <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, 'Quick Tools', index, -1)} title="Move Up">
-                      <ChevronUp size={14} />
-                    </button>
-                    <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, 'Quick Tools', index, 1)} title="Move Down">
-                      <ChevronDown size={14} />
-                    </button>
+                    {reorderMode && (
+                      <>
+                        <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, 'Quick Tools', index, -1)} title="Move Up">
+                          <ChevronUp size={14} />
+                        </button>
+                        <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, 'Quick Tools', index, 1)} title="Move Down">
+                          <ChevronDown size={14} />
+                        </button>
+                      </>
+                    )}
                     <button className="note-delete-btn" style={{ display: 'flex', alignItems: 'center' }} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title="Unpin Quick Tool">
                       <PinOff size={14} />
                     </button>
@@ -303,12 +323,16 @@ export default function Sidebar({ activeView, onViewChange, notes, onNewNote, on
                     <Icon size={18} className="sidebar-item-icon" />
                     <span>{item.label}</span>
                     <div className="sidebar-item-actions">
-                      <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, section.title, index, -1)} title="Move Up">
-                        <ChevronUp size={14} />
-                      </button>
-                      <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, section.title, index, 1)} title="Move Down">
-                        <ChevronDown size={14} />
-                      </button>
+                      {reorderMode && (
+                        <>
+                          <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, section.title, index, -1)} title="Move Up">
+                            <ChevronUp size={14} />
+                          </button>
+                          <button className="note-delete-btn move-btn" onClick={(e) => handleMove(e, section.title, index, 1)} title="Move Down">
+                            <ChevronDown size={14} />
+                          </button>
+                        </>
+                      )}
                       {canPin && (
                         <button className="note-delete-btn pin-btn" style={{ display: 'flex', alignItems: 'center', opacity: isPinned ? 1 : '' }} onClick={(e) => { e.stopPropagation(); onToggleQuickTool(item.id); }} title={isPinned ? "Unpin Tool" : "Pin to Quick Tools"}>
                           {isPinned ? <PinOff size={14} color="#10B981" /> : <Pin size={14} />}
