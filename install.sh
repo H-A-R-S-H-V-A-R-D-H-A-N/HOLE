@@ -8,20 +8,29 @@ echo "  ================================================="
 echo ""
 
 # Check for Node.js
+INSTALL_NODE=false
+
 if ! command -v node &> /dev/null; then
-    echo "  [ERROR] Node.js is not installed."
-    echo "  Please install Node.js 20+ from https://nodejs.org"
-    exit 1
+    echo "  [INFO] Node.js is missing. Installing automatically..."
+    INSTALL_NODE=true
+else
+    NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+    if [ "$NODE_VERSION" -lt 20 ]; then
+        echo "  [INFO] Node.js is outdated (v$NODE_VERSION). Upgrading to v22 automatically..."
+        INSTALL_NODE=true
+    fi
 fi
 
-NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$NODE_VERSION" -lt 20 ]; then
-    echo "  [ERROR] Node.js 20+ is required. You have $(node -v)"
-    echo ""
-    echo "  Install the latest LTS version:"
-    echo "    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -"
-    echo "    sudo apt-get install -y nodejs"
-    exit 1
+if [ "$INSTALL_NODE" = true ]; then
+    if command -v apt-get &> /dev/null; then
+        curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+    elif command -v brew &> /dev/null; then
+        brew install node
+    else
+        echo "  [WARNING] Could not automatically install Node.js. Please follow manual install instructions in README.md"
+        exit 1
+    fi
 fi
 
 echo "  [OK] Node.js $(node -v) detected"

@@ -130,7 +130,7 @@ HOLE combines dozens of separate hacking utilities into a single, cohesive ecosy
 
 HOLE runs natively from source. No pre-built binaries, no hidden code. You can read every single line before you execute it.
 
-### Prerequisites
+#### Prerequisites
 
 - **Node.js** v20 or higher (v22 LTS recommended)
 - **Git**
@@ -169,7 +169,7 @@ npm run electron:dev
 ```
 
 #### Windows
-```cmd
+```bash
 cd HOLE
 git pull origin main
 install.bat
@@ -278,8 +278,31 @@ npm run electron:dev
 
 HOLE is built for authorized security testing, bug bounty programs (HackerOne, Bugcrowd, Intigriti), and educational purposes. The developers assume no liability for misuse. Always obtain explicit written authorization before testing systems you do not own.
 
+---
+
+## Troubleshooting & Manual Installation
+
+If the automatic installer fails to download Node.js for you, you can install the prerequisites manually:
+
+**Linux (Ubuntu/Debian/Kali)**
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+nvm install 22
+sudo apt update && sudo apt install git build-essential -y
+```
+
+**macOS**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install node git
+```
+
+**Windows**
+Download and install **Git** (https://git-scm.com/download/win) and **Node.js v22 LTS** (https://nodejs.org/).
+
 <br/>
 
 <div align="center">
-  <sub>Built by hunter, for hunters.</sub>
+  <p>Made with ❤️ for the Bug Bounty Community</p>
 </div>

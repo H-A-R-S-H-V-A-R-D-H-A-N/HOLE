@@ -6,16 +6,34 @@ echo   =================================================
 echo.
 
 REM Check for Node.js
+set INSTALL_NODE=0
 where node >nul 2>nul
 if %errorlevel% neq 0 (
-    echo   [ERROR] Node.js is not installed.
-    echo   Please install Node.js 20+ from https://nodejs.org
-    pause
-    exit /b 1
+    echo   [INFO] Node.js is missing. Installing automatically via winget...
+    set INSTALL_NODE=1
+) else (
+    echo   [OK] Node.js detected.
 )
 
-for /f "tokens=1 delims=v" %%a in ('node -v') do set NODE_VER=%%a
-echo   [OK] Node.js detected
+if %INSTALL_NODE%==1 (
+    where winget >nul 2>nul
+    if %errorlevel% neq 0 (
+        echo   [WARNING] winget not found. Opening Node.js download page...
+        start https://nodejs.org/
+        echo   Please install Node.js LTS, then run this installer again.
+        pause
+        exit /b 1
+    ) else (
+        winget install OpenJS.NodeJS.LTS --silent --accept-source-agreements --accept-package-agreements
+        if %errorlevel% neq 0 (
+            echo   [WARNING] Failed to install Node.js automatically. Opening browser...
+            start https://nodejs.org/
+            echo   Please install Node.js LTS, then run this installer again.
+            pause
+            exit /b 1
+        )
+    )
+)
 
 REM Check for npm
 where npm >nul 2>nul
