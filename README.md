@@ -138,6 +138,11 @@ HOLE runs natively from source. No pre-built binaries, no hidden code. You can r
 
 ### Initial Installation
 
+> **What does the installer do?** The `install.sh` and `install.bat` scripts are completely automatic. When you run them, they will:
+> 1. Check if you have Node.js installed (and automatically install **Node.js v22** if it is missing or outdated).
+> 2. Check if you have the Tor Engine installed (and automatically download it if you don't).
+> 3. Securely install all the required `npm` packages and dependencies for HOLE.
+
 #### Linux / macOS
 ```bash
 git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
@@ -282,24 +287,63 @@ HOLE is built for authorized security testing, bug bounty programs (HackerOne, B
 
 ## Troubleshooting & Manual Installation
 
-If the automatic installer fails to download Node.js for you, you can install the prerequisites manually:
+If for some reason the automatic installer fails to download the dependencies for you, or you just prefer to have full control, here are the exact commands to install everything manually so you never get stuck.
+
+### 1. Install Node.js (v22) and Git
 
 **Linux (Ubuntu/Debian/Kali)**
 ```bash
+# 1. Install nvm (Node Version Manager)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 source ~/.bashrc
+
+# 2. Install Node.js 22
 nvm install 22
+nvm use 22
+
+# 3. Install Git and Build Tools
 sudo apt update && sudo apt install git build-essential -y
 ```
 
 **macOS**
 ```bash
+# 1. Install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Install Node and Git
 brew install node git
 ```
 
 **Windows**
 Download and install **Git** (https://git-scm.com/download/win) and **Node.js v22 LTS** (https://nodejs.org/).
+
+---
+
+### 2. Install the Tor Engine
+HOLE requires the Tor Engine to route your traffic securely.
+
+**Linux (Ubuntu/Debian)**: `sudo apt install tor -y`  
+**macOS**: `brew install tor`  
+**Windows**: Download the Tor Expert Bundle from [torproject.org](https://www.torproject.org/download/tor/).  
+
+---
+
+### 3. Install HOLE Manually
+Once you have Node.js and Git installed on your system, you can completely ignore the `install.sh` / `install.bat` scripts and install HOLE manually using `npm`:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
+
+# 2. Enter the folder
+cd HOLE
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the application
+npm run electron:dev
+```
 
 <br/>
 
