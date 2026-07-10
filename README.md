@@ -165,7 +165,7 @@ npm run electron:dev
 
 ### 🛠️ Manual Installation (If Automated Scripts Fail)
 
-If you prefer to have full control over your system, or if the automatic installer fails to download dependencies due to your network, follow this comprehensive manual installation guide.
+> **🚨 Important:** If the `install.sh` or `install.bat` scripts fail for you, OR if you open the app and tools are missing, crashing, or not working correctly, **use this manual installation guide** instead to ensure all dependencies are correctly installed for your specific machine.
 
 #### Step 1: Install Node.js (v22) and Git
 
@@ -322,6 +322,14 @@ npm run electron:dev
 ## Disclaimer
 
 HOLE is built for authorized security testing, bug bounty programs (HackerOne, Bugcrowd, Intigriti), and educational purposes. The developers assume no liability for misuse. Always obtain explicit written authorization before testing systems you do not own.
+
+---
+
+## 📞 Support & Feedback
+
+If you face any issues during installation, if the app crashes, or if you have suggestions for new features, please don't hesitate to reach out!
+
+**Email:** harshvardhansinghrathore600@gmail.com
 
 ---
 
