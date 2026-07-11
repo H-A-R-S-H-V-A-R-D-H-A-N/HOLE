@@ -202,6 +202,23 @@ npm install
 npm run electron:dev
 ```
 
+#### Troubleshooting Missing Dependencies
+
+If you see an error like `sh: 1: concurrently: not found` or `Missing script: "electron"`, it means your initial `npm install` was interrupted (usually due to a dropped internet connection). 
+
+To fix this, do **not** try to install the missing packages manually. Instead, clear your failed installation cache and run the install again cleanly:
+
+```bash
+# Delete the corrupted installation
+rm -rf node_modules package-lock.json
+
+# Reinstall everything cleanly
+npm install
+
+# Launch the app
+npm run electron:dev
+```
+
 ### Updating HOLE
 
 To get the latest tools and features, simply pull the latest changes from the repository and run the install script again to update any dependencies.
