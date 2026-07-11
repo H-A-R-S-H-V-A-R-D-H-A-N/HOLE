@@ -46,16 +46,46 @@ if %errorlevel% neq 0 (
 echo   [OK] npm detected
 echo.
 
+REM Check for Go
+where go >nul 2>nul
+if %errorlevel% neq 0 (
+    echo   [ERROR] Go compiler is not installed. Native compilation is required.
+    echo   Please install Go v1.21+ from https://go.dev/dl/ and run this installer again.
+    pause
+    exit /b 1
+)
+echo   [OK] Go compiler detected
+echo.
+
 REM Auto-install Tor on Windows via PowerShell if not present
 echo   [INFO] Checking Tor Engine...
 where tor >nul 2>nul
 if %errorlevel% neq 0 (
     echo   Tor is missing. Attempting to download Tor Expert Bundle...
     powershell -Command "Invoke-WebRequest -Uri 'https://dist.torproject.org/torbrowser/14.0.6/tor-expert-bundle-windows-x86_64-14.0.6.tar.gz' -OutFile 'tor.tar.gz'"
-    echo   Please note: Windows auto-install for Tor might require manual extraction. We recommend installing Tor Browser separately.
+    if exist tor.tar.gz (
+        echo   Extracting Tor...
+        tar -xf tor.tar.gz
+        if not exist bin mkdir bin
+        move tor bin\tor >nul 2>nul
+        del tor.tar.gz
+        echo   [OK] Tor installed to bin\tor
+    ) else (
+        echo   [WARNING] Failed to download Tor. Please install manually.
+    )
 ) else (
     echo   [OK] Tor Engine detected
 )
+
+echo.
+REM Compile Go Tools
+echo   [INFO] Compiling native OS binaries for recon tools...
+if not exist bin mkdir bin
+for /d %%D in (core\go\*) do (
+    echo   -^> Compiling %%~nxD.exe...
+    go build -o "bin\%%~nxD.exe" "%%D\*.go" 2>nul
+)
+echo   [OK] Native binaries compiled successfully.
 
 echo.
 REM Install dependencies

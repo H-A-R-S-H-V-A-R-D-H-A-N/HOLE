@@ -133,6 +133,7 @@ HOLE runs natively from source. No pre-built binaries, no hidden code. You can r
 #### Prerequisites
 
 - **Node.js** v20 or higher (v22 LTS recommended)
+- **Go** (Golang) v1.21+ (Required to compile the recon tools natively for your OS)
 - **Git**
 - **Build tools** for native modules (`build-essential` on Debian/Ubuntu, Xcode CLT on macOS)
 
@@ -159,7 +160,7 @@ install.bat
 npm run electron:dev
 ```
 
-> **Note:** To stop the app properly, always use `Ctrl + C` in your terminal. **Do not use `Ctrl + Z`**, as this will suspend the process and leave ports (like 5173) open in the background, preventing the app from starting again.
+> **Note:** HOLE strictly requires port `5173`. If this port is already in use by another app, HOLE will hang indefinitely on launch. To stop the app properly, always use `Ctrl + C` in your terminal. **Do not use `Ctrl + Z`**, as this will suspend the process and leave the port open in the background, preventing the app from starting again.
 
 ---
 
@@ -173,7 +174,7 @@ npm run electron:dev
 | :--- | :--- |
 | **Linux (Ubuntu/Debian/Kali)** | `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh \| bash`<br>`source ~/.bashrc`<br>`nvm install 22`<br>`sudo apt update && sudo apt install git build-essential -y` |
 | **macOS** | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`<br>`brew install node git` |
-| **Windows** | 1. Download and install [Git for Windows](https://git-scm.com/download/win)<br>2. Download and install [Node.js v22 LTS](https://nodejs.org/) |
+| **Windows** | 1. Download and install [Git for Windows](https://git-scm.com/download/win)<br>2. Download and install [Node.js v22 LTS](https://nodejs.org/)<br>3. Download and install [Go for Windows](https://go.dev/dl/)<br><br>*(Note: If `npm install` fails at `node-pty`, you must install **Visual Studio Build Tools** with the "Desktop development with C++" workload).* |
 
 #### Step 2: Install the Tor Engine (Required)
 HOLE routes traffic securely through Tor. If the automated script could not install it, install it manually:
