@@ -149,6 +149,7 @@ HOLE runs natively from source. No pre-built binaries, no hidden code. You can r
 git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
 cd HOLE
 bash install.sh
+npm install
 npm run electron:dev
 ```
 
@@ -157,6 +158,7 @@ npm run electron:dev
 git clone https://github.com/H-A-R-S-H-V-A-R-D-H-A-N/HOLE.git
 cd HOLE
 install.bat
+npm install
 npm run electron:dev
 ```
 
