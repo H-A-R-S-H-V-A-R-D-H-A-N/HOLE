@@ -47,6 +47,8 @@ export default function TerminalInstance({ id, isActive, isFullscreen, onToggleF
       },
       fontFamily: 'var(--font-mono)',
       fontSize: 14,
+      lineHeight: 1.4,
+      letterSpacing: 0.5,
       scrollback: 5000
     });
     
