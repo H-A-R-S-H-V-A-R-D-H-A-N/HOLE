@@ -69,6 +69,46 @@ export default function TerminalInstance({ id, isActive, isFullscreen, onToggleF
       }
     });
 
+    // Handle Copy/Paste Shortcuts
+    term.attachCustomKeyEventHandler((e) => {
+      // Ctrl+Shift+C or Cmd+C (Copy)
+      if ((e.ctrlKey && e.shiftKey && e.code === 'KeyC') || (e.metaKey && e.code === 'KeyC')) {
+        if (e.type === 'keydown') {
+          const selection = term.getSelection();
+          if (selection) {
+            navigator.clipboard.writeText(selection);
+          }
+        }
+        return false;
+      }
+      
+      // Ctrl+C (Copy only if text is selected, otherwise let it send SIGINT)
+      if (e.ctrlKey && !e.shiftKey && !e.metaKey && e.code === 'KeyC') {
+        const selection = term.getSelection();
+        if (selection) {
+          if (e.type === 'keydown') {
+            navigator.clipboard.writeText(selection);
+            term.clearSelection();
+          }
+          return false;
+        }
+      }
+
+      // Ctrl+Shift+V or Cmd+V or Ctrl+V (Paste)
+      if ((e.ctrlKey && e.shiftKey && e.code === 'KeyV') || (e.metaKey && e.code === 'KeyV') || (e.ctrlKey && !e.shiftKey && !e.metaKey && e.code === 'KeyV')) {
+        if (e.type === 'keydown') {
+          navigator.clipboard.readText().then(text => {
+            if (window.electronAPI) {
+              window.electronAPI.ptyWrite(id, text);
+            }
+          });
+        }
+        return false;
+      }
+      
+      return true;
+    });
+
     // Handle resize
     const resizeObserver = new ResizeObserver(() => {
       if (fitAddonRef.current && xtermRef.current && terminalRef.current && terminalRef.current.offsetParent !== null) {
