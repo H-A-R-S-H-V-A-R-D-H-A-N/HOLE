@@ -331,6 +331,16 @@ npm run electron:dev
   <img src="screenshots/time-tracker.png" width="90%" />
   <br/><br/>
   <img src="screenshots/pro_features/pro_1.png" width="90%" />
+  <br/><br/>
+  <img src="docs/screenshots/media__1784109024522.png" width="90%" />
+  <br/><br/>
+  <img src="docs/screenshots/media__1784109087910.png" width="90%" />
+  <br/><br/>
+  <img src="docs/screenshots/media__1784109102172.png" width="90%" />
+  <br/><br/>
+  <img src="docs/screenshots/media__1784109121772.png" width="90%" />
+  <br/><br/>
+  <img src="docs/screenshots/media__1784109132717.png" width="90%" />
 </div>
 
 <br/>
