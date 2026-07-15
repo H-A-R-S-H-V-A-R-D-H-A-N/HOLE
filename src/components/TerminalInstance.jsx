@@ -95,19 +95,6 @@ export default function TerminalInstance({ id, isActive, isFullscreen, onToggleF
           return false;
         }
       }
-
-      // Ctrl+Shift+V or Cmd+V or Ctrl+V (Paste)
-      if ((e.ctrlKey && e.shiftKey && e.code === 'KeyV') || (e.metaKey && e.code === 'KeyV') || (e.ctrlKey && !e.shiftKey && !e.metaKey && e.code === 'KeyV')) {
-        if (e.type === 'keydown') {
-          navigator.clipboard.readText().then(text => {
-            if (window.electronAPI) {
-              window.electronAPI.ptyWrite(id, text);
-            }
-          });
-        }
-        return false;
-      }
-      
       return true;
     });
 

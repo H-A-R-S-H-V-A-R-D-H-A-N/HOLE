@@ -40,28 +40,28 @@ The attacker is back inside the victim's account. They can now silently read all
 
 ## Attack Flow Diagram
 
-```mermaid
-sequenceDiagram
-    participant Attacker
-    participant Platform
-    participant Victim
-
-    Attacker->>Platform: Sign up via Google SSO (attacker@gmail)
-    Platform-->>Attacker: Free account created
-    
-    Attacker->>Platform: Change email to victim@gmail
-    Platform-->>Attacker: Changed (No verify, no alert)
-    Attacker->>Platform: Log out
-    
-    Victim->>Platform: Register with victim@gmail
-    Platform-->>Victim: Error: "Account already exists"
-    
-    Victim->>Platform: Request password reset
-    Platform-->>Victim: Reset link sent
-    Victim->>Platform: Resets password (resets attacker's account)
-    
-    Attacker->>Platform: Login via Google SSO (attacker@gmail)
-    Platform-->>Attacker: Logged in! (SSO permanent backdoor)
+```bash
+Attacker                     Platform                     Victim
+   |                            |                           |
+   |-- Sign up via Google SSO ----->|                           |
+   |<-- Free account created -------|                           |
+   |                            |                           |
+   |-- Change email to victim ----->|                           |
+   |<-- Changed, no verify, no alert|                           |
+   |                            |                           |
+   |   Log out                  |                           |
+   |                            |                           |
+   |                            |<--- Register victim@gmail --|
+   |                            |---- "Account already exists"|
+   |                            |                           |
+   |                            |<--- Password reset request--|
+   |                            |---- Reset link to victim -->|
+   |                            |   Victim resets password  |
+   |                            |   (resets attacker acct)  |
+   |                            |                           |
+   |-- Login via Google SSO ------->|                           |
+   |<-- Logged in (SSO permanent) --|                           |
+   |   Full access regained     |                           |
 ```
 
 ## Impact

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Terminal, CheckCircle, Copy, AlertTriangle, BookOpen, ChevronRight, Award, Server } from 'lucide-react';
+import { ArrowLeft, Terminal, CheckCircle, Copy, AlertTriangle, BookOpen, ChevronRight, Award, Server, Shield } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import html2canvas from 'html2canvas';
 
 export default function LabRunner({ setActiveView, viewId, setViewId }) {
   const id = viewId;
@@ -9,6 +10,10 @@ export default function LabRunner({ setActiveView, viewId, setViewId }) {
   const [status, setStatus] = useState('idle'); // idle, error, solved
   const [hintIndex, setHintIndex] = useState(0);
   const [copied, setCopied] = useState('');
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [certHash, setCertHash] = useState('');
+  const [certName, setCertName] = useState('');
+  const [hasCert, setHasCert] = useState(false);
 
   useEffect(() => {
     fetch('/src/data/labs.json')
@@ -24,6 +29,15 @@ export default function LabRunner({ setActiveView, viewId, setViewId }) {
           if (prog.solved.includes(id)) {
             setStatus('solved');
           }
+        }
+
+        // Check if certificate exists
+        const savedCert = localStorage.getItem(`hole_lab_cert_${id}`);
+        if (savedCert) {
+          const cert = JSON.parse(savedCert);
+          setCertName(cert.name);
+          setCertHash(cert.hash);
+          setHasCert(true);
         }
       })
       .catch(err => console.error("Error loading lab:", err));
@@ -41,6 +55,9 @@ export default function LabRunner({ setActiveView, viewId, setViewId }) {
     if (flagInput.trim() === lab.flag) {
       setStatus('solved');
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      
+      const newHash = Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      setCertHash(newHash);
       
       // Save progress
       const saved = localStorage.getItem('hole_lab_progress');
@@ -134,9 +151,31 @@ export default function LabRunner({ setActiveView, viewId, setViewId }) {
                 <Award size={64} color="#22C55E" style={{ margin: '0 auto 16px' }} />
                 <h2 style={{ margin: '0 0 8px 0', color: '#22C55E' }}>Lab Conquered!</h2>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>You successfully exploited the vulnerability and found the flag.</p>
-                <button className="btn btn-primary" style={{ margin: '0 auto', background: '#22C55E', borderColor: '#22C55E', color: '#000' }}>
-                  View Certificate
-                </button>
+                <div style={{ maxWidth: '300px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {!hasCert && (
+                    <input
+                      type="text"
+                      placeholder="Enter your name..."
+                      value={certName}
+                      onChange={(e) => setCertName(e.target.value)}
+                      style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'var(--bg-deep)', color: 'var(--text-primary)', outline: 'none', textAlign: 'center', fontSize: '16px' }}
+                    />
+                  )}
+                  <button 
+                    className="btn btn-primary" 
+                    disabled={!certName.trim()}
+                    onClick={() => {
+                      if (!hasCert) {
+                        localStorage.setItem(`hole_lab_cert_${id}`, JSON.stringify({ name: certName.trim(), hash: certHash }));
+                        setHasCert(true);
+                      }
+                      setShowCertificate(true);
+                    }}
+                    style={{ background: certName.trim() ? '#22C55E' : 'var(--bg-tertiary)', borderColor: certName.trim() ? '#22C55E' : 'var(--border-subtle)', color: certName.trim() ? '#000' : 'var(--text-muted)' }}
+                  >
+                    {hasCert ? 'View Certificate' : 'Generate Certificate'}
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleFlagSubmit} style={{ display: 'flex', gap: '12px' }}>
@@ -196,6 +235,75 @@ export default function LabRunner({ setActiveView, viewId, setViewId }) {
           </div>
         </div>
       </div>
+
+      {/* Certificate Modal */}
+      {showCertificate && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }} onClick={() => setShowCertificate(false)}>
+          <div style={{ background: '#0b0f19', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '48px', maxWidth: '800px', width: '100%', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), 0 0 100px rgba(59, 130, 246, 0.2)' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowCertificate(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>✕</button>
+            
+            {/* The Certificate Art */}
+            <div id="hole-certificate" style={{ border: '2px solid var(--border-subtle)', padding: '12px', borderRadius: '12px', background: 'var(--bg-deep)' }}>
+              <div style={{ border: '1px solid rgba(255,255,255,0.1)', padding: '48px', borderRadius: '8px', background: 'linear-gradient(135deg, #0b0f19 0%, #111827 100%)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 50%)', pointerEvents: 'none' }}></div>
+                
+                <h1 style={{ fontFamily: 'monospace', color: 'var(--text-primary)', fontSize: '32px', letterSpacing: '8px', margin: '0 0 16px 0', textTransform: 'uppercase' }}>CERTIFICATE</h1>
+                <p style={{ color: 'var(--accent-primary)', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '48px', fontWeight: 600 }}>OF VULNERABILITY EXPLOITATION</p>
+                
+                <p style={{ color: 'var(--text-secondary)', fontSize: '16px', marginBottom: '8px' }}>This certifies that</p>
+                <h2 style={{ color: '#F97316', fontSize: '32px', marginBottom: '8px', fontFamily: 'monospace' }}>{certName}</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '16px', marginBottom: '16px' }}>has successfully conquered</p>
+                <h2 style={{ color: '#fff', fontSize: '28px', marginBottom: '48px', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>{lab.title}</h2>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '64px' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px', marginBottom: '8px', color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: '16px' }}>{new Date().toLocaleDateString()}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Date of Completion</div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Shield size={48} color="var(--accent-primary)" style={{ marginBottom: '12px' }} />
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '2px' }}>HOLE WORKSTATION</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '10px', marginTop: '8px', fontFamily: 'monospace' }}>Verify: {certHash || 'f9a2b4c6e8d01...'}</span>
+                  </div>
+                  
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px', marginBottom: '8px', color: '#EF4444', fontFamily: 'monospace', fontSize: '16px', fontWeight: 700 }}>CRITICAL</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vulnerability Level</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '32px' }}>
+              <button 
+                onClick={() => {
+                  const element = document.getElementById('hole-certificate');
+                  html2canvas(element, { scale: 2, backgroundColor: '#0b0f19' }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `HOLE_Certificate_${lab.id}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                  });
+                }}
+                style={{ background: 'var(--bg-deep)', color: 'var(--text-primary)', padding: '12px 32px', borderRadius: '30px', fontWeight: 600, border: '1px solid var(--border-subtle)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Copy size={18} /> Download Image
+              </button>
+              
+              <button 
+                onClick={() => {
+                  const text = encodeURIComponent(`I just conquered the ${lab.title} vulnerability lab on the HOLE Bug Bounty Workstation! 🛡️👾\n\nVerify my cert: ${certHash}\n\nTry it yourself: https://github.com/holeworkstation/hole\n\n#BugBounty #CyberSecurity #HOLEworkstation`);
+                  window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+                }}
+                style={{ background: '#1DA1F2', color: '#fff', padding: '12px 32px', borderRadius: '30px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              >
+                Share on X (Twitter)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .lab-difficulty {

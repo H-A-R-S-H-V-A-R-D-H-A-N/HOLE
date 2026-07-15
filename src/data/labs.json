@@ -8,21 +8,20 @@
     "objective": "Take over the admin account and retrieve the flag hidden in the billing dashboard.",
     "flag": "HOLE{0auth_b4ckd00r_p3rs1st3nc3}",
     "hints": [
-      "Hint 1: Look at how the application verifies email changes. Does it send a confirmation link?",
-      "Hint 2: What happens if you change your email to the target's email before they reset their password?",
-      "Hint 3: After the victim regains access via password reset, does your active Google SSO session get invalidated? Try logging in with Google again.",
-      "Start by signing in with the provided SSO mock provider to bypass the payment screen.",
-      "Navigate to your account settings and change your email to the admin's email.",
-      "Log out and log back in using the SSO provider to see if you retain access.",
-      "Check the billing dashboard for the flag once you've successfully hijacked the admin session."
+      "1. Register using the Google SSO button with the email: `attacker@gmail.com`. Standard registration is blocked.",
+      "2. Once logged in, go to Account Settings and set a new password for the account.",
+      "3. In Account Settings, change your email to `victim@hole.local`. Notice that no verification link is sent, but the password you just set is now tied to this new email!",
+      "4. Log out. Now, pretend you are the victim. Try to sign up with Google SSO using `victim@hole.local`. It will fail, saying the account already exists.",
+      "5. As the victim, go to Forgot Password and enter `victim@hole.local`. Complete the OTP process (enter any 6 digits) and reset the password to something new. Log in to verify.",
+      "6. Now, act as the attacker again. Go to the login page, click 'Sign in with Google', and enter your original `attacker@gmail.com` address. You will be logged straight into the victim's account, bypassing their new password, and the flag will be revealed!"
     ],
     "dockerImage": "holeworkstation/hole-lab-oauth-ato:latest",
-    "port": 8080,
+    "port": 3000,
     "estimatedTime": "20 min",
     "commands": {
       "pull": "docker pull holeworkstation/hole-lab-oauth-ato:latest",
-      "run": "docker run -d -p 3000:3000 holeworkstation/hole-lab-oauth-ato:latest",
-      "stop": "docker ps -q --filter ancestor=holeworkstation/hole-lab-oauth-ato | xargs -r docker stop"
+      "run": "docker rm -f hole-oauth-lab 2>/dev/null; docker run --rm --name hole-oauth-lab -d -p 3000:3000 holeworkstation/hole-lab-oauth-ato:latest",
+      "stop": "docker stop hole-oauth-lab"
     }
   }
 ]

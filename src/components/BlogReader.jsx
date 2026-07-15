@@ -16,7 +16,7 @@ marked.use({
       const { text, lang } = token;
       
       if (lang === 'mermaid') {
-        return `<div class="mermaid">${text}</div>`;
+        return `<pre class="mermaid">${text}</pre>`;
       }
       
       let highlighted;
@@ -45,8 +45,8 @@ export default function BlogReader({ setActiveView, viewId, setViewId }) {
         const found = data.find(b => b.id === id);
         setBlog(found);
         if (found) {
-          // 2. Fetch markdown content
-          fetch(`/${found.contentFile}`)
+          // 2. Fetch markdown content with a cache buster
+          fetch(`/${found.contentFile}?v=${Date.now()}`)
             .then(res => res.text())
             .then(text => {
               // Parse the markdown using the global configuration
