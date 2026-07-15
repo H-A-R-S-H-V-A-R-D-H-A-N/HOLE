@@ -1,0 +1,16 @@
+[
+  {
+    "id": "oauth-ato-backdoor",
+    "title": "Account Takeover via Unverified Email Claim & Permanent SSO Backdoor",
+    "author": "Harshvardhan (Admin)",
+    "type": "official",
+    "date": "2026-07-15",
+    "category": "Web Security",
+    "difficulty": "Critical",
+    "tags": ["OAuth", "Account Takeover", "Logic Flaw", "Authentication"],
+    "coverImage": "blogs/covers/oauth-ato.png",
+    "contentFile": "blogs/content/oauth-ato-backdoor.md",
+    "labId": "lab-oauth-ato",
+    "readTime": "6 min"
+  }
+]

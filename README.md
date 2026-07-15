@@ -349,7 +349,7 @@ HOLE is built for authorized security testing, bug bounty programs (HackerOne, B
 
 If you face any issues during installation, if the app crashes, or if you have suggestions for new features, please don't hesitate to reach out!
 
-**Email:** harshvardhansinghrathore600@gmail.com
+**Email:** holeworkstation@gmail.com
 
 ---
 

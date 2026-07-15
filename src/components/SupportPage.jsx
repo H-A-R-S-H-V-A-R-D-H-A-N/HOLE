@@ -171,7 +171,7 @@ export default function SupportPage() {
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
               }}
-              onClick={() => window.open('mailto:harshvardhansinghrathore611@gmail.com?subject=Enterprise Sponsorship for HOLE', '_blank')}
+              onClick={() => window.open('mailto:holeworkstation@gmail.com?subject=Enterprise Sponsorship for HOLE', '_blank')}
             >
               <div style={{
                 width: '48px', height: '48px', borderRadius: '12px',
@@ -263,7 +263,7 @@ export default function SupportPage() {
             Thank you for believing in me and using my app.
           </p>
           <p style={{ margin: '0 0 8px' }}>
-            <a href="mailto:harshvardhansinghrathore611@gmail.com" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600 }}>harshvardhansinghrathore611@gmail.com</a>
+            <a href="mailto:holeworkstation@gmail.com" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600 }}>holeworkstation@gmail.com</a>
           </p>
           <p style={{ margin: 0, fontSize: '12px' }}>
             Stay curious, keep hacking. 🎯

@@ -23,6 +23,8 @@ import {
   GitCompare,
   Camera,
   GitBranch,
+  BookOpen,
+  FlaskConical,
   AtSign,
   Key,
   Database,
@@ -94,6 +96,8 @@ const navSections = [
     title: 'Main',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'blog', label: 'Blog', icon: BookOpen },
+      { id: 'labs', label: 'Labs', icon: FlaskConical },
       { id: 'editor', label: 'Editor', icon: FileEdit },
       { id: 'journal', label: 'Hacker Journal', icon: Book },
       { id: 'payloads', label: 'Payloads', icon: Layers },

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "lab-oauth-ato",
+    "title": "OAuth SSO ATO: The Persistent Backdoor",
+    "blogId": "oauth-ato-backdoor",
+    "difficulty": "Critical",
+    "description": "Exploit a flawed OAuth implementation to permanently hijack another user's account by chaining a paywall bypass and an unverified email change.",
+    "objective": "Take over the admin account and retrieve the flag hidden in the billing dashboard.",
+    "flag": "HOLE{0auth_b4ckd00r_p3rs1st3nc3}",
+    "hints": [
+      "Hint 1: Look at how the application verifies email changes. Does it send a confirmation link?",
+      "Hint 2: What happens if you change your email to the target's email before they reset their password?",
+      "Hint 3: After the victim regains access via password reset, does your active Google SSO session get invalidated? Try logging in with Google again.",
+      "Start by signing in with the provided SSO mock provider to bypass the payment screen.",
+      "Navigate to your account settings and change your email to the admin's email.",
+      "Log out and log back in using the SSO provider to see if you retain access.",
+      "Check the billing dashboard for the flag once you've successfully hijacked the admin session."
+    ],
+    "dockerImage": "holeworkstation/hole-lab-oauth-ato:latest",
+    "port": 8080,
+    "estimatedTime": "20 min",
+    "commands": {
+      "pull": "docker pull holeworkstation/hole-lab-oauth-ato:latest",
+      "run": "docker run -d -p 3000:3000 holeworkstation/hole-lab-oauth-ato:latest",
+      "stop": "docker ps -q --filter ancestor=holeworkstation/hole-lab-oauth-ato | xargs -r docker stop"
+    }
+  }
+]

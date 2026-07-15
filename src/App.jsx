@@ -29,6 +29,10 @@ import TorMode from './components/TorMode';
 import TerminalView from './components/TerminalView';
 import WAFEvasion from './components/WAFEvasion';
 import SearchOverlay from './components/SearchOverlay';
+import BlogSection from './components/BlogSection';
+import BlogReader from './components/BlogReader';
+import LabSection from './components/LabSection';
+import LabRunner from './components/LabRunner';
 
 import JWTForger from './components/JWTForger';
 import CryptoStego from './components/CryptoStego';
@@ -61,6 +65,7 @@ import './App.css';
 
 export default function App() {
   const [activeView, setActiveView] = useState('dashboard');
+  const [viewId, setViewId] = useState('');
   const [notes, setNotes] = useState([]);
   const [editorContent, setEditorContent] = useState(null);
   const [editorTitle, setEditorTitle] = useState('');
@@ -782,6 +787,18 @@ export default function App() {
             <SonarCatcher />
           </div>
 
+          <div style={{ display: activeView === 'blog' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <BlogSection setActiveView={setActiveView} setViewId={setViewId} />
+          </div>
+          <div style={{ display: activeView === 'blog-reader' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            {activeView === 'blog-reader' && <BlogReader setActiveView={setActiveView} viewId={viewId} setViewId={setViewId} />}
+          </div>
+          <div style={{ display: activeView === 'labs' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            <LabSection setActiveView={setActiveView} setViewId={setViewId} />
+          </div>
+          <div style={{ display: activeView === 'lab-runner' ? 'block' : 'none', height: '100%', overflowY: 'auto' }}>
+            {activeView === 'lab-runner' && <LabRunner setActiveView={setActiveView} viewId={viewId} setViewId={setViewId} />}
+          </div>
 
           {activeView === 'support' && <SupportPage />}
         </div>
