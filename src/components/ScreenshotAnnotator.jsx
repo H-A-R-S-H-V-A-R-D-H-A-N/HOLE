@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, Circle, ArrowRight, Square, Eraser, Copy, CheckCheck, Trash2, Upload, Download, Undo2, Layers, MousePointer2 } from 'lucide-react';
+import { Camera, Circle, ArrowRight, Square, Eraser, Copy, CheckCheck, Trash2, Upload, Download, Undo2, Layers, MousePointer2, Minus, Type, Highlighter, Pencil, EyeOff, Redo2 } from 'lucide-react';
 import '../styles/Tools.css';
 
 export default function ScreenshotAnnotator() {
@@ -8,12 +8,18 @@ export default function ScreenshotAnnotator() {
   const [image, setImage] = useState(null);
   const [tool, setTool] = useState('rect'); 
   const [color, setColor] = useState('#EF4444');
+  const [strokeWidth, setStrokeWidth] = useState(3);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState(null);
   const [annotations, setAnnotations] = useState([]);
+  const [undoneAnnotations, setUndoneAnnotations] = useState([]);
   const [copied, setCopied] = useState(false);
   const [tempAnnotation, setTempAnnotation] = useState(null);
   const [draggingIndex, setDraggingIndex] = useState(-1);
+  const [freehandPoints, setFreehandPoints] = useState([]);
+  const [textInput, setTextInput] = useState({ active: false, x: 0, y: 0, value: '' });
+  const textInputRef = useRef(null);
+  const presetColors = ['#EF4444','#F97316','#FACC15','#22C55E','#3B82F6','#8B5CF6','#EC4899','#000000','#FFFFFF'];
 
   const loadImage = (file) => {
     const reader = new FileReader();
@@ -76,7 +82,7 @@ export default function ScreenshotAnnotator() {
     all.forEach(a => {
       ctx.strokeStyle = a.color;
       ctx.fillStyle = a.color;
-      ctx.lineWidth = Math.max(3, canvas.width / 300);
+      ctx.lineWidth = a.strokeWidth || Math.max(3, canvas.width / 300);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
@@ -103,19 +109,53 @@ export default function ScreenshotAnnotator() {
         ctx.lineTo(a.ex - headLen * Math.cos(angle + Math.PI / 6), a.ey - headLen * Math.sin(angle + Math.PI / 6));
         ctx.closePath();
         ctx.fill();
+      } else if (a.tool === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(a.sx, a.sy);
+        ctx.lineTo(a.ex, a.ey);
+        ctx.stroke();
+      } else if (a.tool === 'freehand' && a.points && a.points.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(a.points[0].x, a.points[0].y);
+        for (let i = 1; i < a.points.length; i++) {
+          ctx.lineTo(a.points[i].x, a.points[i].y);
+        }
+        ctx.stroke();
+      } else if (a.tool === 'highlight') {
+        const bx = Math.min(a.sx, a.ex), by = Math.min(a.sy, a.ey);
+        const bw = Math.abs(a.ex - a.sx), bh = Math.abs(a.ey - a.sy);
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.restore();
+      } else if (a.tool === 'redact') {
+        const bx = Math.min(a.sx, a.ex), by = Math.min(a.sy, a.ey);
+        const bw = Math.abs(a.ex - a.sx), bh = Math.abs(a.ey - a.sy);
+        ctx.fillRect(bx, by, bw, bh);
+      } else if (a.tool === 'text' && a.text) {
+        const fontSize = Math.max(16, (a.strokeWidth || 3) * 6);
+        ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+        ctx.fillText(a.text, a.sx, a.sy);
       } else if (a.tool === 'blur') {
         const bx = Math.min(a.sx, a.ex), by = Math.min(a.sy, a.ey);
         const bw = Math.abs(a.ex - a.sx), bh = Math.abs(a.ey - a.sy);
         if (bw > 5 && bh > 5) {
-          const pixelSize = Math.max(8, canvas.width / 60);
+          const pixelSize = Math.max(10, canvas.width / 50);
           const imgData = ctx.getImageData(bx, by, bw, bh);
-          for (let y = 0; y < bh; y += pixelSize) {
-            for (let x = 0; x < bw; x += pixelSize) {
-              const idx = (Math.floor(y) * Math.floor(bw) + Math.floor(x)) * 4;
-              if (idx < imgData.data.length) {
-                const r = imgData.data[idx], g = imgData.data[idx + 1], b = imgData.data[idx + 2];
-                ctx.fillStyle = `rgb(${r},${g},${b})`;
-                ctx.fillRect(bx + x, by + y, pixelSize, pixelSize);
+          for (let py = 0; py < bh; py += pixelSize) {
+            for (let px = 0; px < bw; px += pixelSize) {
+              let r = 0, g = 0, b = 0, count = 0;
+              for (let dy = 0; dy < pixelSize && py + dy < bh; dy++) {
+                for (let dx = 0; dx < pixelSize && px + dx < bw; dx++) {
+                  const idx = ((Math.floor(py + dy)) * Math.floor(bw) + Math.floor(px + dx)) * 4;
+                  if (idx + 2 < imgData.data.length) {
+                    r += imgData.data[idx]; g += imgData.data[idx+1]; b += imgData.data[idx+2]; count++;
+                  }
+                }
+              }
+              if (count > 0) {
+                ctx.fillStyle = `rgb(${Math.round(r/count)},${Math.round(g/count)},${Math.round(b/count)})`;
+                ctx.fillRect(bx + px, by + py, pixelSize, pixelSize);
               }
             }
           }
@@ -160,8 +200,14 @@ export default function ScreenshotAnnotator() {
       return;
     }
 
+    if (tool === 'text') {
+      setTextInput({ active: true, x: pos.x, y: pos.y, value: '' });
+      setTimeout(() => textInputRef.current?.focus(), 50);
+      return;
+    }
     setIsDrawing(true);
     setStartPos(pos);
+    if (tool === 'freehand') setFreehandPoints([pos]);
   };
 
   const handleMouseMove = (e) => {
@@ -181,7 +227,12 @@ export default function ScreenshotAnnotator() {
       return;
     }
 
-    setTempAnnotation({ tool, color, sx: startPos.x, sy: startPos.y, ex: pos.x, ey: pos.y });
+    if (tool === 'freehand') {
+      setFreehandPoints(prev => [...prev, pos]);
+      setTempAnnotation({ tool, color, strokeWidth, points: [...freehandPoints, pos] });
+      return;
+    }
+    setTempAnnotation({ tool, color, strokeWidth, sx: startPos.x, sy: startPos.y, ex: pos.x, ey: pos.y });
   };
 
   const handleMouseUp = (e) => {
@@ -195,8 +246,13 @@ export default function ScreenshotAnnotator() {
     }
 
     const pos = getCoords(e);
-    if (startPos && (Math.abs(startPos.x - pos.x) > 2 || Math.abs(startPos.y - pos.y) > 2)) {
-      setAnnotations(prev => [...prev, { tool, color, sx: startPos.x, sy: startPos.y, ex: pos.x, ey: pos.y }]);
+    if (tool === 'freehand' && freehandPoints.length > 1) {
+      setAnnotations(prev => [...prev, { tool, color, strokeWidth, points: [...freehandPoints, pos] }]);
+      setUndoneAnnotations([]);
+      setFreehandPoints([]);
+    } else if (startPos && (Math.abs(startPos.x - pos.x) > 2 || Math.abs(startPos.y - pos.y) > 2)) {
+      setAnnotations(prev => [...prev, { tool, color, strokeWidth, sx: startPos.x, sy: startPos.y, ex: pos.x, ey: pos.y }]);
+      setUndoneAnnotations([]);
     }
     setIsDrawing(false);
     setStartPos(null);
@@ -264,10 +320,15 @@ export default function ScreenshotAnnotator() {
             <div className="pro-tool-group">
               {[
                 { id: 'select', icon: MousePointer2, label: 'Select / Move' },
-                { id: 'rect', icon: Square, label: 'Box' },
-                { id: 'circle', icon: Circle, label: 'Circle' },
+                { id: 'rect', icon: Square, label: 'Box Outline' },
+                { id: 'circle', icon: Circle, label: 'Circle Outline' },
                 { id: 'arrow', icon: ArrowRight, label: 'Arrow' },
-                { id: 'blur', icon: Eraser, label: 'Redact' },
+                { id: 'line', icon: Minus, label: 'Line' },
+                { id: 'freehand', icon: Pencil, label: 'Freehand Draw' },
+                { id: 'text', icon: Type, label: 'Text Label' },
+                { id: 'highlight', icon: Highlighter, label: 'Highlight' },
+                { id: 'redact', icon: EyeOff, label: 'Redact / Hide' },
+                { id: 'blur', icon: Eraser, label: 'Pixelate / Blur' },
               ].map(t => (
                 <button 
                   key={t.id} 
@@ -275,35 +336,71 @@ export default function ScreenshotAnnotator() {
                   onClick={() => setTool(t.id)}
                   title={t.label}
                 >
-                  <t.icon size={20} />
+                  <t.icon size={18} />
                 </button>
               ))}
             </div>
             <div className="pro-tool-sep" />
-            <div className="pro-color-grid" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-              <label style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Color</label>
-              <input 
-                type="color" 
-                value={color} 
-                onChange={(e) => setColor(e.target.value)} 
-                style={{ width: '40px', height: '40px', padding: '0', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'transparent' }} 
-              />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '0 6px' }}>
+              <label style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Color</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px' }}>
+                {presetColors.map(c => (
+                  <button key={c} onClick={() => setColor(c)} style={{ width: '14px', height: '14px', borderRadius: '50%', background: c, border: color === c ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', transform: color === c ? 'scale(1.25)' : 'scale(1)', transition: 'all 0.15s', padding: 0 }} />
+                ))}
+              </div>
+              <input type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ width: '32px', height: '22px', padding: '0', border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} title="Custom color" />
             </div>
             <div className="pro-tool-sep" />
-            <button className="pro-tool-btn" onClick={() => setAnnotations(prev => prev.slice(0, -1))} disabled={annotations.length === 0} title="Undo">
-              <Undo2 size={20} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '0 6px' }}>
+              <label style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Size</label>
+              <input type="range" min="1" max="10" value={strokeWidth} onChange={(e) => setStrokeWidth(Number(e.target.value))} style={{ width: '40px', accentColor: 'var(--accent-primary)' }} title={`Stroke: ${strokeWidth}`} />
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700 }}>{strokeWidth}px</span>
+            </div>
+            <div className="pro-tool-sep" />
+            <button className="pro-tool-btn" onClick={() => { setAnnotations(prev => { const last = prev[prev.length - 1]; if (last) setUndoneAnnotations(p => [...p, last]); return prev.slice(0, -1); }); }} disabled={annotations.length === 0} title="Undo">
+              <Undo2 size={18} />
+            </button>
+            <button className="pro-tool-btn" onClick={() => { setUndoneAnnotations(prev => { const last = prev[prev.length - 1]; if (last) setAnnotations(p => [...p, last]); return prev.slice(0, -1); }); }} disabled={undoneAnnotations.length === 0} title="Redo">
+              <Redo2 size={18} />
             </button>
           </div>
 
           <div className="pro-canvas-container">
-            <div className="pro-canvas-wrapper">
+            <div className="pro-canvas-wrapper" style={{ position: 'relative' }}>
               <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
-                style={{ cursor: 'crosshair', display: 'block' }}
+                onMouseLeave={() => { if (isDrawing && tool === 'freehand' && freehandPoints.length > 1) { setAnnotations(prev => [...prev, { tool, color, strokeWidth, points: freehandPoints }]); setFreehandPoints([]); setIsDrawing(false); setTempAnnotation(null); } }}
+                style={{ cursor: tool === 'text' ? 'text' : tool === 'select' ? 'default' : 'crosshair', display: 'block' }}
               />
+              {textInput.active && (
+                <input
+                  ref={textInputRef}
+                  type="text"
+                  value={textInput.value}
+                  onChange={(e) => setTextInput(prev => ({ ...prev, value: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && textInput.value.trim()) {
+                      setAnnotations(prev => [...prev, { tool: 'text', color, strokeWidth, sx: textInput.x, sy: textInput.y, text: textInput.value.trim() }]);
+                      setUndoneAnnotations([]);
+                      setTextInput({ active: false, x: 0, y: 0, value: '' });
+                    } else if (e.key === 'Escape') {
+                      setTextInput({ active: false, x: 0, y: 0, value: '' });
+                    }
+                  }}
+                  onBlur={() => {
+                    if (textInput.value.trim()) {
+                      setAnnotations(prev => [...prev, { tool: 'text', color, strokeWidth, sx: textInput.x, sy: textInput.y, text: textInput.value.trim() }]);
+                      setUndoneAnnotations([]);
+                    }
+                    setTextInput({ active: false, x: 0, y: 0, value: '' });
+                  }}
+                  style={{ position: 'absolute', left: textInput.x + 'px', top: (textInput.y - 20) + 'px', background: 'rgba(0,0,0,0.8)', color: color, border: '1px solid ' + color, borderRadius: '4px', padding: '4px 8px', fontSize: '14px', fontWeight: 'bold', fontFamily: 'Inter, sans-serif', outline: 'none', zIndex: 10, minWidth: '120px' }}
+                  placeholder="Type and press Enter"
+                />
+              )}
             </div>
             <div className="pro-canvas-footer">
                <button className="btn btn-secondary" onClick={handleDownload} style={{ padding: '8px 16px' }}>
