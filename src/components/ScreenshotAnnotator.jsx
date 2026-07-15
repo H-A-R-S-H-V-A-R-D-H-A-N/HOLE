@@ -6,6 +6,7 @@ export default function ScreenshotAnnotator() {
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const [image, setImage] = useState(null);
+  const scaleRef = useRef(1);
   const [tool, setTool] = useState('rect'); 
   const [color, setColor] = useState('#EF4444');
   const [strokeWidth, setStrokeWidth] = useState(3);
@@ -71,6 +72,7 @@ export default function ScreenshotAnnotator() {
     if (image.width > maxW || image.height > maxH) {
       scale = Math.min(maxW / image.width, maxH / image.height);
     }
+    scaleRef.current = scale;
     
     canvas.width = image.width * scale;
     canvas.height = image.height * scale;
@@ -259,11 +261,81 @@ export default function ScreenshotAnnotator() {
     setTempAnnotation(null);
   };
 
+  const renderFullRes = useCallback(() => {
+    if (!image) return null;
+    const offscreen = document.createElement('canvas');
+    offscreen.width = image.width;
+    offscreen.height = image.height;
+    const ctx = offscreen.getContext('2d');
+    ctx.drawImage(image, 0, 0, image.width, image.height);
+    const s = 1 / scaleRef.current;
+    annotations.forEach(a => {
+      ctx.strokeStyle = a.color;
+      ctx.fillStyle = a.color;
+      ctx.lineWidth = (a.strokeWidth || 3) * s;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (a.tool === 'circle') {
+        const rx = Math.abs(a.ex - a.sx) / 2 * s, ry = Math.abs(a.ey - a.sy) / 2 * s;
+        const cx = (a.sx + a.ex) / 2 * s, cy = (a.sy + a.ey) / 2 * s;
+        ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+      } else if (a.tool === 'rect') {
+        ctx.strokeRect(a.sx * s, a.sy * s, (a.ex - a.sx) * s, (a.ey - a.sy) * s);
+      } else if (a.tool === 'arrow') {
+        ctx.beginPath(); ctx.moveTo(a.sx * s, a.sy * s); ctx.lineTo(a.ex * s, a.ey * s); ctx.stroke();
+        const angle = Math.atan2(a.ey - a.sy, a.ex - a.sx);
+        const headLen = Math.max(15, image.width / 40);
+        ctx.beginPath(); ctx.moveTo(a.ex * s, a.ey * s);
+        ctx.lineTo(a.ex * s - headLen * Math.cos(angle - Math.PI / 6), a.ey * s - headLen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(a.ex * s - headLen * Math.cos(angle + Math.PI / 6), a.ey * s - headLen * Math.sin(angle + Math.PI / 6));
+        ctx.closePath(); ctx.fill();
+      } else if (a.tool === 'line') {
+        ctx.beginPath(); ctx.moveTo(a.sx * s, a.sy * s); ctx.lineTo(a.ex * s, a.ey * s); ctx.stroke();
+      } else if (a.tool === 'freehand' && a.points && a.points.length > 1) {
+        ctx.beginPath(); ctx.moveTo(a.points[0].x * s, a.points[0].y * s);
+        for (let i = 1; i < a.points.length; i++) ctx.lineTo(a.points[i].x * s, a.points[i].y * s);
+        ctx.stroke();
+      } else if (a.tool === 'highlight') {
+        const bx = Math.min(a.sx, a.ex) * s, by = Math.min(a.sy, a.ey) * s;
+        ctx.save(); ctx.globalAlpha = 0.3;
+        ctx.fillRect(bx, by, Math.abs(a.ex - a.sx) * s, Math.abs(a.ey - a.sy) * s);
+        ctx.restore();
+      } else if (a.tool === 'redact') {
+        const bx = Math.min(a.sx, a.ex) * s, by = Math.min(a.sy, a.ey) * s;
+        ctx.fillRect(bx, by, Math.abs(a.ex - a.sx) * s, Math.abs(a.ey - a.sy) * s);
+      } else if (a.tool === 'text' && a.text) {
+        const fontSize = Math.max(16, (a.strokeWidth || 3) * 6) * s;
+        ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+        ctx.fillText(a.text, a.sx * s, a.sy * s);
+      } else if (a.tool === 'blur') {
+        const bx = Math.min(a.sx, a.ex) * s, by = Math.min(a.sy, a.ey) * s;
+        const bw = Math.abs(a.ex - a.sx) * s, bh = Math.abs(a.ey - a.sy) * s;
+        if (bw > 5 && bh > 5) {
+          const pixelSize = Math.max(10, image.width / 50);
+          const imgData = ctx.getImageData(bx, by, bw, bh);
+          for (let py = 0; py < bh; py += pixelSize) {
+            for (let px = 0; px < bw; px += pixelSize) {
+              let r = 0, g = 0, b = 0, count = 0;
+              for (let dy = 0; dy < pixelSize && py + dy < bh; dy++) {
+                for (let dx = 0; dx < pixelSize && px + dx < bw; dx++) {
+                  const idx = (Math.floor(py + dy) * Math.floor(bw) + Math.floor(px + dx)) * 4;
+                  if (idx + 2 < imgData.data.length) { r += imgData.data[idx]; g += imgData.data[idx+1]; b += imgData.data[idx+2]; count++; }
+                }
+              }
+              if (count > 0) { ctx.fillStyle = `rgb(${Math.round(r/count)},${Math.round(g/count)},${Math.round(b/count)})`; ctx.fillRect(bx + px, by + py, pixelSize, pixelSize); }
+            }
+          }
+        }
+      }
+    });
+    return offscreen;
+  }, [image, annotations]);
+
   const handleCopyToClipboard = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const fullRes = renderFullRes();
+    if (!fullRes) return;
     try {
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+      const blob = await new Promise(resolve => fullRes.toBlob(resolve, 'image/png', 1.0));
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -273,11 +345,11 @@ export default function ScreenshotAnnotator() {
   };
 
   const handleDownload = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const fullRes = renderFullRes();
+    if (!fullRes) return;
     const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = `kroma_annotation_${Date.now()}.png`;
+    a.href = fullRes.toDataURL('image/png');
+    a.download = `HOLE_annotation_${Date.now()}.png`;
     a.click();
   };
 
