@@ -25,13 +25,12 @@
   <img src="public/hole-icon.png" width="120" alt="HOLE">
   <h1>H O L E</h1>
   <p><strong>The Anonymous Bug Bounty Workstation</strong></p>
-  <p>A fully offline, native desktop arsenal built for elite penetration testers and bug bounty hunters.<br/>An ever-growing arsenal of integrated security tools. Zero telemetry. Complete local data sovereignty.</p>
+  <p>A powerful native desktop arsenal built for elite penetration testers and bug bounty hunters.<br/>An ever-growing ecosystem of integrated security tools.</p>
 
   <br/>
 
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0D1117?style=for-the-badge&labelColor=161B22&color=7C3AED" />
   <img src="https://img.shields.io/badge/License-MIT-0D1117?style=for-the-badge&labelColor=161B22&color=10B981" />
-  <img src="https://img.shields.io/badge/Network-100%25_Offline-0D1117?style=for-the-badge&labelColor=161B22&color=EF4444" />
   <img src="https://img.shields.io/badge/Tor-Ghost_Mode-0D1117?style=for-the-badge&labelColor=161B22&color=06B6D4" />
 </div>
 
@@ -45,9 +44,7 @@
 
 Every serious hunter knows the pain. You have 15 terminal tabs open, five browser extensions fighting each other, scattered notes across three apps, and your recon data lives in random folders you will never find again.
 
-HOLE kills that workflow chaos. It is a single native Electron application that replaces your entire fragmented toolkit with one unified dark-themed interface. Everything from subdomain mapping to JWT forgery to reverse shell generation happens inside one window, and nothing ever touches the internet unless you explicitly route it through the built-in Tor engine.
-
-Your data stays on your hard drive. Period.
+HOLE kills that workflow chaos. It is a single native Electron application that replaces your entire fragmented toolkit with one unified dark-themed interface. Everything from subdomain mapping to JWT forgery to reverse shell generation happens inside one window.
 
 <br/>
 
@@ -247,21 +244,7 @@ npm run electron:dev
 
 <br/>
 
-## Security Architecture
 
-| Principle | Implementation |
-|---|---|
-| **Zero Analytics** | No tracking scripts, no crash reporters, no telemetry of any kind |
-| **Offline First** | The application makes zero network requests unless explicitly routed through the Tor engine |
-| **Local Storage** | All data (notes, workflows, payloads, journals) is saved as plain files in your `HOLE_Workspace` directory |
-| **No Database** | No SQLite, no MongoDB, no remote DB. Everything is flat files you can read, move, and delete |
-| **Open Source** | Every line of code is visible in this repository |
-
-<br/>
-
----
-
-<br/>
 
 ## Showcase Gallery
 
