@@ -48,7 +48,7 @@ export default function BountyTracker() {
   const previewRef = useRef(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
 
   const renderedHtml = useMemo(() => {
     let finalHtml = marked(reportContent || '*No report content written yet.*');
@@ -228,34 +228,37 @@ export default function BountyTracker() {
         </button>
       </div>
 
-      <div className="filter-pills-container" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '8px', alignItems: 'center' }}>
-        <button className={`filter-pill ${activeSection === 'all' ? 'active' : ''}`} onClick={() => setActiveSection('all')}>
-          All <span className="pill-count">{bounties.length}</span>
-        </button>
-        
-        <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px', flexShrink: 0 }} />
+      <div className="filter-pills-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', marginBottom: '8px', gap: '24px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', overflowX: 'auto', flex: 1, alignItems: 'center' }}>
+          <button className={`filter-pill ${activeSection === 'all' ? 'active' : ''}`} onClick={() => setActiveSection('all')}>
+            All <span className="pill-count">{bounties.length}</span>
+          </button>
+          
+          <div style={{ width: '2px', height: '24px', background: 'var(--border-default)', margin: '0 8px', flexShrink: 0, borderRadius: '2px' }} />
 
-        {['submitted', 'triaged', 'resolved', 'resolved-paid', 'paid', 'duplicate'].map(st => {
-          const count = bounties.filter(b => b.status === st).length;
-          if (count === 0 && activeSection !== `status-${st}`) return null;
-          return (
-            <button key={st} className={`filter-pill ${activeSection === 'status-' + st ? 'active' : ''}`} onClick={() => setActiveSection(`status-${st}`)}>
-              {statusLabels[st]} <span className="pill-count">{count}</span>
-            </button>
-          );
-        })}
+          {['submitted', 'triaged', 'resolved', 'resolved-paid', 'paid', 'duplicate'].map(st => {
+            const count = bounties.filter(b => b.status === st).length;
+            if (count === 0 && activeSection !== `status-${st}`) return null;
+            return (
+              <button key={st} className={`filter-pill ${activeSection === 'status-' + st ? 'active' : ''}`} onClick={() => setActiveSection(`status-${st}`)}>
+                {statusLabels[st]} <span className="pill-count">{count}</span>
+              </button>
+            );
+          })}
+        </div>
 
-        <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px', flexShrink: 0 }} />
-
-        {['critical', 'high', 'medium', 'low', 'info'].map(sev => {
-          const count = bounties.filter(b => b.severity === sev).length;
-          if (count === 0 && activeSection !== `severity-${sev}`) return null;
-          return (
-            <button key={sev} className={`filter-pill ${activeSection === 'severity-' + sev ? 'active' : ''}`} onClick={() => setActiveSection(`severity-${sev}`)}>
-              {sev.charAt(0).toUpperCase() + sev.slice(1)} <span className="pill-count">{count}</span>
-            </button>
-          );
-        })}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center' }}>
+          <div style={{ width: '2px', height: '24px', background: 'var(--border-default)', margin: '0 8px', flexShrink: 0, borderRadius: '2px' }} />
+          {['critical', 'high', 'medium', 'low', 'info'].map(sev => {
+            const count = bounties.filter(b => b.severity === sev).length;
+            if (count === 0 && activeSection !== `severity-${sev}`) return null;
+            return (
+              <button key={sev} className={`filter-pill ${activeSection === 'severity-' + sev ? 'active' : ''}`} onClick={() => setActiveSection(`severity-${sev}`)}>
+                {sev.charAt(0).toUpperCase() + sev.slice(1)} <span className="pill-count">{count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="bounty-stats" style={{ marginBottom: '24px' }}>
@@ -292,13 +295,13 @@ export default function BountyTracker() {
           </thead>
           <tbody>
             {currentBounties.map((b) => (
-            <tr key={b.id}>
-              <td style={{ fontWeight: 600 }}>{b.program}</td>
-              <td>{b.title}</td>
-              <td><span className={`badge badge-${b.severity}`}>{b.severity}</span></td>
-              <td><span className={`status-badge status-${b.status}`}>{statusLabels[b.status]}</span></td>
-              <td style={{ fontWeight: 700, color: b.amount > 0 ? 'var(--accent-green)' : 'var(--text-muted)' }}>{b.amount > 0 ? `$${b.amount}` : '—'}</td>
-              <td style={{ color: 'var(--text-muted)' }}>{b.date}</td>
+            <tr key={b.id} className="bounty-row">
+              <td style={{ fontWeight: 700, fontSize: '15px' }}>{b.program}</td>
+              <td style={{ color: 'var(--text-secondary)' }}>{b.title}</td>
+              <td><span className={`bounty-badge severity-${b.severity}`}>{b.severity.toUpperCase()}</span></td>
+              <td><span className={`bounty-badge status-${b.status}`}>{statusLabels[b.status] || b.status}</span></td>
+              <td style={{ color: '#10B981', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '15px' }}>{b.amount ? `$${b.amount.toLocaleString()}` : '—'}</td>
+              <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{b.date}</td>
               <td style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn-icon" onClick={() => handleOpenReport(b)} title="Write/View Report" style={{ color: 'var(--accent-secondary)' }}><FileText size={16} /></button>
                 <button className="btn-icon" onClick={() => handleOpenModal(b)} title="Edit"><Edit3 size={16} /></button>
@@ -536,15 +539,53 @@ export default function BountyTracker() {
         }
         
         .bounty-table-container {
-          background: var(--bg-primary);
-          border: 1px solid var(--border-subtle);
-          border-radius: 16px;
-          overflow: hidden;
+          background: transparent;
+          border: none;
           margin-bottom: 24px;
         }
         .bounty-table {
           margin-bottom: 0;
           border: none;
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0 16px;
+        }
+        .bounty-table thead th {
+          padding: 0 24px 8px 24px;
+          color: var(--text-muted);
+          font-weight: 700;
+          text-transform: uppercase;
+          font-size: 11px;
+          letter-spacing: 0.5px;
+          border-bottom: none;
+        }
+        .bounty-table tbody tr {
+          background: var(--bg-secondary);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .bounty-table tbody tr:hover {
+          transform: translateY(-4px) scale(1.01);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+          background: var(--bg-tertiary);
+          z-index: 10;
+          position: relative;
+        }
+        .bounty-table tbody td {
+          padding: 20px 24px;
+          border: none;
+          border-top: 1px solid var(--border-subtle);
+          border-bottom: 1px solid var(--border-subtle);
+        }
+        .bounty-table tbody tr td:first-child {
+          border-top-left-radius: 16px;
+          border-bottom-left-radius: 16px;
+          border-left: 1px solid var(--border-subtle);
+        }
+        .bounty-table tbody tr td:last-child {
+          border-top-right-radius: 16px;
+          border-bottom-right-radius: 16px;
+          border-right: 1px solid var(--border-subtle);
         }
         .modal-content {
           border-radius: 16px !important;
@@ -555,7 +596,8 @@ export default function BountyTracker() {
           align-items: center;
           padding: 16px 24px;
           background: var(--bg-secondary);
-          border-top: 1px solid var(--border-subtle);
+          border: 1px solid var(--border-subtle);
+          border-radius: 16px;
         }
       `}</style>
     </div>
