@@ -102,9 +102,9 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
         </div>
         <div className="stat-card pro">
           <div className="stat-card-header">
-            <div className="stat-card-icon"><DollarSign size={20} color="#10B981" /></div>
+            <div className="stat-card-icon"><DollarSign size={20} color="#00b853" /></div>
           </div>
-          <div className="stat-card-value">${totalEarned.toLocaleString()}</div>
+          <div className="stat-card-value" style={{ color: '#00b853' }}>${totalEarned.toLocaleString()}</div>
           <div className="stat-card-label">Total Bounties Earned</div>
         </div>
       </div>
@@ -259,7 +259,7 @@ export default function Dashboard({ notes, onViewChange, onNewNote, activeContex
                   <div key={b.id} className="pro-target-item" onClick={() => onViewChange('bounty')}>
                     <div className="pro-target-info">
                       <div className="pro-target-name">{b.program} - {b.title}</div>
-                      <div className="pro-target-meta" style={{ color: b.amount > 0 ? '#10B981' : 'var(--text-muted)' }}>
+                      <div className="pro-target-meta" style={{ color: b.amount > 0 ? '#00b853' : 'var(--text-muted)' }}>
                         {b.amount > 0 ? `+$${b.amount}` : b.status.toUpperCase()}
                       </div>
                     </div>
