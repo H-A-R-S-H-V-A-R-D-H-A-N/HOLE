@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DollarSign, Plus, Filter, ArrowUpDown, ExternalLink,
-  TrendingUp, Target, CheckCircle2, Clock, X, Trash2, Edit3
+  TrendingUp, Target, CheckCircle2, Clock, X, Trash2, Edit3, FileText, Eye, Edit, Maximize, Minimize
 } from 'lucide-react';
+import Editor from '@monaco-editor/react';
+import { marked } from 'marked';
 import ConfirmModal from './ConfirmModal';
 import '../styles/Settings.css';
 
@@ -19,12 +22,19 @@ export default function BountyTracker() {
   const [confirmState, setConfirmState] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0],
+    program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: ''
   });
+
+  // Report Modal State
+  const [activeReportBounty, setActiveReportBounty] = useState(null);
+  const [reportContent, setReportContent] = useState('');
+  const [isPreview, setIsPreview] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const totalEarned = bounties.filter(b => b.status === 'paid').reduce((sum, b) => sum + b.amount, 0);
   const totalSubmitted = bounties.length;
   const totalPaid = bounties.filter(b => b.status === 'paid').length;
+  const totalDuplicates = bounties.filter(b => b.status === 'duplicate').length;
 
   useEffect(() => {
     if (window.electronAPI) {
@@ -40,7 +50,7 @@ export default function BountyTracker() {
       setFormData(bounty);
     } else {
       setEditingId(null);
-      setFormData({ program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0] });
+      setFormData({ program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: '' });
     }
     setShowModal(true);
   };
@@ -64,6 +74,17 @@ export default function BountyTracker() {
         setConfirmState(null);
       }
     });
+  };
+
+  const handleOpenReport = (bounty) => {
+    setActiveReportBounty(bounty);
+    setReportContent(bounty.report || '');
+    setIsPreview(!!bounty.report);
+  };
+
+  const handleSaveReport = () => {
+    setBounties(prev => prev.map(b => b.id === activeReportBounty.id ? { ...b, report: reportContent } : b));
+    setActiveReportBounty(null);
   };
 
   const statusLabels = {
@@ -96,6 +117,10 @@ export default function BountyTracker() {
           <div className="bounty-stat-value" style={{ color: 'var(--accent-secondary)' }}>{totalPaid}</div>
           <div className="bounty-stat-label">Paid Out</div>
         </div>
+        <div className="bounty-stat-card">
+          <div className="bounty-stat-value" style={{ color: 'var(--accent-red)' }}>{totalDuplicates}</div>
+          <div className="bounty-stat-label">Duplicates</div>
+        </div>
       </div>
 
       <table className="bounty-table">
@@ -120,16 +145,17 @@ export default function BountyTracker() {
               <td style={{ fontWeight: 700, color: b.amount > 0 ? 'var(--accent-green)' : 'var(--text-muted)' }}>{b.amount > 0 ? `$${b.amount}` : '—'}</td>
               <td style={{ color: 'var(--text-muted)' }}>{b.date}</td>
               <td style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn-icon" onClick={() => handleOpenReport(b)} title="Write/View Report" style={{ color: 'var(--accent-secondary)' }}><FileText size={16} /></button>
                 <button className="btn-icon" onClick={() => handleOpenModal(b)} title="Edit"><Edit3 size={16} /></button>
                 <button className="btn-icon" onClick={() => handleDelete(b)} title="Delete" style={{ color: '#EF4444' }}><Trash2 size={16} /></button>
-                {b.url && <button className="btn-icon" onClick={() => window.open(b.url, '_blank')} title="View Report" style={{ color: 'var(--accent-primary)' }}><ExternalLink size={16} /></button>}
+                {b.url && <button className="btn-icon" onClick={() => window.open(b.url, '_blank')} title="View External Report" style={{ color: 'var(--accent-primary)' }}><ExternalLink size={16} /></button>}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {showModal && (
+      {showModal && createPortal(
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -178,7 +204,7 @@ export default function BountyTracker() {
                 </div>
               </div>
               <div>
-                <label className="pro-label">Report URL</label>
+                <label className="pro-label">External Report URL (Optional)</label>
                 <input value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://..." style={{ width: '100%' }} />
               </div>
             </div>
@@ -187,7 +213,69 @@ export default function BountyTracker() {
               <button className="btn btn-primary" onClick={handleSave}>{editingId ? 'Update' : 'Save'}</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
+
+      {activeReportBounty && createPortal(
+        <div className="modal-overlay" onClick={() => setActiveReportBounty(null)}>
+          <div 
+            className="modal-content report-modal" 
+            onClick={(e) => e.stopPropagation()} 
+            style={{ 
+              width: isFullScreen ? '100vw' : '90vw', 
+              maxWidth: isFullScreen ? 'none' : '1400px', 
+              height: isFullScreen ? '100vh' : '90vh', 
+              borderRadius: isFullScreen ? '0' : 'var(--radius-xl)',
+              display: 'flex', 
+              flexDirection: 'column',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <div className="modal-header" style={{ padding: '24px 32px' }}>
+              <h2 style={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <FileText size={24} color="var(--accent-secondary)" /> 
+                {activeReportBounty.title} 
+                <span className={`status-badge status-${activeReportBounty.status}`} style={{ fontSize: '12px' }}>{statusLabels[activeReportBounty.status]}</span>
+              </h2>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button className="btn btn-ghost" onClick={() => setIsPreview(!isPreview)}>
+                  {isPreview ? <><Edit size={16} /> Edit Markdown</> : <><Eye size={16} /> View Preview</>}
+                </button>
+                <button className="btn-icon" onClick={() => setIsFullScreen(!isFullScreen)} title="Toggle Fullscreen">
+                  {isFullScreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                </button>
+                <button className="btn-icon" onClick={() => setActiveReportBounty(null)}><X size={24} /></button>
+              </div>
+            </div>
+            <div className="modal-body" style={{ flex: 1, padding: 0, display: 'flex', overflow: 'hidden' }}>
+              <div style={{ flex: 1, display: isPreview ? 'none' : 'block', background: '#1e1e1e' }}>
+                <Editor
+                  height="100%"
+                  defaultLanguage="markdown"
+                  theme="vs-dark"
+                  value={reportContent}
+                  onChange={setReportContent}
+                  options={{
+                    minimap: { enabled: false },
+                    wordWrap: 'on',
+                    fontSize: 14,
+                    fontFamily: 'JetBrains Mono',
+                    padding: { top: 24 }
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1, display: isPreview ? 'block' : 'none', padding: '32px 48px', overflowY: 'auto', background: 'var(--bg-primary)' }}>
+                <div className="markdown-body" dangerouslySetInnerHTML={{ __html: marked(reportContent || '*No report content written yet.*') }} />
+              </div>
+            </div>
+            <div className="modal-footer" style={{ padding: '24px 32px', borderTop: '1px solid var(--border-subtle)' }}>
+              <button className="btn btn-secondary" onClick={() => setActiveReportBounty(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleSaveReport}>Save Report</button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {confirmState && (
