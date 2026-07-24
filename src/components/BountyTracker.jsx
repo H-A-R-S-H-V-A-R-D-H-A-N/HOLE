@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DollarSign, Plus, Filter, ArrowUpDown, ExternalLink,
-  TrendingUp, Target, CheckCircle2, Clock, X, Trash2, Edit3, FileText, Eye, Edit, Maximize, Minimize
+  TrendingUp, Target, CheckCircle2, Clock, X, Trash2, Edit3, FileText, Eye, Edit, Maximize, Minimize, Folder, LayoutList, Shield
 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { marked } from 'marked';
@@ -18,11 +18,24 @@ export default function BountyTracker() {
       return [];
     }
   });
+
+  const [activeSection, setActiveSection] = useState('all');
+  const [customFolders, setCustomFolders] = useState(() => {
+    try {
+      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_bounty_folders') : localStorage.getItem('kroma_bounty_folders');
+      return (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
+    } catch {
+      return [];
+    }
+  });
+  const [newFolderName, setNewFolderName] = useState('');
+  const [showFolderInput, setShowFolderInput] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [confirmState, setConfirmState] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: ''
+    program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: '', folderId: ''
   });
 
   // Report Modal State
@@ -117,18 +130,28 @@ export default function BountyTracker() {
     return () => el.removeEventListener('click', handleCodeActions);
   }, [isPreview, renderedHtml]);
 
-  const totalEarned = bounties.filter(b => b.status === 'paid').reduce((sum, b) => sum + b.amount, 0);
+  const totalEarned = bounties.filter(b => b.status === 'paid' || b.status === 'resolved-paid').reduce((sum, b) => sum + b.amount, 0);
   const totalSubmitted = bounties.length;
-  const totalPaid = bounties.filter(b => b.status === 'paid').length;
+  const totalPaid = bounties.filter(b => b.status === 'paid' || b.status === 'resolved-paid').length;
   const totalDuplicates = bounties.filter(b => b.status === 'duplicate').length;
+
+  const filteredBounties = useMemo(() => {
+    if (activeSection === 'all') return bounties;
+    if (activeSection.startsWith('severity-')) return bounties.filter(b => b.severity === activeSection.replace('severity-', ''));
+    if (activeSection.startsWith('status-')) return bounties.filter(b => b.status === activeSection.replace('status-', ''));
+    if (activeSection.startsWith('folder-')) return bounties.filter(b => b.folderId === activeSection.replace('folder-', ''));
+    return bounties;
+  }, [bounties, activeSection]);
 
   useEffect(() => {
     if (window.electronAPI) {
       window.electronAPI.storeSetSync('kroma_bounties', bounties);
+      window.electronAPI.storeSetSync('kroma_bounty_folders', customFolders);
     } else {
       localStorage.setItem('kroma_bounties', JSON.stringify(bounties));
+      localStorage.setItem('kroma_bounty_folders', JSON.stringify(customFolders));
     }
-  }, [bounties]);
+  }, [bounties, customFolders]);
 
   const handleOpenModal = (bounty = null) => {
     if (bounty) {
@@ -136,7 +159,7 @@ export default function BountyTracker() {
       setFormData(bounty);
     } else {
       setEditingId(null);
-      setFormData({ program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: '' });
+      setFormData({ program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: '', folderId: activeSection.startsWith('folder-') ? activeSection.replace('folder-', '') : '' });
     }
     setShowModal(true);
   };
@@ -177,52 +200,142 @@ export default function BountyTracker() {
     submitted: 'Submitted',
     triaged: 'Triaged',
     resolved: 'Resolved',
+    'resolved-paid': 'Resolved & Paid',
     paid: 'Paid',
     duplicate: 'Duplicate',
   };
 
   return (
-    <div className="bounty-tracker-page page-enter">
-      <div className="bounty-header">
-        <h1 className="bounty-title">💰 Bounty Tracker</h1>
-        <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-          <Plus size={18} /> Add Bounty
-        </button>
+    <div className="bounty-tracker-page page-enter" style={{ display: 'flex', gap: '0', height: '100%', overflow: 'hidden', padding: 0 }}>
+      {/* Sidebar */}
+      <div className="bounty-sidebar" style={{ width: '260px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', padding: 'var(--space-xl)', background: 'var(--bg-secondary)', borderRight: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 800 }}>💰 Tracker</h2>
+        </div>
+        
+        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px' }}>Overview</div>
+          <button className={`nav-item ${activeSection === 'all' ? 'active' : ''}`} onClick={() => setActiveSection('all')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: activeSection === 'all' ? 'var(--bg-tertiary)' : 'transparent', color: activeSection === 'all' ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left', width: '100%' }}>
+            <LayoutList size={16} /> All Bounties
+            <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{bounties.length}</span>
+          </button>
+        </div>
+        
+        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px' }}>By Severity</div>
+          {['critical', 'high', 'medium', 'low', 'info'].map(sev => {
+            const count = bounties.filter(b => b.severity === sev).length;
+            const isActive = activeSection === `severity-${sev}`;
+            return (
+              <button key={sev} onClick={() => setActiveSection(`severity-${sev}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: isActive ? 'var(--bg-tertiary)' : 'transparent', color: isActive ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left', width: '100%' }}>
+                <Shield size={16} className={`text-${sev}`} /> {sev.charAt(0).toUpperCase() + sev.slice(1)}
+                {count > 0 && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+        
+        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px' }}>By Status</div>
+          {['submitted', 'triaged', 'resolved', 'resolved-paid', 'paid', 'duplicate'].map(st => {
+            const count = bounties.filter(b => b.status === st).length;
+            const isActive = activeSection === `status-${st}`;
+            return (
+              <button key={st} onClick={() => setActiveSection(`status-${st}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: isActive ? 'var(--bg-tertiary)' : 'transparent', color: isActive ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left', width: '100%' }}>
+                <CheckCircle2 size={16} className={`text-status-${st}`} /> {statusLabels[st] || st}
+                {count > 0 && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Custom Folders
+            <button className="btn-icon" onClick={() => setShowFolderInput(!showFolderInput)} style={{ padding: '2px' }}><Plus size={14} /></button>
+          </div>
+          {showFolderInput && (
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', padding: '0 4px' }}>
+              <input value={newFolderName} onChange={e => setNewFolderName(e.target.value)} placeholder="Folder name" style={{ flex: 1, padding: '6px 10px', fontSize: '12px', background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#fff' }} onKeyDown={e => {
+                if (e.key === 'Enter' && newFolderName.trim()) {
+                  setCustomFolders([...customFolders, { id: Date.now().toString(), name: newFolderName.trim() }]);
+                  setNewFolderName('');
+                  setShowFolderInput(false);
+                }
+              }} />
+            </div>
+          )}
+          {customFolders.map(folder => {
+            const count = bounties.filter(b => b.folderId === folder.id).length;
+            const isActive = activeSection === `folder-${folder.id}`;
+            return (
+              <div key={folder.id} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                <button onClick={() => setActiveSection(`folder-${folder.id}`)} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: isActive ? 'var(--bg-tertiary)' : 'transparent', color: isActive ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left' }}>
+                  <Folder size={16} /> {folder.name}
+                  {count > 0 && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{count}</span>}
+                </button>
+                <button className="btn-icon" onClick={() => {
+                  if (confirm(`Delete folder "${folder.name}"? Bounties will not be deleted, just removed from this folder.`)) {
+                    setCustomFolders(customFolders.filter(f => f.id !== folder.id));
+                    setBounties(prev => prev.map(b => b.folderId === folder.id ? { ...b, folderId: '' } : b));
+                    if (activeSection === `folder-${folder.id}`) setActiveSection('all');
+                  }
+                }} style={{ padding: '6px', color: '#EF4444', opacity: 0.5 }} title="Delete Folder">
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="bounty-stats">
-        <div className="bounty-stat-card">
-          <div className="bounty-stat-value" style={{ color: 'var(--accent-green)' }}>${totalEarned.toLocaleString()}</div>
-          <div className="bounty-stat-label">Total Earned</div>
+      {/* Main Content Area */}
+      <div className="bounty-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: 'var(--space-xl)' }}>
+        <div className="bounty-header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 className="bounty-title" style={{ fontSize: '24px', fontWeight: 800 }}>
+            {activeSection === 'all' ? 'All Bounties' : 
+             activeSection.startsWith('severity-') ? `Severity: ${activeSection.replace('severity-', '').toUpperCase()}` : 
+             activeSection.startsWith('status-') ? `Status: ${statusLabels[activeSection.replace('status-', '')]}` :
+             activeSection.startsWith('folder-') ? `Folder: ${customFolders.find(f => f.id === activeSection.replace('folder-', ''))?.name || 'Unknown'}` : 'Bounties'}
+          </h1>
+          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+            <Plus size={18} /> Add Bounty
+          </button>
         </div>
-        <div className="bounty-stat-card">
-          <div className="bounty-stat-value" style={{ color: 'var(--accent-primary)' }}>{totalSubmitted}</div>
-          <div className="bounty-stat-label">Reports Submitted</div>
-        </div>
-        <div className="bounty-stat-card">
-          <div className="bounty-stat-value" style={{ color: 'var(--accent-secondary)' }}>{totalPaid}</div>
-          <div className="bounty-stat-label">Paid Out</div>
-        </div>
-        <div className="bounty-stat-card">
-          <div className="bounty-stat-value" style={{ color: 'var(--accent-red)' }}>{totalDuplicates}</div>
-          <div className="bounty-stat-label">Duplicates</div>
-        </div>
-      </div>
 
-      <table className="bounty-table">
-        <thead>
-          <tr>
-            <th>Program</th>
-            <th>Vulnerability</th>
-            <th>Severity</th>
-            <th>Status</th>
-            <th>Amount</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bounties.map((b) => (
+        <div className="bounty-stats">
+          <div className="bounty-stat-card">
+            <div className="bounty-stat-value" style={{ color: 'var(--accent-green)' }}>${totalEarned.toLocaleString()}</div>
+            <div className="bounty-stat-label">Total Earned</div>
+          </div>
+          <div className="bounty-stat-card">
+            <div className="bounty-stat-value" style={{ color: 'var(--accent-primary)' }}>{totalSubmitted}</div>
+            <div className="bounty-stat-label">Reports Submitted</div>
+          </div>
+          <div className="bounty-stat-card">
+            <div className="bounty-stat-value" style={{ color: 'var(--accent-secondary)' }}>{totalPaid}</div>
+            <div className="bounty-stat-label">Paid Out</div>
+          </div>
+          <div className="bounty-stat-card">
+            <div className="bounty-stat-value" style={{ color: 'var(--accent-red)' }}>{totalDuplicates}</div>
+            <div className="bounty-stat-label">Duplicates</div>
+          </div>
+        </div>
+
+        <table className="bounty-table">
+          <thead>
+            <tr>
+              <th>Program</th>
+              <th>Vulnerability</th>
+              <th>Severity</th>
+              <th>Status</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredBounties.map((b) => (
             <tr key={b.id}>
               <td style={{ fontWeight: 600 }}>{b.program}</td>
               <td>{b.title}</td>
@@ -274,6 +387,7 @@ export default function BountyTracker() {
                     <option value="submitted">Submitted</option>
                     <option value="triaged">Triaged</option>
                     <option value="resolved">Resolved</option>
+                    <option value="resolved-paid">Resolved & Paid</option>
                     <option value="paid">Paid</option>
                     <option value="duplicate">Duplicate</option>
                   </select>
@@ -285,13 +399,24 @@ export default function BountyTracker() {
                   <input type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: parseInt(e.target.value) || 0 })} style={{ width: '100%' }} />
                 </div>
                 <div>
+                  <label className="pro-label">Custom Folder (Optional)</label>
+                  <select className="settings-select" value={formData.folderId || ''} onChange={(e) => setFormData({ ...formData, folderId: e.target.value })} style={{ width: '100%' }}>
+                    <option value="">None (All Bounties)</option>
+                    {customFolders.map(f => (
+                      <option key={f.id} value={f.id}>{f.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label className="pro-label">External Report URL (Optional)</label>
+                  <input value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://..." style={{ width: '100%' }} />
+                </div>
+                <div>
                   <label className="pro-label">Date</label>
                   <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} style={{ width: '100%' }} />
                 </div>
-              </div>
-              <div>
-                <label className="pro-label">External Report URL (Optional)</label>
-                <input value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://..." style={{ width: '100%' }} />
               </div>
             </div>
             <div className="modal-footer">
@@ -377,6 +502,7 @@ export default function BountyTracker() {
       <style>{`
         .pro-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
       `}</style>
+      </div>
     </div>
   );
 }

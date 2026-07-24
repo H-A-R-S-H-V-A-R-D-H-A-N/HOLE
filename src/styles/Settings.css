@@ -309,3 +309,9 @@
   background: var(--accent-red-dim);
   color: var(--accent-red);
 }
+
+.status-resolved-paid {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
