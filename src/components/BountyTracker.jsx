@@ -2,12 +2,22 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DollarSign, Plus, Filter, ArrowUpDown, ExternalLink,
-  TrendingUp, Target, CheckCircle2, Clock, X, Trash2, Edit3, FileText, Eye, Edit, Maximize, Minimize, Folder, LayoutList, Shield
+  TrendingUp, Target, CheckCircle2, Clock, X, Trash2, Edit3, FileText, Eye, Edit, Maximize, Minimize, Folder, LayoutList, Shield, Paintbrush
 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { marked } from 'marked';
 import ConfirmModal from './ConfirmModal';
 import '../styles/Settings.css';
+
+const formatColorsList = [
+  { name: 'Default (Cyan)', color: '#00D4FF' },
+  { name: 'Green', color: '#10B981' },
+  { name: 'Red', color: '#EF4444' },
+  { name: 'Yellow', color: '#F59E0B' },
+  { name: 'Purple', color: '#8B5CF6' },
+  { name: 'Pink', color: '#EC4899' },
+  { name: 'White', color: '#FFFFFF' },
+];
 
 export default function BountyTracker() {
   const [bounties, setBounties] = useState(() => {
@@ -41,6 +51,8 @@ export default function BountyTracker() {
   // Report Modal State
   const [activeReportBounty, setActiveReportBounty] = useState(null);
   const [reportContent, setReportContent] = useState('');
+  const [reportColor, setReportColor] = useState('#00D4FF');
+  const [showReportColors, setShowReportColors] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const previewRef = useRef(null);
@@ -188,11 +200,12 @@ export default function BountyTracker() {
   const handleOpenReport = (bounty) => {
     setActiveReportBounty(bounty);
     setReportContent(bounty.report || '');
+    setReportColor(bounty.formatColor || localStorage.getItem('hole_format_color') || '#00D4FF');
     setIsPreview(!!bounty.report);
   };
 
   const handleSaveReport = () => {
-    setBounties(prev => prev.map(b => b.id === activeReportBounty.id ? { ...b, report: reportContent } : b));
+    setBounties(prev => prev.map(b => b.id === activeReportBounty.id ? { ...b, report: reportContent, formatColor: reportColor } : b));
     setActiveReportBounty(null);
   };
 
@@ -449,7 +462,28 @@ export default function BountyTracker() {
                 {activeReportBounty.title} 
                 <span className={`status-badge status-${activeReportBounty.status}`} style={{ fontSize: '12px' }}>{statusLabels[activeReportBounty.status]}</span>
               </h2>
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ position: 'relative' }}>
+                  <button className="btn-icon" onClick={() => setShowReportColors(!showReportColors)} title="Formatting Theme Color" style={{ color: reportColor === '#FFFFFF' ? 'var(--text-primary)' : reportColor }}>
+                    <Paintbrush size={18} />
+                  </button>
+                  {showReportColors && (
+                    <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1000, display: 'flex', gap: '6px', background: 'var(--bg-elevated)', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-default)', marginTop: '8px' }}>
+                      {formatColorsList.map(({ name, color }) => (
+                        <button
+                          key={name}
+                          style={{ backgroundColor: color, width: '20px', height: '20px', borderRadius: '50%', border: 'none', cursor: 'pointer' }}
+                          title={name}
+                          onClick={() => {
+                            setReportColor(color);
+                            localStorage.setItem('hole_format_color', color);
+                            setShowReportColors(false);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button className="btn btn-ghost" onClick={() => setIsPreview(!isPreview)}>
                   {isPreview ? <><Edit size={16} /> Edit Markdown</> : <><Eye size={16} /> View Preview</>}
                 </button>
@@ -476,7 +510,7 @@ export default function BountyTracker() {
                   }}
                 />
               </div>
-              <div style={{ flex: 1, display: isPreview ? 'block' : 'none', padding: '32px 48px', overflowY: 'auto', background: 'var(--bg-primary)' }}>
+              <div style={{ flex: 1, display: isPreview ? 'block' : 'none', padding: '32px 48px', overflowY: 'auto', background: 'var(--bg-primary)', '--accent-primary': reportColor, '--accent-primary-dim': `${reportColor}33` }}>
                 <div ref={previewRef} className="markdown-body reader-tiptap rendered-content" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
               </div>
             </div>

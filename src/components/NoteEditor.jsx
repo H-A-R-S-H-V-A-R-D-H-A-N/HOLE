@@ -626,6 +626,7 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
                     title={name}
                     onClick={() => {
                       setFormatColor(color);
+                      localStorage.setItem('hole_format_color', color);
                       setShowFormatColors(false);
                     }}
                   />
