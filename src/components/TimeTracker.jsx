@@ -16,6 +16,9 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
   const [editHours, setEditHours] = useState('');
   const [editMinutes, setEditMinutes] = useState('');
   const intervalRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const [confirmState, setConfirmState] = useState(null);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
