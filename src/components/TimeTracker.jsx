@@ -19,6 +19,9 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
   const startTimeRef = useRef(null);
   const [confirmState, setConfirmState] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
   const getTrackerPath = () => {
     return storageDir ? `${storageDir}/TimeTracker/sessions.json` : null;
   };
@@ -373,51 +376,76 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
       )}
 
       {/* Session History */}
-      {sessions.length > 0 && (
-        <div style={{ marginTop: '32px', paddingBottom: '32px' }}>
-          <label className="tool-label" style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>SESSION HISTORY</label>
-          <div className="timer-history" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {[...sessions].reverse().map(s => (
-              <div key={s.id} className="timer-history-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '12px 16px', borderRadius: '10px', border: '1px solid var(--border-default)' }}>
-                <div>
-                  <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{s.program}</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '12px' }}>
-                    {new Date(s.date).toLocaleDateString()} at {new Date(s.date).toLocaleTimeString()}
-                  </span>
+      {sessions.length > 0 && (() => {
+        const reversedSessions = [...sessions].reverse();
+        const totalPages = Math.ceil(reversedSessions.length / itemsPerPage);
+        const currentSessions = reversedSessions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+        return (
+          <div style={{ marginTop: '32px', paddingBottom: '32px' }}>
+            <label className="tool-label" style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>SESSION HISTORY</label>
+            <div className="timer-history" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {currentSessions.map(s => (
+                <div key={s.id} className="timer-history-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '12px 16px', borderRadius: '10px', border: '1px solid var(--border-default)' }}>
+                  <div>
+                    <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{s.program}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '12px' }}>
+                      {new Date(s.date).toLocaleDateString()} at {new Date(s.date).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {editingId === s.id ? (
+                      <>
+                        <input type="number" value={editHours} onChange={(e) => setEditHours(e.target.value)} min="0" style={{ width: '50px', padding: '4px 6px', fontSize: '13px', background: 'var(--bg-deep)', border: '1px solid var(--border-default)', borderRadius: '6px', color: 'var(--text-primary)' }} placeholder="h" />
+                        <span style={{ color: 'var(--text-muted)' }}>h</span>
+                        <input type="number" value={editMinutes} onChange={(e) => setEditMinutes(e.target.value)} min="0" max="59" style={{ width: '50px', padding: '4px 6px', fontSize: '13px', background: 'var(--bg-deep)', border: '1px solid var(--border-default)', borderRadius: '6px', color: 'var(--text-primary)' }} placeholder="m" />
+                        <span style={{ color: 'var(--text-muted)' }}>m</span>
+                        <button onClick={() => saveEditSession(s.id)} style={{ padding: '6px', background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer' }}>
+                          <Check size={14} />
+                        </button>
+                        <button onClick={() => setEditingId(null)} style={{ padding: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                          <X size={14} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#10B981', fontWeight: 700 }}>
+                          {formatTime(s.duration)}
+                        </span>
+                        <button onClick={() => startEditSession(s)} title="Edit time" style={{ padding: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginLeft: '8px' }}>
+                          <Edit3 size={14} />
+                        </button>
+                        <button onClick={() => deleteSession(s.id)} style={{ padding: '6px', background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', opacity: 0.7 }}>
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {editingId === s.id ? (
-                    <>
-                      <input type="number" value={editHours} onChange={(e) => setEditHours(e.target.value)} min="0" style={{ width: '50px', padding: '4px 6px', fontSize: '13px', background: 'var(--bg-deep)', border: '1px solid var(--border-default)', borderRadius: '6px', color: 'var(--text-primary)' }} placeholder="h" />
-                      <span style={{ color: 'var(--text-muted)' }}>h</span>
-                      <input type="number" value={editMinutes} onChange={(e) => setEditMinutes(e.target.value)} min="0" max="59" style={{ width: '50px', padding: '4px 6px', fontSize: '13px', background: 'var(--bg-deep)', border: '1px solid var(--border-default)', borderRadius: '6px', color: 'var(--text-primary)' }} placeholder="m" />
-                      <span style={{ color: 'var(--text-muted)' }}>m</span>
-                      <button onClick={() => saveEditSession(s.id)} style={{ padding: '6px', background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer' }}>
-                        <Check size={14} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="pagination-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-subtle)', borderRadius: '16px', marginTop: '16px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, reversedSessions.length)} of {reversedSessions.length} results
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</button>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button key={i} className={`btn btn-sm ${currentPage === i + 1 ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setCurrentPage(i + 1)} style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px' }}>
+                        {i + 1}
                       </button>
-                      <button onClick={() => setEditingId(null)} style={{ padding: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                        <X size={14} />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#10B981', fontWeight: 700 }}>
-                        {formatTime(s.duration)}
-                      </span>
-                      <button onClick={() => startEditSession(s)} title="Edit time" style={{ padding: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginLeft: '8px' }}>
-                        <Edit3 size={14} />
-                      </button>
-                      <button onClick={() => deleteSession(s.id)} style={{ padding: '6px', background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', opacity: 0.7 }}>
-                        <Trash2 size={14} />
-                      </button>
-                    </>
-                  )}
+                    ))}
+                  </div>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
       {confirmState && (
         <ConfirmModal
           title={confirmState.title}

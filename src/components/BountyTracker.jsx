@@ -57,6 +57,9 @@ export default function BountyTracker() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const previewRef = useRef(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
   const renderedHtml = useMemo(() => {
     let finalHtml = marked(reportContent || '*No report content written yet.*');
     
@@ -155,6 +158,17 @@ export default function BountyTracker() {
     return bounties;
   }, [bounties, activeSection]);
 
+  const totalPages = Math.ceil(filteredBounties.length / itemsPerPage);
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeSection]);
+
+  const currentBounties = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredBounties.slice(start, start + itemsPerPage);
+  }, [filteredBounties, currentPage]);
+
   useEffect(() => {
     if (window.electronAPI) {
       window.electronAPI.storeSetSync('kroma_bounties', bounties);
@@ -219,122 +233,78 @@ export default function BountyTracker() {
   };
 
   return (
-    <div className="bounty-tracker-page page-enter" style={{ display: 'flex', gap: '0', height: '100%', overflow: 'hidden', padding: 0 }}>
-      {/* Sidebar */}
-      <div className="bounty-sidebar" style={{ width: '260px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', padding: 'var(--space-xl)', background: 'var(--bg-secondary)', borderRight: '1px solid var(--border-subtle)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 800 }}>💰 Tracker</h2>
-        </div>
-        
-        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px' }}>Overview</div>
-          <button className={`nav-item ${activeSection === 'all' ? 'active' : ''}`} onClick={() => setActiveSection('all')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: activeSection === 'all' ? 'var(--bg-tertiary)' : 'transparent', color: activeSection === 'all' ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left', width: '100%' }}>
-            <LayoutList size={16} /> All Bounties
-            <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{bounties.length}</span>
-          </button>
-        </div>
-        
-        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px' }}>By Severity</div>
-          {['critical', 'high', 'medium', 'low', 'info'].map(sev => {
-            const count = bounties.filter(b => b.severity === sev).length;
-            const isActive = activeSection === `severity-${sev}`;
-            return (
-              <button key={sev} onClick={() => setActiveSection(`severity-${sev}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: isActive ? 'var(--bg-tertiary)' : 'transparent', color: isActive ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left', width: '100%' }}>
-                <Shield size={16} className={`text-${sev}`} /> {sev.charAt(0).toUpperCase() + sev.slice(1)}
-                {count > 0 && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{count}</span>}
-              </button>
-            );
-          })}
-        </div>
-        
-        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px' }}>By Status</div>
-          {['submitted', 'triaged', 'resolved', 'resolved-paid', 'paid', 'duplicate'].map(st => {
-            const count = bounties.filter(b => b.status === st).length;
-            const isActive = activeSection === `status-${st}`;
-            return (
-              <button key={st} onClick={() => setActiveSection(`status-${st}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: isActive ? 'var(--bg-tertiary)' : 'transparent', color: isActive ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left', width: '100%' }}>
-                <CheckCircle2 size={16} className={`text-status-${st}`} /> {statusLabels[st] || st}
-                {count > 0 && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{count}</span>}
-              </button>
-            );
-          })}
-        </div>
+    <div className="bounty-tracker-page page-enter">
+      <div className="bounty-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 className="bounty-title" style={{ fontSize: '24px', fontWeight: 800 }}>💰 Bounty Tracker</h1>
+        <button className="btn btn-primary" onClick={() => handleOpenModal()} style={{ borderRadius: '12px' }}>
+          <Plus size={18} /> Add Bounty
+        </button>
+      </div>
 
-        <div className="nav-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div className="nav-group-title" style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            Custom Folders
-            <button className="btn-icon" onClick={() => setShowFolderInput(!showFolderInput)} style={{ padding: '2px' }}><Plus size={14} /></button>
-          </div>
-          {showFolderInput && (
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', padding: '0 4px' }}>
-              <input value={newFolderName} onChange={e => setNewFolderName(e.target.value)} placeholder="Folder name" style={{ flex: 1, padding: '6px 10px', fontSize: '12px', background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#fff' }} onKeyDown={e => {
-                if (e.key === 'Enter' && newFolderName.trim()) {
-                  setCustomFolders([...customFolders, { id: Date.now().toString(), name: newFolderName.trim() }]);
-                  setNewFolderName('');
-                  setShowFolderInput(false);
-                }
-              }} />
-            </div>
-          )}
-          {customFolders.map(folder => {
-            const count = bounties.filter(b => b.folderId === folder.id).length;
-            const isActive = activeSection === `folder-${folder.id}`;
-            return (
-              <div key={folder.id} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                <button onClick={() => setActiveSection(`folder-${folder.id}`)} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: isActive ? 'var(--bg-tertiary)' : 'transparent', color: isActive ? '#fff' : 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left' }}>
-                  <Folder size={16} /> {folder.name}
-                  {count > 0 && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{count}</span>}
+      <div className="filter-pills-container" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '8px', alignItems: 'center' }}>
+        <button className={`filter-pill ${activeSection === 'all' ? 'active' : ''}`} onClick={() => setActiveSection('all')}>
+          All <span className="pill-count">{bounties.length}</span>
+        </button>
+        
+        <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px', flexShrink: 0 }} />
+
+        {['submitted', 'triaged', 'resolved', 'resolved-paid', 'paid', 'duplicate'].map(st => {
+          const count = bounties.filter(b => b.status === st).length;
+          if (count === 0 && activeSection !== `status-${st}`) return null;
+          return (
+            <button key={st} className={`filter-pill ${activeSection === \`status-\${st}\` ? 'active' : ''}`} onClick={() => setActiveSection(`status-${st}`)}>
+              {statusLabels[st]} <span className="pill-count">{count}</span>
+            </button>
+          );
+        })}
+
+        <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px', flexShrink: 0 }} />
+
+        {['critical', 'high', 'medium', 'low', 'info'].map(sev => {
+          const count = bounties.filter(b => b.severity === sev).length;
+          if (count === 0 && activeSection !== `severity-${sev}`) return null;
+          return (
+            <button key={sev} className={`filter-pill ${activeSection === \`severity-\${sev}\` ? 'active' : ''}`} onClick={() => setActiveSection(`severity-${sev}`)}>
+              {sev.charAt(0).toUpperCase() + sev.slice(1)} <span className="pill-count">{count}</span>
+            </button>
+          );
+        })}
+
+        {(customFolders.length > 0) && (
+          <>
+            <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px', flexShrink: 0 }} />
+            {customFolders.map(folder => {
+              const count = bounties.filter(b => b.folderId === folder.id).length;
+              return (
+                <button key={folder.id} className={`filter-pill ${activeSection === \`folder-\${folder.id}\` ? 'active' : ''}`} onClick={() => setActiveSection(`folder-${folder.id}`)}>
+                  <Folder size={14} /> {folder.name} <span className="pill-count">{count}</span>
                 </button>
-                <button className="btn-icon" onClick={() => {
-                  if (confirm(`Delete folder "${folder.name}"? Bounties will not be deleted, just removed from this folder.`)) {
-                    setCustomFolders(customFolders.filter(f => f.id !== folder.id));
-                    setBounties(prev => prev.map(b => b.folderId === folder.id ? { ...b, folderId: '' } : b));
-                    if (activeSection === `folder-${folder.id}`) setActiveSection('all');
-                  }
-                }} style={{ padding: '6px', color: '#EF4444', opacity: 0.5 }} title="Delete Folder">
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            );
-          })}
+              );
+            })}
+          </>
+        )}
+      </div>
+
+      <div className="bounty-stats" style={{ marginBottom: '24px' }}>
+        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
+          <div className="bounty-stat-value" style={{ color: '#10B981' }}>${totalEarned.toLocaleString()}</div>
+          <div className="bounty-stat-label">Total Earned</div>
+        </div>
+        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
+          <div className="bounty-stat-value" style={{ color: 'var(--accent-primary)' }}>{totalSubmitted}</div>
+          <div className="bounty-stat-label">Reports Submitted</div>
+        </div>
+        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
+          <div className="bounty-stat-value" style={{ color: 'var(--accent-secondary)' }}>{totalPaid}</div>
+          <div className="bounty-stat-label">Paid Out</div>
+        </div>
+        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
+          <div className="bounty-stat-value" style={{ color: 'var(--accent-red)' }}>{totalDuplicates}</div>
+          <div className="bounty-stat-label">Duplicates</div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="bounty-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: 'var(--space-xl)' }}>
-        <div className="bounty-header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 className="bounty-title" style={{ fontSize: '24px', fontWeight: 800 }}>
-            {activeSection === 'all' ? 'All Bounties' : 
-             activeSection.startsWith('severity-') ? `Severity: ${activeSection.replace('severity-', '').toUpperCase()}` : 
-             activeSection.startsWith('status-') ? `Status: ${statusLabels[activeSection.replace('status-', '')]}` :
-             activeSection.startsWith('folder-') ? `Folder: ${customFolders.find(f => f.id === activeSection.replace('folder-', ''))?.name || 'Unknown'}` : 'Bounties'}
-          </h1>
-          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-            <Plus size={18} /> Add Bounty
-          </button>
-        </div>
-
-        <div className="bounty-stats">
-          <div className="bounty-stat-card">
-            <div className="bounty-stat-value" style={{ color: 'var(--accent-green)' }}>${totalEarned.toLocaleString()}</div>
-            <div className="bounty-stat-label">Total Earned</div>
-          </div>
-          <div className="bounty-stat-card">
-            <div className="bounty-stat-value" style={{ color: 'var(--accent-primary)' }}>{totalSubmitted}</div>
-            <div className="bounty-stat-label">Reports Submitted</div>
-          </div>
-          <div className="bounty-stat-card">
-            <div className="bounty-stat-value" style={{ color: 'var(--accent-secondary)' }}>{totalPaid}</div>
-            <div className="bounty-stat-label">Paid Out</div>
-          </div>
-          <div className="bounty-stat-card">
-            <div className="bounty-stat-value" style={{ color: 'var(--accent-red)' }}>{totalDuplicates}</div>
-            <div className="bounty-stat-label">Duplicates</div>
-          </div>
-        </div>
-
+      <div className="bounty-table-container">
         <table className="bounty-table">
           <thead>
             <tr>
@@ -348,7 +318,7 @@ export default function BountyTracker() {
             </tr>
           </thead>
           <tbody>
-            {filteredBounties.map((b) => (
+            {currentBounties.map((b) => (
             <tr key={b.id}>
               <td style={{ fontWeight: 600 }}>{b.program}</td>
               <td>{b.title}</td>
@@ -363,9 +333,36 @@ export default function BountyTracker() {
                 {b.url && <button className="btn-icon" onClick={() => window.open(b.url, '_blank')} title="View External Report" style={{ color: 'var(--accent-primary)' }}><ExternalLink size={16} /></button>}
               </td>
             </tr>
-          ))}
-        </tbody>
-      </table>
+            ))}
+            {currentBounties.length === 0 && (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+                  No bounties found in this section.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        
+        {totalPages > 1 && (
+          <div className="pagination-container">
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredBounties.length)} of {filteredBounties.length} results
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button key={i} className={`btn btn-sm ${currentPage === i + 1 ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setCurrentPage(i + 1)} style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px' }}>
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button className="btn btn-ghost btn-sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {showModal && createPortal(
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -535,8 +532,67 @@ export default function BountyTracker() {
 
       <style>{`
         .pro-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
+        
+        .filter-pills-container::-webkit-scrollbar { display: none; }
+        .filter-pill {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 14px;
+          border-radius: 20px;
+          background: var(--bg-secondary);
+          color: var(--text-secondary);
+          border: 1px solid var(--border-subtle);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .filter-pill:hover {
+          background: var(--bg-tertiary);
+          border-color: var(--border-default);
+          color: var(--text-primary);
+        }
+        .filter-pill.active {
+          background: var(--text-primary);
+          color: var(--bg-deep);
+          border-color: var(--text-primary);
+        }
+        .filter-pill .pill-count {
+          background: rgba(255,255,255,0.08);
+          color: inherit;
+          padding: 2px 6px;
+          border-radius: 10px;
+          font-size: 11px;
+        }
+        .filter-pill.active .pill-count {
+          background: rgba(0,0,0,0.15);
+        }
+        
+        .bounty-table-container {
+          background: var(--bg-primary);
+          border: 1px solid var(--border-subtle);
+          border-radius: 16px;
+          overflow: hidden;
+          margin-bottom: 24px;
+        }
+        .bounty-table {
+          margin-bottom: 0;
+          border: none;
+        }
+        .modal-content {
+          border-radius: 16px !important;
+        }
+        .pagination-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 24px;
+          background: var(--bg-secondary);
+          border-top: 1px solid var(--border-subtle);
+        }
       `}</style>
-      </div>
     </div>
   );
 }
