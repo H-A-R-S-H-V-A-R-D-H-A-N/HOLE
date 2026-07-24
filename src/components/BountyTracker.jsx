@@ -234,8 +234,6 @@ export default function BountyTracker() {
             All <span className="pill-count">{bounties.length}</span>
           </button>
           
-          <div style={{ width: '2px', height: '24px', background: 'var(--border-default)', margin: '0 8px', flexShrink: 0, borderRadius: '2px' }} />
-
           {['submitted', 'triaged', 'resolved', 'resolved-paid', 'paid', 'duplicate'].map(st => {
             const count = bounties.filter(b => b.status === st).length;
             if (count === 0 && activeSection !== `status-${st}`) return null;
@@ -248,7 +246,6 @@ export default function BountyTracker() {
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center' }}>
-          <div style={{ width: '2px', height: '24px', background: 'var(--border-default)', margin: '0 8px', flexShrink: 0, borderRadius: '2px' }} />
           {['critical', 'high', 'medium', 'low', 'info'].map(sev => {
             const count = bounties.filter(b => b.severity === sev).length;
             if (count === 0 && activeSection !== `severity-${sev}`) return null;
@@ -539,34 +536,37 @@ export default function BountyTracker() {
         }
         
         .bounty-table-container {
-          background: transparent;
-          border: none;
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
           margin-bottom: 24px;
         }
         .bounty-table {
           margin-bottom: 0;
           border: none;
           width: 100%;
-          border-collapse: separate;
-          border-spacing: 0 16px;
+          border-collapse: separate !important;
+          border-spacing: 0 16px !important;
         }
         .bounty-table thead th {
           padding: 0 24px 8px 24px;
-          color: var(--text-muted);
+          color: var(--text-muted) !important;
           font-weight: 700;
           text-transform: uppercase;
           font-size: 11px;
           letter-spacing: 0.5px;
-          border-bottom: none;
+          border-bottom: none !important;
+          background: transparent !important;
         }
         .bounty-table tbody tr {
           background: var(--bg-secondary);
-          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
           transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+          border-radius: 16px !important;
         }
         .bounty-table tbody tr:hover {
           transform: translateY(-4px) scale(1.01);
-          box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.3) !important;
           background: var(--bg-tertiary);
           z-index: 10;
           position: relative;
@@ -574,18 +574,19 @@ export default function BountyTracker() {
         .bounty-table tbody td {
           padding: 20px 24px;
           border: none;
-          border-top: 1px solid var(--border-subtle);
-          border-bottom: 1px solid var(--border-subtle);
+          border-top: 1px solid var(--border-subtle) !important;
+          border-bottom: 1px solid var(--border-subtle) !important;
+          background: inherit;
         }
         .bounty-table tbody tr td:first-child {
-          border-top-left-radius: 16px;
-          border-bottom-left-radius: 16px;
-          border-left: 1px solid var(--border-subtle);
+          border-top-left-radius: 16px !important;
+          border-bottom-left-radius: 16px !important;
+          border-left: 1px solid var(--border-subtle) !important;
         }
         .bounty-table tbody tr td:last-child {
-          border-top-right-radius: 16px;
-          border-bottom-right-radius: 16px;
-          border-right: 1px solid var(--border-subtle);
+          border-top-right-radius: 16px !important;
+          border-bottom-right-radius: 16px !important;
+          border-right: 1px solid var(--border-subtle) !important;
         }
         .modal-content {
           border-radius: 16px !important;
