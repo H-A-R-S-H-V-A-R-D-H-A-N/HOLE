@@ -16,11 +16,11 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
   const [editHours, setEditHours] = useState('');
   const [editMinutes, setEditMinutes] = useState('');
   const intervalRef = useRef(null);
-  const startTimeRef = useRef(null);
-  const [confirmState, setConfirmState] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
+
+  const [currentProgramPage, setCurrentProgramPage] = useState(1);
+  const programsPerPage = 5;
 
   const getTrackerPath = () => {
     return storageDir ? `${storageDir}/TimeTracker/sessions.json` : null;
@@ -342,13 +342,16 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
       )}
 
       {/* Per-Program Breakdown */}
-      {Object.keys(programStats).length > 0 && (
-        <div style={{ marginTop: '32px' }}>
-          <label className="tool-label" style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>PROGRAM BREAKDOWN</label>
-          <div className="timer-program-list" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {Object.entries(programStats)
-              .sort((a, b) => b[1].totalSeconds - a[1].totalSeconds)
-              .map(([name, stats]) => {
+      {Object.keys(programStats).length > 0 && (() => {
+        const sortedPrograms = Object.entries(programStats).sort((a, b) => b[1].totalSeconds - a[1].totalSeconds);
+        const totalProgramPages = Math.ceil(sortedPrograms.length / programsPerPage);
+        const currentPrograms = sortedPrograms.slice((currentProgramPage - 1) * programsPerPage, currentProgramPage * programsPerPage);
+
+        return (
+          <div style={{ marginTop: '32px' }}>
+            <label className="tool-label" style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>PROGRAM BREAKDOWN</label>
+            <div className="timer-program-list" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {currentPrograms.map(([name, stats]) => {
                 const pct = totalHours > 0 ? Math.round((stats.totalSeconds / totalHours) * 100) : 0;
                 return (
                   <div key={name} className="timer-program-row" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-secondary)', padding: '12px 16px', borderRadius: '10px', border: '1px solid var(--border-default)', cursor: 'pointer', transition: 'all 0.2s' }}>
@@ -371,9 +374,29 @@ export default function TimeTracker({ storageDir, fsUpdateTrigger }) {
                   </div>
                 );
               })}
+            </div>
+
+            {totalProgramPages > 1 && (
+              <div className="pagination-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-subtle)', borderRadius: '16px', marginTop: '16px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+                  Showing {((currentProgramPage - 1) * programsPerPage) + 1} to {Math.min(currentProgramPage * programsPerPage, sortedPrograms.length)} of {sortedPrograms.length} programs
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setCurrentProgramPage(p => Math.max(1, p - 1))} disabled={currentProgramPage === 1}>Previous</button>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[...Array(totalProgramPages)].map((_, i) => (
+                      <button key={i} className={`btn btn-sm ${currentProgramPage === i + 1 ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setCurrentProgramPage(i + 1)} style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px' }}>
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setCurrentProgramPage(p => Math.min(totalProgramPages, p + 1))} disabled={currentProgramPage === totalProgramPages}>Next</button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Session History */}
       {sessions.length > 0 && (() => {

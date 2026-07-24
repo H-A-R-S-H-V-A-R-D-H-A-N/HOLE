@@ -252,7 +252,7 @@ export default function BountyTracker() {
           const count = bounties.filter(b => b.status === st).length;
           if (count === 0 && activeSection !== `status-${st}`) return null;
           return (
-            <button key={st} className={`filter-pill ${activeSection === \`status-\${st}\` ? 'active' : ''}`} onClick={() => setActiveSection(`status-${st}`)}>
+            <button key={st} className={`filter-pill ${activeSection === 'status-' + st ? 'active' : ''}`} onClick={() => setActiveSection(`status-${st}`)}>
               {statusLabels[st]} <span className="pill-count">{count}</span>
             </button>
           );
@@ -264,7 +264,7 @@ export default function BountyTracker() {
           const count = bounties.filter(b => b.severity === sev).length;
           if (count === 0 && activeSection !== `severity-${sev}`) return null;
           return (
-            <button key={sev} className={`filter-pill ${activeSection === \`severity-\${sev}\` ? 'active' : ''}`} onClick={() => setActiveSection(`severity-${sev}`)}>
+            <button key={sev} className={`filter-pill ${activeSection === 'severity-' + sev ? 'active' : ''}`} onClick={() => setActiveSection(`severity-${sev}`)}>
               {sev.charAt(0).toUpperCase() + sev.slice(1)} <span className="pill-count">{count}</span>
             </button>
           );
@@ -276,7 +276,7 @@ export default function BountyTracker() {
             {customFolders.map(folder => {
               const count = bounties.filter(b => b.folderId === folder.id).length;
               return (
-                <button key={folder.id} className={`filter-pill ${activeSection === \`folder-\${folder.id}\` ? 'active' : ''}`} onClick={() => setActiveSection(`folder-${folder.id}`)}>
+                <button key={folder.id} className={`filter-pill ${activeSection === 'folder-' + folder.id ? 'active' : ''}`} onClick={() => setActiveSection(`folder-${folder.id}`)}>
                   <Folder size={14} /> {folder.name} <span className="pill-count">{count}</span>
                 </button>
               );
