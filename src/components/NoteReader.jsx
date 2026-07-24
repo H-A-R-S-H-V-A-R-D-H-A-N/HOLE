@@ -252,7 +252,7 @@ export default function NoteReader({ note, onClose, showSearchOverlay, setShowSe
     return `<pre style="background:#000;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:20px;overflow-x:auto;font-family:var(--font-mono);font-size:13px;line-height:1.7;color:#C9D1D9;white-space:pre-wrap;word-break:break-word;margin:0;">${escaped}</pre>`;
   }, [rawSource]);
 
-  const formatColor = note.metadata?.formatColor || localStorage.getItem('hole_format_color') || 'var(--accent-primary)';
+  const formatColor = note.metadata?.formatColor || '#00b853';
 
   return (
     <div className="note-reader-fullscreen page-enter" ref={readerRef} style={{ ...(isFullscreen ? { background: 'var(--bg-deep)', overflow: 'auto' } : {}), '--accent-primary': formatColor, '--accent-primary-dim': `${formatColor}33` }}>

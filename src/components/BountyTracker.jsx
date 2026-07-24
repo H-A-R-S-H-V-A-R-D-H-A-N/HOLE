@@ -201,7 +201,15 @@ export default function BountyTracker() {
   const handleOpenReport = (bounty) => {
     setActiveReportBounty(bounty);
     setReportContent(bounty.report || '');
-    setReportColor(bounty.formatColor || localStorage.getItem('hole_format_color') || '#00D4FF');
+    
+    // If it's an already written report, use its saved color (or default if old).
+    // If it's a new empty report, use the last selected brush color from local storage.
+    if (bounty.report && bounty.report.trim() !== '') {
+      setReportColor(bounty.formatColor || '#00b853');
+    } else {
+      setReportColor(bounty.formatColor || localStorage.getItem('hole_format_color') || '#00b853');
+    }
+    
     setIsPreview(!!bounty.report);
   };
 

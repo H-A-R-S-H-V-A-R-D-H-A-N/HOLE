@@ -77,7 +77,12 @@ export default function NoteEditor({ initialId, initialContent, initialTitle, in
   const [showHighlightColors, setShowHighlightColors] = useState(false);
   const [showTextColors, setShowTextColors] = useState(false);
   const [showFormatColors, setShowFormatColors] = useState(false);
-  const [formatColor, setFormatColor] = useState(initialMeta?.formatColor || localStorage.getItem('hole_format_color') || '#00D4FF');
+  const [formatColor, setFormatColor] = useState(() => {
+    if (initialContent && initialContent.trim() !== '') {
+      return initialMeta?.formatColor || '#00b853';
+    }
+    return initialMeta?.formatColor || localStorage.getItem('hole_format_color') || '#00b853';
+  });
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle');
