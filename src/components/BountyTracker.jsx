@@ -30,22 +30,12 @@ export default function BountyTracker() {
   });
 
   const [activeSection, setActiveSection] = useState('all');
-  const [customFolders, setCustomFolders] = useState(() => {
-    try {
-      const saved = window.electronAPI ? window.electronAPI.storeGetSync('kroma_bounty_folders') : localStorage.getItem('kroma_bounty_folders');
-      return (typeof saved === 'string' ? JSON.parse(saved) : saved) || [];
-    } catch {
-      return [];
-    }
-  });
-  const [newFolderName, setNewFolderName] = useState('');
-  const [showFolderInput, setShowFolderInput] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
   const [confirmState, setConfirmState] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: '', folderId: ''
+    program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: ''
   });
 
   // Report Modal State
@@ -154,7 +144,6 @@ export default function BountyTracker() {
     if (activeSection === 'all') return bounties;
     if (activeSection.startsWith('severity-')) return bounties.filter(b => b.severity === activeSection.replace('severity-', ''));
     if (activeSection.startsWith('status-')) return bounties.filter(b => b.status === activeSection.replace('status-', ''));
-    if (activeSection.startsWith('folder-')) return bounties.filter(b => b.folderId === activeSection.replace('folder-', ''));
     return bounties;
   }, [bounties, activeSection]);
 
@@ -172,12 +161,10 @@ export default function BountyTracker() {
   useEffect(() => {
     if (window.electronAPI) {
       window.electronAPI.storeSetSync('kroma_bounties', bounties);
-      window.electronAPI.storeSetSync('kroma_bounty_folders', customFolders);
     } else {
       localStorage.setItem('kroma_bounties', JSON.stringify(bounties));
-      localStorage.setItem('kroma_bounty_folders', JSON.stringify(customFolders));
     }
-  }, [bounties, customFolders]);
+  }, [bounties]);
 
   const handleOpenModal = (bounty = null) => {
     if (bounty) {
@@ -185,7 +172,7 @@ export default function BountyTracker() {
       setFormData(bounty);
     } else {
       setEditingId(null);
-      setFormData({ program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: '', folderId: activeSection.startsWith('folder-') ? activeSection.replace('folder-', '') : '' });
+      setFormData({ program: '', title: '', severity: 'medium', status: 'submitted', amount: 0, url: '', date: new Date().toISOString().split('T')[0], report: '' });
     }
     setShowModal(true);
   };
@@ -269,20 +256,6 @@ export default function BountyTracker() {
             </button>
           );
         })}
-
-        {(customFolders.length > 0) && (
-          <>
-            <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px', flexShrink: 0 }} />
-            {customFolders.map(folder => {
-              const count = bounties.filter(b => b.folderId === folder.id).length;
-              return (
-                <button key={folder.id} className={`filter-pill ${activeSection === 'folder-' + folder.id ? 'active' : ''}`} onClick={() => setActiveSection(`folder-${folder.id}`)}>
-                  <Folder size={14} /> {folder.name} <span className="pill-count">{count}</span>
-                </button>
-              );
-            })}
-          </>
-        )}
       </div>
 
       <div className="bounty-stats" style={{ marginBottom: '24px' }}>
@@ -409,24 +382,16 @@ export default function BountyTracker() {
                   <input type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: parseInt(e.target.value) || 0 })} style={{ width: '100%' }} />
                 </div>
                 <div>
-                  <label className="pro-label">Custom Folder (Optional)</label>
-                  <select className="settings-select" value={formData.folderId || ''} onChange={(e) => setFormData({ ...formData, folderId: e.target.value })} style={{ width: '100%' }}>
-                    <option value="">None (All Bounties)</option>
-                    {customFolders.map(f => (
-                      <option key={f.id} value={f.id}>{f.name}</option>
-                    ))}
-                  </select>
+                  <label className="pro-label">External Report URL (Optional)</label>
+                  <input value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://..." style={{ width: '100%' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label className="pro-label">External Report URL (Optional)</label>
-                  <input value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://..." style={{ width: '100%' }} />
-                </div>
-                <div>
                   <label className="pro-label">Date</label>
                   <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} style={{ width: '100%' }} />
                 </div>
+                <div></div>
               </div>
             </div>
             <div className="modal-footer">
