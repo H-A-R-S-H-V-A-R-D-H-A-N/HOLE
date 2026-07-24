@@ -260,7 +260,7 @@ export default function BountyTracker() {
 
       <div className="bounty-stats" style={{ marginBottom: '24px' }}>
         <div className="bounty-stat-card" style={{ borderRadius: '24px' }}>
-          <div className="bounty-stat-value" style={{ color: '#059669' }}>${totalEarned.toLocaleString()}</div>
+          <div className="bounty-stat-value" style={{ color: '#00b853' }}>${totalEarned.toLocaleString()}</div>
           <div className="bounty-stat-label">Total Earned</div>
         </div>
         <div className="bounty-stat-card" style={{ borderRadius: '24px' }}>
@@ -297,7 +297,7 @@ export default function BountyTracker() {
               <td style={{ color: 'var(--text-secondary)' }}>{b.title}</td>
               <td><span className={`bounty-badge severity-${b.severity}`}>{b.severity.toUpperCase()}</span></td>
               <td><span className={`bounty-badge status-${b.status}`}>{statusLabels[b.status] || b.status}</span></td>
-              <td style={{ color: '#059669', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '15px' }}>{b.amount ? `$${b.amount.toLocaleString()}` : '—'}</td>
+              <td style={{ color: '#00b853', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '15px' }}>{b.amount ? `$${b.amount.toLocaleString()}` : '—'}</td>
               <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{b.date}</td>
               <td style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn-icon" onClick={() => handleOpenReport(b)} title="Write/View Report" style={{ color: 'var(--accent-secondary)' }}><FileText size={16} /></button>
@@ -559,15 +559,14 @@ export default function BountyTracker() {
           background: transparent !important;
         }
         .bounty-table tbody tr {
-          background: var(--bg-secondary);
+          background: transparent !important;
           box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
           transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-          border-radius: 16px !important;
+          border-radius: 50px !important;
         }
         .bounty-table tbody tr:hover {
           transform: translateY(-4px) scale(1.01);
           box-shadow: 0 12px 30px rgba(0,0,0,0.3) !important;
-          background: var(--bg-tertiary);
           z-index: 10;
           position: relative;
         }
@@ -576,17 +575,23 @@ export default function BountyTracker() {
           border: none;
           border-top: 1px solid var(--border-subtle) !important;
           border-bottom: 1px solid var(--border-subtle) !important;
-          background: inherit;
+          background: var(--bg-secondary);
+          transition: background 0.3s ease;
+        }
+        .bounty-table tbody tr:hover td {
+          background: var(--bg-tertiary) !important;
         }
         .bounty-table tbody tr td:first-child {
-          border-top-left-radius: 24px !important;
-          border-bottom-left-radius: 24px !important;
+          border-top-left-radius: 50px !important;
+          border-bottom-left-radius: 50px !important;
           border-left: 1px solid var(--border-subtle) !important;
+          padding-left: 32px;
         }
         .bounty-table tbody tr td:last-child {
-          border-top-right-radius: 24px !important;
-          border-bottom-right-radius: 24px !important;
+          border-top-right-radius: 50px !important;
+          border-bottom-right-radius: 50px !important;
           border-right: 1px solid var(--border-subtle) !important;
+          padding-right: 32px;
         }
         .modal-content {
           border-radius: 24px !important;
