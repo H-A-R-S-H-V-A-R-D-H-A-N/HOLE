@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DollarSign, Plus, Filter, ArrowUpDown, ExternalLink,
@@ -30,6 +30,92 @@ export default function BountyTracker() {
   const [reportContent, setReportContent] = useState('');
   const [isPreview, setIsPreview] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const previewRef = useRef(null);
+
+  const renderedHtml = useMemo(() => {
+    let finalHtml = marked(reportContent || '*No report content written yet.*');
+    
+    if (finalHtml) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(finalHtml, 'text/html');
+      const pres = doc.querySelectorAll('pre');
+      
+      pres.forEach(pre => {
+        if (pre.parentElement?.classList.contains('reader-code-wrapper')) return;
+        
+        const codeEl = pre.querySelector('code');
+        const langClass = codeEl?.className?.match(/language-(\w+)/) || codeEl?.className?.match(/hljs (\w+)/);
+        const lang = langClass ? langClass[1] : '';
+        
+        const wrapper = doc.createElement('div');
+        wrapper.className = 'reader-code-wrapper';
+        
+        const header = doc.createElement('div');
+        header.className = 'reader-code-header';
+        
+        const langLabel = doc.createElement('span');
+        langLabel.className = 'reader-code-lang';
+        langLabel.textContent = lang ? lang.charAt(0).toUpperCase() + lang.slice(1) : 'Code';
+        
+        const actions = doc.createElement('div');
+        actions.className = 'reader-code-actions';
+        
+        actions.innerHTML = `
+          <button class="reader-code-btn download-btn" data-ext="${lang || 'txt'}" title="Download">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button class="reader-code-btn copy-btn" title="Copy">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        `;
+        
+        header.appendChild(langLabel);
+        header.appendChild(actions);
+        
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+      });
+      
+      finalHtml = doc.body.innerHTML;
+    }
+    return finalHtml;
+  }, [reportContent]);
+
+  useEffect(() => {
+    if (!isPreview || !previewRef.current) return;
+
+    const handleCodeActions = (e) => {
+      const btn = e.target.closest('.reader-code-btn');
+      if (!btn) return;
+      
+      const wrapper = btn.closest('.reader-code-wrapper');
+      if (!wrapper) return;
+      
+      const code = wrapper.querySelector('code')?.textContent || '';
+
+      if (btn.classList.contains('copy-btn')) {
+        navigator.clipboard.writeText(code);
+        btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => {
+          btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        }, 2000);
+      } else if (btn.classList.contains('download-btn')) {
+        const ext = btn.getAttribute('data-ext') || 'txt';
+        const blob = new Blob([code], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; 
+        a.download = `code.${ext}`; 
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    };
+
+    const el = previewRef.current;
+    el.addEventListener('click', handleCodeActions);
+    return () => el.removeEventListener('click', handleCodeActions);
+  }, [isPreview, renderedHtml]);
 
   const totalEarned = bounties.filter(b => b.status === 'paid').reduce((sum, b) => sum + b.amount, 0);
   const totalSubmitted = bounties.length;
@@ -266,7 +352,7 @@ export default function BountyTracker() {
                 />
               </div>
               <div style={{ flex: 1, display: isPreview ? 'block' : 'none', padding: '32px 48px', overflowY: 'auto', background: 'var(--bg-primary)' }}>
-                <div className="markdown-body" dangerouslySetInnerHTML={{ __html: marked(reportContent || '*No report content written yet.*') }} />
+                <div ref={previewRef} className="markdown-body reader-tiptap rendered-content" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
               </div>
             </div>
             <div className="modal-footer" style={{ padding: '24px 32px', borderTop: '1px solid var(--border-subtle)' }}>
