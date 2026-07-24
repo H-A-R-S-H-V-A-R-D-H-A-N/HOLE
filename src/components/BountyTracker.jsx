@@ -259,19 +259,19 @@ export default function BountyTracker() {
       </div>
 
       <div className="bounty-stats" style={{ marginBottom: '24px' }}>
-        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
-          <div className="bounty-stat-value" style={{ color: '#10B981' }}>${totalEarned.toLocaleString()}</div>
+        <div className="bounty-stat-card" style={{ borderRadius: '24px' }}>
+          <div className="bounty-stat-value" style={{ color: '#059669' }}>${totalEarned.toLocaleString()}</div>
           <div className="bounty-stat-label">Total Earned</div>
         </div>
-        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
+        <div className="bounty-stat-card" style={{ borderRadius: '24px' }}>
           <div className="bounty-stat-value" style={{ color: 'var(--accent-primary)' }}>{totalSubmitted}</div>
           <div className="bounty-stat-label">Reports Submitted</div>
         </div>
-        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
+        <div className="bounty-stat-card" style={{ borderRadius: '24px' }}>
           <div className="bounty-stat-value" style={{ color: 'var(--accent-secondary)' }}>{totalPaid}</div>
           <div className="bounty-stat-label">Paid Out</div>
         </div>
-        <div className="bounty-stat-card" style={{ borderRadius: '16px' }}>
+        <div className="bounty-stat-card" style={{ borderRadius: '24px' }}>
           <div className="bounty-stat-value" style={{ color: 'var(--accent-red)' }}>{totalDuplicates}</div>
           <div className="bounty-stat-label">Duplicates</div>
         </div>
@@ -297,7 +297,7 @@ export default function BountyTracker() {
               <td style={{ color: 'var(--text-secondary)' }}>{b.title}</td>
               <td><span className={`bounty-badge severity-${b.severity}`}>{b.severity.toUpperCase()}</span></td>
               <td><span className={`bounty-badge status-${b.status}`}>{statusLabels[b.status] || b.status}</span></td>
-              <td style={{ color: '#10B981', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '15px' }}>{b.amount ? `$${b.amount.toLocaleString()}` : '—'}</td>
+              <td style={{ color: '#059669', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '15px' }}>{b.amount ? `$${b.amount.toLocaleString()}` : '—'}</td>
               <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{b.date}</td>
               <td style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn-icon" onClick={() => handleOpenReport(b)} title="Write/View Report" style={{ color: 'var(--accent-secondary)' }}><FileText size={16} /></button>
@@ -579,17 +579,17 @@ export default function BountyTracker() {
           background: inherit;
         }
         .bounty-table tbody tr td:first-child {
-          border-top-left-radius: 16px !important;
-          border-bottom-left-radius: 16px !important;
+          border-top-left-radius: 24px !important;
+          border-bottom-left-radius: 24px !important;
           border-left: 1px solid var(--border-subtle) !important;
         }
         .bounty-table tbody tr td:last-child {
-          border-top-right-radius: 16px !important;
-          border-bottom-right-radius: 16px !important;
+          border-top-right-radius: 24px !important;
+          border-bottom-right-radius: 24px !important;
           border-right: 1px solid var(--border-subtle) !important;
         }
         .modal-content {
-          border-radius: 16px !important;
+          border-radius: 24px !important;
         }
         .pagination-container {
           display: flex;
@@ -598,7 +598,7 @@ export default function BountyTracker() {
           padding: 16px 24px;
           background: var(--bg-secondary);
           border: 1px solid var(--border-subtle);
-          border-radius: 16px;
+          border-radius: 24px;
         }
       `}</style>
     </div>
