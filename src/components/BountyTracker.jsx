@@ -299,11 +299,13 @@ export default function BountyTracker() {
               <td><span className={`bounty-badge status-${b.status}`}>{statusLabels[b.status] || b.status}</span></td>
               <td style={{ color: '#00b853', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '15px' }}>{b.amount ? `$${b.amount.toLocaleString()}` : '—'}</td>
               <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{b.date}</td>
-              <td style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn-icon" onClick={() => handleOpenReport(b)} title="Write/View Report" style={{ color: 'var(--accent-secondary)' }}><FileText size={16} /></button>
-                <button className="btn-icon" onClick={() => handleOpenModal(b)} title="Edit"><Edit3 size={16} /></button>
-                <button className="btn-icon" onClick={() => handleDelete(b)} title="Delete" style={{ color: '#EF4444' }}><Trash2 size={16} /></button>
-                {b.url && <button className="btn-icon" onClick={() => window.open(b.url, '_blank')} title="View External Report" style={{ color: 'var(--accent-primary)' }}><ExternalLink size={16} /></button>}
+              <td>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-icon" onClick={() => handleOpenReport(b)} title="Write/View Report" style={{ color: 'var(--accent-secondary)' }}><FileText size={16} /></button>
+                  <button className="btn-icon" onClick={() => handleOpenModal(b)} title="Edit"><Edit3 size={16} /></button>
+                  <button className="btn-icon" onClick={() => handleDelete(b)} title="Delete" style={{ color: '#EF4444' }}><Trash2 size={16} /></button>
+                  {b.url && <button className="btn-icon" onClick={() => window.open(b.url, '_blank')} title="View External Report" style={{ color: 'var(--accent-primary)' }}><ExternalLink size={16} /></button>}
+                </div>
               </td>
             </tr>
             ))}
@@ -560,13 +562,13 @@ export default function BountyTracker() {
         }
         .bounty-table tbody tr {
           background: transparent !important;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+          box-shadow: none !important;
+          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
           transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-          border-radius: 50px !important;
         }
         .bounty-table tbody tr:hover {
           transform: translateY(-4px) scale(1.01);
-          box-shadow: 0 12px 30px rgba(0,0,0,0.3) !important;
+          filter: drop-shadow(0 12px 24px rgba(0,0,0,0.3));
           z-index: 10;
           position: relative;
         }
